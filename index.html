@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>คำนวณความชันเทรล</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;700&display=swap">
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <style>
 :root{--bg:#eceee4;--panel:#fafaf4;--ink:#1b2a21;--mute:#667366;--line:#cdd3c3;--accent:#2c5a43;--onaccent:#f4f7ef;--field:#fff;--bad:#c4503f;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121a15;--panel:#1b2620;--ink:#e5ebdf;--mute:#93a095;--line:#33423a;--accent:#7fc29c;--onaccent:#102017;--field:#141d18;--bad:#e0705e;color-scheme:dark}}
@@ -40,7 +42,7 @@ button.on{background:var(--accent);color:var(--onaccent);border-color:var(--acce
 [data-ic]{display:inline-flex;align-items:center;justify-content:center;line-height:0}
 .tabs button{padding:6px 12px;font-size:.88rem}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-input[type=number],input[type=text]{font:inherit;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:8px;padding:7px 9px;width:100%;min-width:0}
+input[type=number],input[type=text],input[type=date]{font:inherit;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:8px;padding:7px 9px;width:100%;min-width:0}
 label{display:flex;flex-direction:column;font-size:.78rem;color:var(--mute);gap:3px}
 input[type=range]{width:100%;accent-color:var(--accent)}
 #cv{width:100%;height:auto;display:block;touch-action:pan-y;user-select:none;-webkit-user-select:none;cursor:crosshair}
@@ -94,12 +96,26 @@ th{color:var(--mute);font-weight:500;font-size:.78rem}
 .hbig .big b{font-size:clamp(2.8rem,8vw,4.2rem)}
 @media(max-width:900px){.hgrid{grid-template-columns:1fr 1fr}.hg{border-left:0;padding-left:0;border-top:1px solid var(--line);padding-top:10px}}
 @media(max-width:560px){.hgrid{grid-template-columns:1fr}}
+[hidden]{display:none!important}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.acct{display:flex;align-items:center;gap:6px;margin-bottom:12px}
+.pri{background:var(--accent);color:var(--onaccent);border-color:var(--accent)}
+.act{display:flex;justify-content:space-between;gap:10px;width:100%;text-align:left;margin-bottom:4px;font-size:.85rem}
+.act small{color:var(--mute)}
 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
 </style>
 </head>
 <body>
 <main>
-<h1>คำนวณความชันเทรล</h1>
+<div class="top"><h1>คำนวณความชันเทรล</h1><div class="acct" id="acct"></div></div>
+<div class="box" id="login" hidden style="margin-bottom:14px"><label style="max-width:320px">อีเมล<input type="text" id="email" autocomplete="email" placeholder="you@example.com"></label><div style="margin-top:8px"><button class="pri" id="loginGo">ส่งลิงก์เข้าสู่ระบบ</button></div><p class="note" id="loginMsg"></p></div>
+<section class="box" id="stv" hidden style="margin-bottom:14px">
+  <div class="shd" style="margin:0 0 8px"><strong>กิจกรรมจาก Strava</strong><button class="ib" id="stvX" data-tip="ปิด" aria-label="ปิด">×</button></div>
+  <div class="srow2" style="margin:0 0 8px"><label>ค้นหาชื่อ<input type="text" id="q"></label><label>ตั้งแต่วันที่<input type="date" id="dFrom"></label><label>ถึงวันที่<input type="date" id="dTo"></label></div>
+  <p class="note" id="stvMsg"></p>
+  <div id="stvList" style="max-height:300px;overflow-y:auto"></div>
+  <button id="stvMore" hidden style="margin-top:8px">โหลดเพิ่ม</button>
+</section>
 
 <section class="box hero" aria-live="polite">
   <div class="hgrid">
@@ -125,7 +141,7 @@ th{color:var(--mute);font-weight:500;font-size:.78rem}
       <button class="mb" id="bUndo" data-tip="เลิกทำ" aria-label="เลิกทำ" disabled><span data-ic="undo"></span></button>
       <button class="mb" id="bRedo" data-tip="ทำซ้ำ" aria-label="ทำซ้ำ" disabled><span data-ic="redo"></span></button>
     </div>
-    <input type="file" id="gpx" accept=".gpx" hidden>
+    <input type="file" id="gpx" accept=".gpx,.tcx" hidden>
     <div class="ter" id="ter"></div>
     <p class="note" id="hint"></p>
     <div style="position:relative"><svg id="cv" viewBox="0 0 700 270" role="img" aria-label="กราฟโปรไฟล์ความสูง"></svg><div id="tip" class="tip" hidden></div><div class="zc"><button id="zi" data-tip="ซูมเข้า" aria-label="ซูมเข้า"><span data-ic="plus"></span></button><button id="zo" data-tip="ซูมออก" aria-label="ซูมออก"><span data-ic="minus"></span></button><button id="zr" data-tip="รีเซ็ตซูม" aria-label="รีเซ็ตซูม"><span data-ic="fit"></span></button></div></div>
@@ -144,7 +160,7 @@ th{color:var(--mute);font-weight:500;font-size:.78rem}
 
 <section class="box">
   <h2>เส้นทางที่บันทึกและการเปรียบเทียบ</h2>
-  <div class="grp" style="margin-bottom:6px"><button class="ib" id="bExp" data-tip="ส่งออกเส้นทางที่บันทึกเป็นไฟล์สำรอง" aria-label="ส่งออกไฟล์สำรอง"><span data-ic="download"></span></button><button class="ib" id="bImp" data-tip="นำเข้าไฟล์สำรองเส้นทาง" aria-label="นำเข้าไฟล์สำรอง"><span data-ic="upload"></span></button><input type="file" id="jsonIn" accept=".json" hidden></div>
+  <div class="grp" style="margin-bottom:6px"><button class="ib" id="bExp" data-tip="ส่งออกเส้นทางที่บันทึกเป็นไฟล์สำรอง" aria-label="ส่งออกไฟล์สำรอง"><span data-ic="download"></span></button><button class="ib" id="bImp" data-tip="นำเข้าไฟล์สำรองเส้นทาง" aria-label="นำเข้าไฟล์สำรอง"><span data-ic="upload"></span></button><input type="file" id="jsonIn" accept=".json" hidden><button class="ib" id="bUpLocal" data-ic="cloudup" hidden data-tip="อัปโหลดเส้นทางที่เก็บในเครื่องนี้ขึ้นบัญชี" aria-label="อัปโหลดเส้นทางในเครื่องขึ้นบัญชี"></button></div>
   <div id="saved"></div>
   <div id="cmp"></div>
 </section>
@@ -152,7 +168,7 @@ th{color:var(--mute);font-weight:500;font-size:.78rem}
 
 <script>
 const $=s=>document.querySelector(s);
-const P={upload:"M12 16V4m0 0L8 8m4-4l4 4M4 20h16",swap:"M7 4v14m0 0l-3-3m3 3l3-3M17 20V6m0 0l-3 3m3-3l3 3",mount:"M3 19l6-11 4 7 3-4 5 8z",cut:"M6 6a2 2 0 100 4 2 2 0 000-4zM6 14a2 2 0 100 4 2 2 0 000-4zM8 9l12 9M8 15L20 6",undo:"M9 14L4 9l5-5M4 9h10a6 6 0 010 12h-3",redo:"M15 14l5-5-5-5M20 9H10a6 6 0 000 12h3",plus:"M12 5v14M5 12h14",trash:"M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3",save:"M5 4h11l3 3v13H5zM8 4v5h7V4M8 20v-6h8v6",grip:"M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01",minus:"M5 12h14",fit:"M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5",download:"M12 4v12m0 0l-4-4m4 4l4-4M4 20h16",chart:"M3 17l5-6 4 4 5-8 4 5",map:"M9 4L3 6v14l6-2 6 2 6-2V4l-6 2zM9 4v14M15 6v14",cube:"M12 3l8 4.5v9L12 21l-8-4.5v-9zM12 12l8-4.5M12 12v9M12 12L4 7.5"};
+const P={upload:"M12 16V4m0 0L8 8m4-4l4 4M4 20h16",swap:"M7 4v14m0 0l-3-3m3 3l3-3M17 20V6m0 0l-3 3m3-3l3 3",mount:"M3 19l6-11 4 7 3-4 5 8z",cut:"M6 6a2 2 0 100 4 2 2 0 000-4zM6 14a2 2 0 100 4 2 2 0 000-4zM8 9l12 9M8 15L20 6",undo:"M9 14L4 9l5-5M4 9h10a6 6 0 010 12h-3",redo:"M15 14l5-5-5-5M20 9H10a6 6 0 000 12h3",plus:"M12 5v14M5 12h14",trash:"M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3",save:"M5 4h11l3 3v13H5zM8 4v5h7V4M8 20v-6h8v6",grip:"M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01",minus:"M5 12h14",fit:"M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5",download:"M12 4v12m0 0l-4-4m4 4l4-4M4 20h16",user:"M20 21a8 8 0 00-16 0M12 12a4 4 0 100-8 4 4 0 000 8z",out:"M9 4H5v16h4M16 8l4 4-4 4M20 12H9",act:"M3 12h4l3-8 4 16 3-8h4",cloudup:"M7 18a4 4 0 010-8 5 5 0 019.6-1A4.5 4.5 0 0117 18M12 12v7m0-7l-3 3m3-3l3 3",chart:"M3 17l5-6 4 4 5-8 4 5",map:"M9 4L3 6v14l6-2 6 2 6-2V4l-6 2zM9 4v14M15 6v14",cube:"M12 3l8 4.5v9L12 21l-8-4.5v-9zM12 12l8-4.5M12 12v9M12 12L4 7.5"};
 const ic=n=>'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+P[n]+'"/></svg>';
 document.querySelectorAll("[data-ic]").forEach(b=>b.innerHTML=ic(b.dataset.ic));
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -223,13 +239,7 @@ function applyTol(tol,auto){
   const segs=[];for(let k=1;k<idx.length;k++)segs.push(mk(idx[k-1],idx[k],1));
   S.segs=segs;S.gpx=true;S.rev=false;S.sel=-1;S.end=-1;$("#tol").value=tol;render();
 }
-$("#bUp").onclick=()=>$("#gpx").click();
-$("#gpx").onchange=e=>{
-  const f=e.target.files[0];if(!f)return;const rd=new FileReader();
-  rd.onload=()=>{$("#err").textContent="";
-    try{
-      const doc=new DOMParser().parseFromString(rd.result,"application/xml");
-      const pts=[...doc.getElementsByTagName("trkpt")].map(p=>{const el=p.getElementsByTagName("ele")[0];return[parseFloat(p.getAttribute("lat")),parseFloat(p.getAttribute("lon")),el?parseFloat(el.textContent):NaN]}).filter(p=>!isNaN(p[0])&&!isNaN(p[1])&&!isNaN(p[2]));
+function importPts(pts,name){
       if(pts.length<2)throw 0;
       const sm=pts.map((p,i)=>{let s=0,n=0;for(let k=Math.max(0,i-3);k<=Math.min(pts.length-1,i+3);k++){s+=pts[k][2];n++}return s/n});
       const w=4,sp=pts.map((p,i)=>{let a=0,o=0,n=0;for(let k=Math.max(0,i-w);k<=Math.min(pts.length-1,i+w);k++){a+=pts[k][0];o+=pts[k][1];n++}return[a/n,o/n]});
@@ -241,9 +251,20 @@ $("#gpx").onchange=e=>{
       push();
       G={x:xr,xr,y:kept.map(i=>sm[i]),px:kept.map(i=>(pts[i][1]-pts[0][1])*k),py:kept.map(i=>(pts[i][0]-pts[0][0])*111320),terr:new Uint8Array(kept.length).fill(1)};
       let lo=1e9,hi=-1e9;G.y.forEach(v=>{lo=Math.min(lo,v);hi=Math.max(hi,v)});
-      $("#name").value=f.name.replace(/\.gpx$/i,"");
+      $("#name").value=name;
       applyTol(Math.max(3,Math.round((hi-lo)*.03)),true);
-    }catch(x){$("#err").textContent="อ่านไฟล์ไม่ได้ ไฟล์ GPX ต้องมีจุดพิกัดพร้อมค่าความสูง (ele)"}
+}
+$("#bUp").onclick=()=>$("#gpx").click();
+$("#gpx").onchange=e=>{
+  const f=e.target.files[0];if(!f)return;const rd=new FileReader();
+  rd.onload=()=>{$("#err").textContent="";
+    try{
+      const doc=new DOMParser().parseFromString(rd.result,"application/xml");
+      const tcx=/\.tcx$/i.test(f.name),tx=(p,n)=>{const e=p.getElementsByTagName(n)[0];return e?parseFloat(e.textContent):NaN};
+      const pts=(tcx?[...doc.getElementsByTagName("Trackpoint")].map(p=>[tx(p,"LatitudeDegrees"),tx(p,"LongitudeDegrees"),tx(p,"AltitudeMeters")]):[...doc.getElementsByTagName("trkpt")].map(p=>{const el=p.getElementsByTagName("ele")[0];return[parseFloat(p.getAttribute("lat")),parseFloat(p.getAttribute("lon")),el?parseFloat(el.textContent):NaN]})).filter(p=>!isNaN(p[0])&&!isNaN(p[1])&&!isNaN(p[2]));
+      if(pts.length<2)throw 0;
+      importPts(pts,f.name.replace(/\.(gpx|tcx)$/i,""));
+    }catch(x){$("#err").textContent="อ่านไฟล์ไม่ได้ ไฟล์ GPX หรือ TCX ต้องมีจุดพิกัดพร้อมค่าความสูง"}
   };
   rd.readAsText(f);e.target.value="";
 };
@@ -489,22 +510,24 @@ function profile(rows){
 }
 function summary(rows){const s=stats(rows,0,rows.length-1);let mx=0;rows.forEach(r=>{if(r.d>0)mx=Math.max(mx,Math.abs(r.g))});return{tot:s.d,gain:s.gain,loss:s.loss,avg:s.g,mx,eq:s.eq,score:s.score,inten:s.inten}}
 function packG(){return{xr:G.xr.map(r3),y:G.y.map(r1),px:G.px.map(Math.round),py:G.py.map(Math.round),terr:Array.from(G.terr).join("")}}
-$("#bSave").onclick=()=>{
+$("#bSave").onclick=async()=>{
   const rows=calc();if(!rows.length)return;
-  SV.unshift({name:$("#name").value.trim()||"เส้นทางไม่มีชื่อ",pf:profile(rows),segs:S.segs.map(q=>({d:q.d,s:q.s,e:q.e,t:q.t,ia:q.ia,ib:q.ib})),gp:G&&G.xr?packG():null,gx:!!S.gpx,tol:$("#tol").value,...summary(rows)});
-  SV=SV.slice(0,30);S.cmp=S.cmp.map(i=>i+1).filter(i=>i<SV.length);lsSet(SV);renderSaved();
+  if(sb&&!USER){$("#login").hidden=false;$("#loginMsg").textContent="ต้องเข้าสู่ระบบก่อนจึงจะบันทึกเส้นทางได้";$("#email").focus();return}
+  const rec={name:$("#name").value.trim()||"เส้นทางไม่มีชื่อ",pf:profile(rows),segs:S.segs.map(q=>({d:q.d,s:q.s,e:q.e,t:q.t,ia:q.ia,ib:q.ib})),gp:G&&G.xr?packG():null,gx:!!S.gpx,tol:$("#tol").value,...summary(rows)};
+  if(cloud()){const{data,error}=await sb.from("routes").insert({name:rec.name,data:rec}).select("id").single();if(error){err("บันทึกขึ้นบัญชีไม่สำเร็จ: "+error.message);return}rec.id=data.id}
+  SV.unshift(rec);if(!cloud())SV=SV.slice(0,30);S.cmp=S.cmp.map(i=>i+1).filter(i=>i<SV.length);if(!cloud())lsSet(SV);renderSaved();
 };
 function renderSaved(){
   $("#saved").innerHTML=SV.length?SV.map((r,i)=>'<div class="sv"><label><input type="checkbox" data-c="'+i+'"'+(S.cmp.includes(i)?" checked":"")+'><span>'+esc(r.name)+' · '+r.tot.toFixed(1)+' กม. · ขึ้น '+Math.round(r.gain)+' ม.</span></label><button data-o="'+i+'">เปิด</button><button class="ib" data-x="'+i+'" data-tip="ลบเส้นทาง" aria-label="ลบเส้นทาง">'+ic("trash")+'</button></div>').join(""):'<p class="note">ยังไม่มีเส้นทางที่บันทึกไว้ ตั้งชื่อแล้วกดปุ่มบันทึกในกล่องรายการช่วง</p>';
   renderCmp();
 }
-$("#saved").onclick=e=>{
+$("#saved").onclick=async e=>{
   const c=e.target.closest("[data-c]"),o=e.target.closest("[data-o]"),x=e.target.closest("[data-x]");
   if(c){const i=+c.dataset.c;S.cmp=c.checked?S.cmp.concat(i):S.cmp.filter(v=>v!==i);renderCmp()}
   else if(o){const r=SV[+o.dataset.o];push();S.segs=r.segs.map(q=>({...q,g:0}));S.rev=false;S.sel=-1;S.end=-1;S.hov=-1;S.hi=-1;$("#name").value=r.name;
     if(r.gp){const g=r.gp,xr=g.xr||g.xf;G={xr,x:xr,y:g.y,px:g.px,py:g.py,terr:Uint8Array.from(g.terr.split("").map(Number))};S.gpx=r.gx!==false;if(S.gpx)S.segs.forEach(q=>{if(q.ia!=null)q.d=r3(G.x[q.ib]-G.x[q.ia])});$("#tol").value=r.tol||10}else{S.gpx=false;G=null}
     render()}
-  else if(x){const i=+x.dataset.x;SV.splice(i,1);S.cmp=S.cmp.filter(v=>v!==i).map(v=>v>i?v-1:v);lsSet(SV);renderSaved()}
+  else if(x){const i=+x.dataset.x,r=SV[i];if(cloud()&&r.id){const{error}=await sb.from("routes").delete().eq("id",r.id);if(error){err("ลบไม่สำเร็จ: "+error.message);return}}SV.splice(i,1);S.cmp=S.cmp.filter(v=>v!==i).map(v=>v>i?v-1:v);if(!cloud())lsSet(SV);renderSaved()}
 };
 const PAL=["#2c5a43","#c4503f","#3b6fb5","#c9964a","#8a5bb5","#2a9d8f","#d6609a"];
 function fmtT(m){const h=Math.floor(m/60),mm=Math.round(m%60);return h+":"+String(mm).padStart(2,"0")+" ชม."}
@@ -549,8 +572,80 @@ document.addEventListener("focusout",()=>{gt.hidden=true});
 document.addEventListener("pointerdown",()=>{gt.hidden=true});
 $("#bExp").onclick=()=>{if(!SV.length){$("#err").textContent="ยังไม่มีเส้นทางที่บันทึกไว้";return}const b=new Blob([JSON.stringify({v:3,routes:SV})],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="trail-routes.json";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
 $("#bImp").onclick=()=>$("#jsonIn").click();
-$("#jsonIn").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const d=JSON.parse(rd.result),a=Array.isArray(d)?d:d.routes;if(!Array.isArray(a))throw 0;const have=new Set(SV.map(r=>r.name+"|"+r.tot));S.cmp=[];SV=a.filter(r=>r&&r.segs&&!have.has(r.name+"|"+r.tot)).concat(SV).slice(0,30);lsSet(SV);renderSaved()}catch(_){$("#err").textContent="อ่านไฟล์สำรองไม่ได้"}};rd.readAsText(f);e.target.value=""};
-SV=lsGet();sync();renderSaved();render();
+$("#jsonIn").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=async()=>{try{const d=JSON.parse(rd.result),a=Array.isArray(d)?d:d.routes;if(!Array.isArray(a))throw 0;const have=new Set(SV.map(r=>r.name+"|"+r.tot)),fresh=a.filter(r=>r&&r.segs&&!have.has(r.name+"|"+r.tot));
+    if(cloud()){const{error}=await sb.from("routes").insert(fresh.map(r=>{const{id,...rest}=r;return{name:r.name,data:rest}}));if(error)throw error;await loadRoutes()}
+    else{S.cmp=[];SV=fresh.concat(SV).slice(0,30);lsSet(SV);renderSaved()}}catch(_){err("อ่านไฟล์สำรองไม่ได้")}};rd.readAsText(f);e.target.value=""};
+/* ===== บัญชี + ซิงก์ขึ้นคลาวด์ + Strava (ทำงานเมื่อมี config.js และ /api บน Vercel) ===== */
+const CFG=window.APP_CONFIG||{};
+const sb=CFG.SUPABASE_URL&&CFG.SUPABASE_ANON_KEY&&window.supabase?window.supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY):null;
+let USER=null,SESS=null,ACT=[],actPage=1,synced=false;
+const cloud=()=>!!(sb&&USER);
+const err=m=>{$("#err").textContent=m||""};
+function renderAcct(){
+  const a=$("#acct");
+  if(!sb){a.innerHTML="";return}
+  a.innerHTML=USER?'<span class="note" style="margin:0">'+esc(USER.email||"")+'</span><button class="ib" id="bStv" data-tip="เชื่อมกิจกรรมจาก Strava" aria-label="เชื่อมกิจกรรมจาก Strava"><span data-ic="act"></span></button><button class="ib" id="bOut" data-tip="ออกจากระบบ" aria-label="ออกจากระบบ"><span data-ic="out"></span></button>':'<button class="ib" id="bIn" data-tip="เข้าสู่ระบบเพื่อบันทึกขึ้นบัญชี" aria-label="เข้าสู่ระบบ"><span data-ic="user"></span></button>';
+  a.querySelectorAll("[data-ic]").forEach(b=>b.innerHTML=ic(b.dataset.ic));
+}
+$("#acct").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;if(b.id==="bIn")$("#login").hidden=!$("#login").hidden;else if(b.id==="bOut")sb.auth.signOut();else if(b.id==="bStv")openStrava()});
+$("#loginGo").onclick=async()=>{
+  const em=$("#email").value.trim();if(!em||!sb)return;
+  $("#loginMsg").textContent="กำลังส่ง…";
+  const{error}=await sb.auth.signInWithOtp({email:em,options:{emailRedirectTo:location.origin+location.pathname}});
+  $("#loginMsg").textContent=error?"ส่งไม่สำเร็จ: "+error.message:"ส่งลิงก์ไปที่อีเมลแล้ว กดลิงก์ในอีเมลเพื่อเข้าสู่ระบบ";
+};
+async function loadRoutes(){
+  if(cloud()){
+    const{data,error}=await sb.from("routes").select("id,name,data,created_at").order("created_at",{ascending:false});
+    if(error){err("โหลดเส้นทางจากบัญชีไม่สำเร็จ: "+error.message);SV=lsGet()}else SV=data.map(r=>({...r.data,id:r.id,name:r.name}));
+  }else SV=lsGet();
+  S.cmp=[];renderSaved();
+  $("#bUpLocal").hidden=!(cloud()&&!synced&&lsGet().length);
+}
+$("#bUpLocal").onclick=async()=>{
+  const have=new Set(SV.map(r=>r.name+"|"+r.tot)),fresh=lsGet().filter(r=>!have.has(r.name+"|"+r.tot));
+  if(fresh.length){const{error}=await sb.from("routes").insert(fresh.map(r=>({name:r.name,data:r})));if(error){err("อัปโหลดไม่สำเร็จ: "+error.message);return}}
+  synced=true;await loadRoutes();
+};
+/* Strava */
+const api=p=>fetch(p,{headers:{Authorization:"Bearer "+SESS.access_token}});
+async function openStrava(){$("#stv").hidden=false;$("#stv").scrollIntoView({behavior:"smooth",block:"nearest"});await loadActs(true)}
+async function loadActs(reset){
+  if(reset){ACT=[];actPage=1}
+  $("#stvMsg").textContent="กำลังโหลด…";
+  const p=new URLSearchParams({page:actPage}),f=$("#dFrom").value,t=$("#dTo").value;
+  if(f)p.set("after",Math.floor(new Date(f+"T00:00:00").getTime()/1000));
+  if(t)p.set("before",Math.floor(new Date(t+"T23:59:59").getTime()/1000));
+  let r;try{r=await api("/api/strava-activities?"+p)}catch(_){$("#stvMsg").textContent="เรียก API ไม่ได้ ต้องใช้บน Vercel ที่ตั้งค่าโฟลเดอร์ api แล้ว";return}
+  if(r.status===409){$("#stvMsg").textContent="";$("#stvMore").hidden=true;$("#stvList").innerHTML='<button class="pri" id="stvConn">เชื่อมต่อบัญชี Strava</button><p class="note">ครั้งแรกต้องกดอนุญาตให้แอปอ่านกิจกรรมของคุณ</p>';return}
+  if(!r.ok){$("#stvMsg").textContent="โหลดกิจกรรมไม่สำเร็จ ("+r.status+")";return}
+  const a=await r.json();ACT=ACT.concat(a);$("#stvMore").hidden=a.length<100;$("#stvMsg").textContent="";renderActs();
+}
+function renderActs(){
+  const q=$("#q").value.trim().toLowerCase(),L=ACT.filter(a=>a.dist>0&&(!q||String(a.name).toLowerCase().includes(q)));
+  $("#stvList").innerHTML=L.length?L.map(a=>'<button class="act" data-id="'+a.id+'"><span>'+esc(a.name)+'<br><small>'+esc(new Date(a.date).toLocaleDateString("th-TH"))+' · '+esc(a.type)+'</small></span><span style="text-align:right">'+(a.dist/1000).toFixed(1)+' กม.<br><small>ขึ้น '+Math.round(a.gain||0)+' ม.</small></span></button>').join(""):'<p class="note">ไม่พบกิจกรรม</p>';
+}
+$("#stvList").onclick=async e=>{
+  if(e.target.closest("#stvConn")){try{const r=await api("/api/strava-connect"),j=await r.json();if(j.url)location.href=j.url;else $("#stvMsg").textContent="เชื่อมต่อไม่ได้ ตรวจค่า Environment Variables บน Vercel"}catch(_){$("#stvMsg").textContent="เรียก API ไม่ได้"}return}
+  const b=e.target.closest("[data-id]");if(!b)return;
+  const a=ACT.find(x=>String(x.id)===b.dataset.id);
+  $("#stvMsg").textContent="กำลังดึงข้อมูลเส้นทาง…";
+  try{const r=await api("/api/strava-stream?id="+b.dataset.id);if(!r.ok)throw 0;const j=await r.json();if(!j.latlng||!j.altitude)throw 1;
+    importPts(j.latlng.map((ll,i)=>[ll[0],ll[1],j.altitude[i]]).filter(p=>p[2]!=null),a?a.name:"Strava");
+    $("#stvMsg").textContent="";$("#stv").hidden=true}
+  catch(x){$("#stvMsg").textContent=x===1?"กิจกรรมนี้ไม่มีข้อมูลพิกัดหรือความสูง":"ดึงข้อมูลไม่สำเร็จ"}
+};
+$("#q").oninput=renderActs;
+$("#dFrom").onchange=$("#dTo").onchange=()=>loadActs(true);
+$("#stvMore").onclick=()=>{actPage++;loadActs(false)};
+$("#stvX").onclick=()=>{$("#stv").hidden=true};
+async function initAuth(){
+  renderAcct();if(!sb)return;
+  const{data}=await sb.auth.getSession();SESS=data.session;USER=SESS?SESS.user:null;renderAcct();await loadRoutes();
+  sb.auth.onAuthStateChange((ev,s)=>{const was=USER&&USER.id;SESS=s;USER=s?s.user:null;renderAcct();if((USER&&USER.id)!==was){$("#login").hidden=true;loadRoutes()}});
+  if(new URLSearchParams(location.search).get("strava")==="connected"){history.replaceState(null,"",location.pathname);if(USER)openStrava()}
+}
+SV=lsGet();sync();renderSaved();render();initAuth();
 </script>
 </body>
 </html>
