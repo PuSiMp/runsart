@@ -578,13 +578,14 @@ $("#jsonIn").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new Fi
     else{S.cmp=[];SV=fresh.concat(SV).slice(0,30);lsSet(SV);renderSaved()}}catch(_){err("อ่านไฟล์สำรองไม่ได้")}};rd.readAsText(f);e.target.value=""};
 /* ===== บัญชี + ซิงก์ขึ้นคลาวด์ + Strava (ทำงานเมื่อมี config.js และ /api บน Vercel) ===== */
 const CFG=window.APP_CONFIG||{};
-const sb=CFG.SUPABASE_URL&&CFG.SUPABASE_ANON_KEY&&window.supabase?window.supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY):null;
+let sb=null,CFGERR="";
+try{if(CFG.SUPABASE_URL&&CFG.SUPABASE_ANON_KEY){if(!window.supabase)CFGERR="โหลดไลบรารี Supabase ไม่ได้";else sb=window.supabase.createClient(String(CFG.SUPABASE_URL).trim(),String(CFG.SUPABASE_ANON_KEY).trim())}}catch(e){CFGERR=e.message||String(e)}
 let USER=null,SESS=null,ACT=[],actPage=1,synced=false;
 const cloud=()=>!!(sb&&USER);
 const err=m=>{$("#err").textContent=m||""};
 function renderAcct(){
   const a=$("#acct");
-  if(!sb){a.innerHTML='<span class="note" style="margin:0">ยังไม่ได้ตั้งค่า Supabase ใน config.js จึงยังไม่มีบัญชีและ Strava</span>';return}
+  if(!sb){a.innerHTML='<span class="err" style="margin:0">'+(CFGERR?'ตั้งค่า Supabase ไม่ถูกต้อง: '+esc(CFGERR)+' (ตรวจไฟล์ config.js)':'ยังไม่ได้ตั้งค่า Supabase ใน config.js จึงยังไม่มีบัญชีและ Strava')+'</span>';return}
   const stv='<button class="sbtn" id="bStv" data-tip="ดึงกิจกรรมจาก Strava" aria-label="ดึงกิจกรรมจาก Strava"><span data-ic="act"></span>Strava</button>';
   a.innerHTML=stv+(USER?'<span class="note" style="margin:0">'+esc(USER.email||"")+'</span><button class="ib" id="bOut" data-tip="ออกจากระบบ" aria-label="ออกจากระบบ"><span data-ic="out"></span></button>':'<button class="ib" id="bIn" data-tip="เข้าสู่ระบบเพื่อบันทึกขึ้นบัญชี" aria-label="เข้าสู่ระบบ"><span data-ic="user"></span></button>');
   a.querySelectorAll("[data-ic]").forEach(b=>b.innerHTML=ic(b.dataset.ic));
@@ -647,7 +648,7 @@ async function initAuth(){
   sb.auth.onAuthStateChange((ev,s)=>{const was=USER&&USER.id;SESS=s;USER=s?s.user:null;renderAcct();if((USER&&USER.id)!==was){$("#login").hidden=true;loadRoutes()}});
   if(new URLSearchParams(location.search).get("strava")==="connected"){history.replaceState(null,"",location.pathname);if(USER)openStrava()}
 }
-SV=lsGet();sync();renderSaved();render();initAuth();
+SV=lsGet();sync();renderSaved();render();initAuth().catch(e=>err("บัญชีใช้งานไม่ได้: "+(e.message||e)));
 </script>
 </body>
 </html>
