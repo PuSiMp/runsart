@@ -99,6 +99,7 @@ th{color:var(--mute);font-weight:500;font-size:.78rem}
 [hidden]{display:none!important}
 .top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .acct{display:flex;align-items:center;gap:6px;margin-bottom:12px}
+.sbtn{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 12px;font-size:.85rem}
 .pri{background:var(--accent);color:var(--onaccent);border-color:var(--accent)}
 .act{display:flex;justify-content:space-between;gap:10px;width:100%;text-align:left;margin-bottom:4px;font-size:.85rem}
 .act small{color:var(--mute)}
@@ -583,11 +584,12 @@ const cloud=()=>!!(sb&&USER);
 const err=m=>{$("#err").textContent=m||""};
 function renderAcct(){
   const a=$("#acct");
-  if(!sb){a.innerHTML="";return}
-  a.innerHTML=USER?'<span class="note" style="margin:0">'+esc(USER.email||"")+'</span><button class="ib" id="bStv" data-tip="เชื่อมกิจกรรมจาก Strava" aria-label="เชื่อมกิจกรรมจาก Strava"><span data-ic="act"></span></button><button class="ib" id="bOut" data-tip="ออกจากระบบ" aria-label="ออกจากระบบ"><span data-ic="out"></span></button>':'<button class="ib" id="bIn" data-tip="เข้าสู่ระบบเพื่อบันทึกขึ้นบัญชี" aria-label="เข้าสู่ระบบ"><span data-ic="user"></span></button>';
+  if(!sb){a.innerHTML='<span class="note" style="margin:0">ยังไม่ได้ตั้งค่า Supabase ใน config.js จึงยังไม่มีบัญชีและ Strava</span>';return}
+  const stv='<button class="sbtn" id="bStv" data-tip="ดึงกิจกรรมจาก Strava" aria-label="ดึงกิจกรรมจาก Strava"><span data-ic="act"></span>Strava</button>';
+  a.innerHTML=stv+(USER?'<span class="note" style="margin:0">'+esc(USER.email||"")+'</span><button class="ib" id="bOut" data-tip="ออกจากระบบ" aria-label="ออกจากระบบ"><span data-ic="out"></span></button>':'<button class="ib" id="bIn" data-tip="เข้าสู่ระบบเพื่อบันทึกขึ้นบัญชี" aria-label="เข้าสู่ระบบ"><span data-ic="user"></span></button>');
   a.querySelectorAll("[data-ic]").forEach(b=>b.innerHTML=ic(b.dataset.ic));
 }
-$("#acct").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;if(b.id==="bIn")$("#login").hidden=!$("#login").hidden;else if(b.id==="bOut")sb.auth.signOut();else if(b.id==="bStv")openStrava()});
+$("#acct").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;if(b.id==="bIn")$("#login").hidden=!$("#login").hidden;else if(b.id==="bOut")sb.auth.signOut();else if(b.id==="bStv"){if(!USER){$("#login").hidden=false;$("#loginMsg").textContent="ต้องเข้าสู่ระบบก่อนจึงจะดึงกิจกรรมจาก Strava ได้";$("#email").focus()}else openStrava()}});
 $("#loginGo").onclick=async()=>{
   const em=$("#email").value.trim();if(!em||!sb)return;
   $("#loginMsg").textContent="กำลังส่ง…";
