@@ -15,6 +15,16 @@ module.exports = async (req, res) => {
     if (!r.ok) {
       const detail = await r.text();
       console.error("Strava activities request failed:", r.status, detail);
+      let response;
+      try {
+        response = JSON.parse(detail);
+      } catch (_) {}
+      const appInactive = response && Array.isArray(response.errors) && response.errors.some(
+        (error) => error.resource === "Application" && error.field === "Status" && error.code === "Inactive"
+      );
+      if (appInactive) {
+        return res.status(503).json({ error: "strava_app_inactive" });
+      }
       return res.status(r.status === 401 || r.status === 403 ? 409 : 502).json({
         error: r.status === 401 || r.status === 403 ? "reconnect_strava" : "strava",
         status: r.status,

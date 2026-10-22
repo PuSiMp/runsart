@@ -229,7 +229,7 @@ $("#tq").oninput=()=>{
 /* ---- Strava + ล่าสุด ---- */
 function renderStrava(){
   const b=$("#stravaBox");
-  b.innerHTML=STV==="connected"?'<p class="ok">เชื่อมต่อ Strava แล้ว</p><p class="note">เลือกกิจกรรมได้ในเครื่องมือหรือจากรายการล่าสุดด้านล่าง</p>':'<button class="pri big" id="bStrava">เชื่อมต่อ Strava</button>';
+  b.innerHTML=STV==="connected"?'<p class="ok">เชื่อมต่อ Strava แล้ว</p><p class="note">เลือกกิจกรรมได้ในเครื่องมือหรือจากรายการล่าสุดด้านล่าง</p>':STV==="inactive"?'<p class="err">แอป Strava ถูกปิดใช้งาน ติดต่อเจ้าของแอปเพื่อแก้สถานะ</p>':'<button class="pri big" id="bStrava">เชื่อมต่อ Strava</button>';
 }
 async function connectStrava(){
   if(!sb){setMsg("ต้องตั้งค่า Supabase ใน config.js ก่อน");return}
@@ -255,7 +255,8 @@ async function loadRecent(){
     const r=await fetch("/api/strava-activities?limit=3",{headers:{Authorization:"Bearer "+SESS.access_token}});
     if(!isCurrent())return;
     ra.className="";
-    if(r.status===409){const j=await r.json();STV="none";renderStrava();ra.innerHTML='<p class="note" style="margin-bottom:8px">'+(j.error==="reconnect_strava"?"Strava ต้องการสิทธิ์อ่านกิจกรรมอีกครั้ง กรุณาเชื่อมต่อใหม่และกดอนุญาต":"ยังไม่ได้เชื่อมต่อ Strava")+'</p><button id="recConn">เชื่อมต่อ Strava ใหม่</button>'}
+    if(r.status===503){const j=await r.json();if(j.error==="strava_app_inactive"){STV="inactive";renderStrava();ra.innerHTML='<p class="err">แอป Strava ถูกปิดใช้งาน เจ้าของแอปต้องแก้สถานะใน Strava ก่อนจึงจะโหลดกิจกรรมได้</p>'}else ra.innerHTML='<p class="err">โหลดกิจกรรมไม่สำเร็จ ('+r.status+')</p>'}
+    else if(r.status===409){const j=await r.json();STV="none";renderStrava();ra.innerHTML='<p class="note" style="margin-bottom:8px">'+(j.error==="reconnect_strava"?"Strava ต้องการสิทธิ์อ่านกิจกรรมอีกครั้ง กรุณาเชื่อมต่อใหม่และกดอนุญาต":"ยังไม่ได้เชื่อมต่อ Strava")+'</p><button id="recConn">เชื่อมต่อ Strava ใหม่</button>'}
     else if(!r.ok)ra.innerHTML='<p class="err">โหลดกิจกรรมไม่สำเร็จ ('+r.status+')</p>';
     else{const a=await r.json();if(!isCurrent())return;STV="connected";renderStrava();ra.innerHTML=a.length?a.map(x=>'<a class="item" href="/tools/slope/?activity='+encodeURIComponent(x.id)+'&name='+encodeURIComponent(x.name)+'"><b>'+esc(x.name)+'</b><span>'+esc(new Date(x.date).toLocaleDateString("th-TH"))+' · '+((x.dist||0)/1000).toFixed(1)+' กม. · ขึ้น '+Math.round(x.gain||0)+' ม.</span></a>').join(""):'<p class="note">ยังไม่มีกิจกรรม</p>'}
   }catch(_){ra.className="";ra.innerHTML='<p class="note">เรียก API ไม่ได้ ใช้ได้เมื่ออัปขึ้น Vercel แล้ว</p>'}
