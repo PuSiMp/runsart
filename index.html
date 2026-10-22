@@ -124,9 +124,14 @@ footer{border-top:1px solid var(--line);padding-top:16px;color:var(--mute);font-
         <div class="chips"><span class="chip">GPX / TCX</span><span class="chip">Strava</span><span class="chip">เปรียบเทียบเส้นทาง</span></div>
         <span class="go">เปิดเครื่องมือ →</span>
       </a>
-      <div class="card ghost" id="ghost"><strong>เครื่องมือถัดไปกำลังมา</strong><span class="note">จะทยอยเพิ่มทีละตัว</span></div>
-    </div>
-      <div class="card ghost" id="ghost"><strong>เครื่องมือถัดไปกำลังมา</strong><span class="note">จะทยอยเพิ่มทีละตัว</span></div>
+      <div class="card ghost placeholder">
+        <strong>เครื่องมือถัดไปกำลังมา</strong>
+        <span class="note">จะทยอยเพิ่มทีละตัว</span>
+      </div>
+      <div class="card ghost placeholder">
+        <strong>เครื่องมือถัดไปกำลังมา</strong>
+        <span class="note">จะทยอยเพิ่มทีละตัว</span>
+      </div>
     </div>
     <p class="note" id="noTool" hidden>ไม่พบเครื่องมือที่ค้นหา</p>
   </section>
@@ -225,7 +230,7 @@ $("#file").onchange=e=>{takeFile(e.target.files[0]);e.target.value=""};
 $("#tq").oninput=()=>{
   const q=$("#tq").value.trim().toLowerCase();let n=0;
   document.querySelectorAll("#cards .card[data-kw]").forEach(c=>{const ok=!q||(c.dataset.kw+" "+c.textContent).toLowerCase().includes(q);c.hidden=!ok;if(ok)n++});
-  $("#ghost").hidden=!!q;$("#noTool").hidden=n>0||!q;
+  document.querySelectorAll("#cards .placeholder").forEach(c=>c.hidden=!!q);$("#noTool").hidden=n>0||!q;
 };
 
 /* ---- Strava + ล่าสุด ---- */
