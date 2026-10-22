@@ -56,7 +56,7 @@ function verify(state) {
 }
 
 async function saveTokens(uid, t) {
-  await fetch(SB + "/rest/v1/strava_tokens", {
+  const r = await fetch(SB + "/rest/v1/strava_tokens", {
     method: "POST",
     headers: sbHeaders({ Prefer: "resolution=merge-duplicates" }),
     body: JSON.stringify({
@@ -67,6 +67,10 @@ async function saveTokens(uid, t) {
       athlete_id: t.athlete ? t.athlete.id : null,
     }),
   });
+  if (!r.ok) {
+    console.error("saveTokens failed:", r.status, await r.text());
+    throw new Error("Unable to save Strava tokens");
+  }
 }
 
 // คืน access token ที่ยังใช้ได้ (ต่ออายุให้ถ้าหมดแล้ว)

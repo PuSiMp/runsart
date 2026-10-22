@@ -129,7 +129,7 @@ footer{border-top:1px solid var(--line);padding-top:16px;color:var(--mute);font-
     <p class="note" id="noTool" hidden>ไม่พบเครื่องมือที่ค้นหา</p>
   </section>
 
-  <section class="box" aria-labelledby="hRec">
+  <section class="box" id="recentSection" aria-labelledby="hRec" hidden>
     <h2 id="hRec">กิจกรรมและเส้นทางล่าสุด</h2>
     <div id="recentBody"></div>
   </section>
@@ -239,32 +239,36 @@ async function connectStrava(){
 }
 $("#stravaBox").addEventListener("click",e=>{if(e.target.closest("#bStrava"))connectStrava()});
 async function loadRecent(){
-  const box=$("#recentBody");renderStrava();
-  if(!sb){box.innerHTML='<p class="note">ต้องตั้งค่า Supabase ใน config.js ก่อน จึงจะเห็นกิจกรรมและเส้นทางที่บันทึกไว้</p>';return}
-  if(!USER){box.innerHTML='<p class="note" style="margin-bottom:10px">เข้าสู่ระบบเพื่อดูกิจกรรมล่าสุดจาก Strava และเส้นทางที่บันทึกไว้</p><button class="pri" id="recLogin">เข้าสู่ระบบ</button>';return}
+  const box=$("#recentBody"),uid=USER&&USER.id,request=++recentRequest;renderStrava();
+  $("#recentSection").hidden=!uid;
+  if(!sb||!uid){box.innerHTML="";return}
+  const isCurrent=()=>request===recentRequest&&USER&&USER.id===uid;
   box.innerHTML='<div class="two"><div><h3>กิจกรรมล่าสุดจาก Strava</h3><div id="recAct" class="note">กำลังโหลด…</div></div><div><h3>เส้นทางที่บันทึกไว้</h3><div id="recRoutes" class="note">กำลังโหลด…</div></div></div>';
   const rr=$("#recRoutes"),ra=$("#recAct");
   const{data,error}=await sb.from("routes").select("id,name,data,created_at").order("created_at",{ascending:false}).limit(3);
+  if(!isCurrent())return;
   rr.className="";
   if(error)rr.innerHTML='<p class="err">โหลดเส้นทางไม่สำเร็จ</p>';
   else if(!data.length)rr.innerHTML='<p class="note">ยังไม่มีเส้นทางที่บันทึกไว้ เปิดเครื่องมือความชันแล้วกดบันทึกได้เลย</p>';
   else rr.innerHTML=data.map(r=>{const d=r.data||{};return'<a class="item" href="/tools/slope/?route='+encodeURIComponent(r.id)+'"><b>'+esc(r.name)+'</b><span>'+(d.tot||0).toFixed(1)+' กม. · ขึ้น '+Math.round(d.gain||0)+' ม. · '+Math.round((d.eq||0)*10).toLocaleString("th-TH")+' แต้มความยาก</span></a>'}).join("");
   try{
     const r=await fetch("/api/strava-activities?limit=3",{headers:{Authorization:"Bearer "+SESS.access_token}});
+    if(!isCurrent())return;
     ra.className="";
     if(r.status===409){STV="none";renderStrava();ra.innerHTML='<p class="note" style="margin-bottom:8px">ยังไม่ได้เชื่อมต่อ Strava</p><button id="recConn">เชื่อมต่อ Strava</button>'}
     else if(!r.ok)ra.innerHTML='<p class="err">โหลดกิจกรรมไม่สำเร็จ ('+r.status+')</p>';
-    else{STV="connected";renderStrava();const a=await r.json();ra.innerHTML=a.length?a.map(x=>'<a class="item" href="/tools/slope/?activity='+encodeURIComponent(x.id)+'&name='+encodeURIComponent(x.name)+'"><b>'+esc(x.name)+'</b><span>'+esc(new Date(x.date).toLocaleDateString("th-TH"))+' · '+((x.dist||0)/1000).toFixed(1)+' กม. · ขึ้น '+Math.round(x.gain||0)+' ม.</span></a>').join(""):'<p class="note">ยังไม่มีกิจกรรม</p>'}
+    else{const a=await r.json();if(!isCurrent())return;STV="connected";renderStrava();ra.innerHTML=a.length?a.map(x=>'<a class="item" href="/tools/slope/?activity='+encodeURIComponent(x.id)+'&name='+encodeURIComponent(x.name)+'"><b>'+esc(x.name)+'</b><span>'+esc(new Date(x.date).toLocaleDateString("th-TH"))+' · '+((x.dist||0)/1000).toFixed(1)+' กม. · ขึ้น '+Math.round(x.gain||0)+' ม.</span></a>').join(""):'<p class="note">ยังไม่มีกิจกรรม</p>'}
   }catch(_){ra.className="";ra.innerHTML='<p class="note">เรียก API ไม่ได้ ใช้ได้เมื่ออัปขึ้น Vercel แล้ว</p>'}
 }
-$("#recentBody").addEventListener("click",e=>{if(e.target.closest("#recLogin"))openLogin();else if(e.target.closest("#recConn"))connectStrava()});
+$("#recentBody").addEventListener("click",e=>{if(e.target.closest("#recConn"))connectStrava()});
 
+let recentRequest=0;
 async function init(){
   renderAcct();
   if(!sb){loadRecent();return}
   const{data}=await sb.auth.getSession();SESS=data.session;USER=SESS?SESS.user:null;renderAcct();loadRecent();
   sb.auth.onAuthStateChange((ev,s)=>{const was=USER&&USER.id;SESS=s;USER=s?s.user:null;renderAcct();if((USER&&USER.id)!==was){$("#login").hidden=true;STV="unknown";loadRecent()}});
-  if(new URLSearchParams(location.search).get("strava")==="connected"){history.replaceState(null,"",location.pathname);setMsg("เชื่อมต่อ Strava สำเร็จแล้ว")}
+  if(new URLSearchParams(location.search).get("strava")==="connected"){STV=USER?"connected":"unknown";history.replaceState(null,"",location.pathname+location.hash);setMsg("เชื่อมต่อ Strava สำเร็จแล้ว");if(USER)loadRecent()}
 }
 init().catch(e=>setMsg("บัญชีใช้งานไม่ได้: "+(e.message||e)));
 </script>

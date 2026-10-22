@@ -11,7 +11,12 @@ module.exports = async (req, res) => {
     body: JSON.stringify({ client_id: process.env.STRAVA_CLIENT_ID, client_secret: process.env.STRAVA_CLIENT_SECRET, code: q.code, grant_type: "authorization_code" }),
   });
   if (!r.ok) return res.status(502).send("Strava ปฏิเสธการเชื่อมต่อ ตรวจ Client ID, Secret และ Callback Domain");
-  await saveTokens(uid, await r.json());
+  try {
+    await saveTokens(uid, await r.json());
+  } catch (err) {
+    console.error("Strava token storage failed:", err);
+    return res.status(502).send("เชื่อมต่อ Strava ได้ แต่บันทึกข้อมูลไม่สำเร็จ กรุณาตรวจการตั้งค่า Supabase แล้วลองใหม่");
+  }
   res.writeHead(302, { Location: "/?strava=connected" });
   res.end();
 };
