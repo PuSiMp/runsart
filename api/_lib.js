@@ -108,8 +108,14 @@ async function accessToken(uid) {
     }),
   });
 
-  if (!f.ok) return null;
+  if (!f.ok) {
+    console.error("Strava token refresh failed:", f.status, await f.text());
+    throw new Error("Unable to refresh Strava token");
+  }
   const n = await f.json();
+  if (!n.access_token || !n.refresh_token || !n.expires_at) {
+    throw new Error("Strava token refresh response is incomplete");
+  }
   await saveTokens(uid, { ...n, athlete: { id: t.athlete_id } });
   return n.access_token;
 }
