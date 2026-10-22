@@ -10,7 +10,7 @@ module.exports = async (req, res) => {
     client_id: process.env.STRAVA_CLIENT_ID,
     redirect_uri: redirect,
     response_type: "code",
-    approval_prompt: "auto",
+    approval_prompt: "force",
     scope: "read,activity:read_all",
     state: sign(u.id),
   });

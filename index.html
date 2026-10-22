@@ -255,7 +255,7 @@ async function loadRecent(){
     const r=await fetch("/api/strava-activities?limit=3",{headers:{Authorization:"Bearer "+SESS.access_token}});
     if(!isCurrent())return;
     ra.className="";
-    if(r.status===409){STV="none";renderStrava();ra.innerHTML='<p class="note" style="margin-bottom:8px">ยังไม่ได้เชื่อมต่อ Strava</p><button id="recConn">เชื่อมต่อ Strava</button>'}
+    if(r.status===409){const j=await r.json();STV="none";renderStrava();ra.innerHTML='<p class="note" style="margin-bottom:8px">'+(j.error==="reconnect_strava"?"Strava ต้องการสิทธิ์อ่านกิจกรรมอีกครั้ง กรุณาเชื่อมต่อใหม่และกดอนุญาต":"ยังไม่ได้เชื่อมต่อ Strava")+'</p><button id="recConn">เชื่อมต่อ Strava ใหม่</button>'}
     else if(!r.ok)ra.innerHTML='<p class="err">โหลดกิจกรรมไม่สำเร็จ ('+r.status+')</p>';
     else{const a=await r.json();if(!isCurrent())return;STV="connected";renderStrava();ra.innerHTML=a.length?a.map(x=>'<a class="item" href="/tools/slope/?activity='+encodeURIComponent(x.id)+'&name='+encodeURIComponent(x.name)+'"><b>'+esc(x.name)+'</b><span>'+esc(new Date(x.date).toLocaleDateString("th-TH"))+' · '+((x.dist||0)/1000).toFixed(1)+' กม. · ขึ้น '+Math.round(x.gain||0)+' ม.</span></a>').join(""):'<p class="note">ยังไม่มีกิจกรรม</p>'}
   }catch(_){ra.className="";ra.innerHTML='<p class="note">เรียก API ไม่ได้ ใช้ได้เมื่ออัปขึ้น Vercel แล้ว</p>'}

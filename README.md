@@ -32,6 +32,8 @@
 
 ถ้า Strava อนุญาตแล้วแต่บันทึก token ไม่สำเร็จ ให้ตรวจว่า Vercel มี `SUPABASE_URL` และ `SUPABASE_SERVICE_ROLE_KEY` (service role key ไม่ใช่ anon key) และรัน `supabase.sql` ในโปรเจกต์เดียวกันเพื่อสร้างตาราง `public.strava_tokens` แล้ว Redeploy หลังแก้ Environment Variables
 
+ถ้าโหลดกิจกรรมจาก Strava ไม่ได้และ API ตอบ 409 หลัง Strava ปฏิเสธคำขอ ให้กดเชื่อมต่อ Strava ใหม่และกดอนุญาตสิทธิ์อ่านกิจกรรม
+
 ## วิธีเพิ่มเครื่องมือใหม่ (ทีละตัว)
 1. สร้างโฟลเดอร์ `tools/ชื่อเครื่องมือ/` ใส่ `index.html` ของเครื่องมือนั้น
    - ใส่ `<script src="/config.js"></script>` ถ้าต้องใช้บัญชี

@@ -668,7 +668,7 @@ async function loadActs(reset){
   if(f)p.set("after",Math.floor(new Date(f+"T00:00:00").getTime()/1000));
   if(t)p.set("before",Math.floor(new Date(t+"T23:59:59").getTime()/1000));
   let r;try{r=await api("/api/strava-activities?"+p)}catch(_){$("#stvMsg").textContent="เรียก API ไม่ได้ ต้องใช้บน Vercel ที่ตั้งค่าโฟลเดอร์ api แล้ว";return}
-  if(r.status===409){$("#stvMsg").textContent="";$("#stvMore").hidden=true;$("#stvList").innerHTML='<button class="pri" id="stvConn">เชื่อมต่อบัญชี Strava</button><p class="note">ครั้งแรกต้องกดอนุญาตให้แอปอ่านกิจกรรมของคุณ</p>';return}
+  if(r.status===409){const j=await r.json();$("#stvMsg").textContent="";$("#stvMore").hidden=true;$("#stvList").innerHTML='<button class="pri" id="stvConn">เชื่อมต่อบัญชี Strava ใหม่</button><p class="note">'+(j.error==="reconnect_strava"?"Strava ปฏิเสธการอ่านกิจกรรม กรุณาเชื่อมต่อใหม่และกดอนุญาตให้แอปอ่านกิจกรรม":"ยังไม่ได้เชื่อมต่อบัญชี Strava")+'</p>';return}
   if(!r.ok){$("#stvMsg").textContent="โหลดกิจกรรมไม่สำเร็จ ("+r.status+")";return}
   const a=await r.json();ACT=ACT.concat(a);$("#stvMore").hidden=a.length<100;$("#stvMsg").textContent="";renderActs();
 }
