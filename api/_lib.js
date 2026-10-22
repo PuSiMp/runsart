@@ -3,7 +3,12 @@ const crypto = require("crypto");
 
 // 1. รองรับชื่อตัวแปรทั้งแบบมีและไม่มี NEXT_PUBLIC_
 const SB = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SK = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const SK = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+function requireSupabaseAdmin() {
+  if (!SB) throw new Error("Missing SUPABASE_URL");
+  if (!SK) throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY");
+}
 
 const sbHeaders = (extra) => ({
   apikey: SK,
@@ -17,9 +22,8 @@ async function getUser(req) {
   const authHeader = req.headers.authorization || req.headers.Authorization || "";
   const jwt = authHeader.replace(/^Bearer /i, "").trim();
   
-  if (!jwt || !SB || !SK) {
-    return null;
-  }
+  if (!jwt) return null;
+  requireSupabaseAdmin();
 
   try {
     const r = await fetch(SB + "/auth/v1/user", {
@@ -56,9 +60,14 @@ function verify(state) {
 }
 
 async function saveTokens(uid, t) {
-  const r = await fetch(SB + "/rest/v1/strava_tokens", {
+  requireSupabaseAdmin();
+  if (!t || !t.access_token || !t.refresh_token || !t.expires_at) {
+    throw new Error("Strava token response is incomplete");
+  }
+
+  const r = await fetch(SB + "/rest/v1/strava_tokens?on_conflict=user_id", {
     method: "POST",
-    headers: sbHeaders({ Prefer: "resolution=merge-duplicates" }),
+    headers: sbHeaders({ Prefer: "resolution=merge-duplicates,return=minimal" }),
     body: JSON.stringify({
       user_id: uid,
       access_token: t.access_token,
@@ -75,9 +84,14 @@ async function saveTokens(uid, t) {
 
 // คืน access token ที่ยังใช้ได้ (ต่ออายุให้ถ้าหมดแล้ว)
 async function accessToken(uid) {
+  requireSupabaseAdmin();
   const r = await fetch(SB + "/rest/v1/strava_tokens?user_id=eq." + uid + "&select=*", {
     headers: sbHeaders(),
   });
+  if (!r.ok) {
+    console.error("accessToken lookup failed:", r.status, await r.text());
+    throw new Error("Unable to read Strava tokens");
+  }
   const rows = await r.json();
   const t = rows && rows[0];
   if (!t) return null;

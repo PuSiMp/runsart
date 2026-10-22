@@ -15,7 +15,7 @@ module.exports = async (req, res) => {
     await saveTokens(uid, await r.json());
   } catch (err) {
     console.error("Strava token storage failed:", err);
-    return res.status(502).send("เชื่อมต่อ Strava ได้ แต่บันทึกข้อมูลไม่สำเร็จ กรุณาตรวจการตั้งค่า Supabase แล้วลองใหม่");
+    return res.status(502).send("Strava อนุญาตแล้ว แต่บันทึก token ไม่สำเร็จ ตรวจว่า Vercel ตั้งค่า SUPABASE_URL และ SUPABASE_SERVICE_ROLE_KEY ถูกต้อง และรัน supabase.sql เพื่อสร้างตาราง public.strava_tokens แล้วลองใหม่");
   }
   res.writeHead(302, { Location: "/?strava=connected" });
   res.end();
