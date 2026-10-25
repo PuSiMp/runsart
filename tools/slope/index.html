@@ -77,11 +77,12 @@ th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);white-
 th{color:var(--mute);font-weight:500;font-size:.78rem}
 .tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-size:.78rem;line-height:1.4;padding:5px 9px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-125%);z-index:2;text-align:left}
 .bar{display:flex;align-items:center;gap:2px;flex-wrap:wrap;border:1px solid var(--line);border-radius:10px;padding:3px;margin-bottom:8px;background:var(--bg)}
-.mb{border:0;background:none;display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;padding:0}
+.mb{border:0;background:none;display:inline-flex;align-items:center;justify-content:center;gap:5px;width:auto;min-height:36px;padding:0 8px}
 .mb b{font-weight:500}
+.tool-label{font-size:.76rem;white-space:nowrap}
 .sep{width:1px;height:20px;background:var(--line);margin:0 4px}
 .bar .tabs{display:flex;gap:2px}
-.bar .tabs button{border:0;background:none;width:36px;height:36px;padding:0;display:inline-flex;align-items:center;justify-content:center}
+.bar .tabs button{border:0;background:none;min-width:36px;height:36px;padding:0 8px;display:inline-flex;align-items:center;justify-content:center;gap:5px}
 .bar .tabs button.on{background:var(--accent);color:var(--onaccent)}
 @media(max-width:560px){.mb b{display:none}}
 .zc{position:absolute;top:8px;right:8px;display:flex;flex-direction:column;gap:4px;z-index:3}
@@ -92,7 +93,7 @@ th{color:var(--mute);font-weight:500;font-size:.78rem}
 .hg{border-left:1px solid var(--line);padding-left:14px}
 .hl{font-size:.72rem;color:var(--mute);margin-bottom:6px;display:flex;align-items:center;gap:6px}
 .hg .stats{grid-template-columns:1fr 1fr;margin-top:0}
-.inf{cursor:help;font-size:.85rem}
+.inf{cursor:help;display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;border:1.5px solid currentColor;border-radius:50%;font-size:.76rem;font-weight:700;line-height:1}
 .hbig .big b{font-size:clamp(2.8rem,8vw,4.2rem)}
 @media(max-width:900px){.hgrid{grid-template-columns:1fr 1fr}.hg{border-left:0;padding-left:0;border-top:1px solid var(--line);padding-top:10px}}
 @media(max-width:560px){.hgrid{grid-template-columns:1fr}}
@@ -111,6 +112,9 @@ th{color:var(--mute);font-weight:500;font-size:.78rem}
 .crumbs{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
 .back{color:var(--accent);text-decoration:none;font-size:.9rem;white-space:nowrap}
 .back:hover{text-decoration:underline}
+.toolnav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+.toolnav a{border:1px solid var(--line);border-radius:999px;padding:5px 12px;text-decoration:none;font-size:.84rem;color:var(--mute)}
+.toolnav a[aria-current="page"],.toolnav a:hover{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,transparent)}
 .pri{background:var(--accent);color:var(--onaccent);border-color:var(--accent)}
 .act{display:flex;justify-content:space-between;gap:10px;width:100%;text-align:left;margin-bottom:4px;font-size:.85rem}
 .act small{color:var(--mute)}
@@ -119,7 +123,13 @@ th{color:var(--mute);font-weight:500;font-size:.78rem}
 </head>
 <body>
 <main>
-<div class="top"><div class="crumbs"><a class="back" href="/">← หน้าแรก</a><h1>คำนวณความชันและความยากเส้นทาง</h1></div><div class="acct" id="acct"></div></div>
+<div class="top"><div class="crumbs"><a class="back" href="/">← หน้าแรก</a><a class="back" href="/tools/training%20analysis/">ใช้ไฟล์เดิมวิเคราะห์การซ้อม →</a><h1>คำนวณความชันและความยากเส้นทาง</h1></div><div class="acct" id="acct"></div></div>
+<nav class="toolnav" role="toolbar" aria-label="เครื่องมือ">
+  <a href="/">หน้าแรก</a>
+  <a href="/tools/slope/" aria-current="page">แผนที่และแบ่งช่วง</a>
+  <a href="/tools/training%20analysis/">วิเคราะห์การซ้อม</a>
+  <a href="/tools/race%20planner/">วางแผนแข่ง</a>
+</nav>
 <div id="login" class="modal" hidden><div class="mbox" role="dialog" aria-modal="true" aria-labelledby="lgT">
   <div class="shd" style="margin:0"><strong id="lgT">เข้าสู่ระบบ</strong><button class="ib" id="lgX" data-tip="ปิด" aria-label="ปิด">×</button></div>
   <div class="tabs2"><button id="tIn" class="on">เข้าสู่ระบบ</button><button id="tUp">สมัครสมาชิก</button></div>
@@ -144,8 +154,8 @@ th{color:var(--mute);font-weight:500;font-size:.78rem}
   <div class="hgrid">
     <div class="hbig"><div class="hl">ความชันเฉลี่ย</div><div class="big"><b id="avg">0.0</b><span>%</span></div></div>
     <div class="hg"><div class="hl">เส้นทาง</div><div class="stats" id="hsA"></div></div>
-    <div class="hg"><div class="hl">ความยาก <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="คะแนนความยาก = ระยะเทียบเท่าทางราบ × 10 สะสมไม่มีเพดาน คิดจากระยะทาง ความชัน ลักษณะทาง และการขึ้นลงถี่ ส่วนความหนักต่อกม. ดูความโหดต่อหนึ่งกิโลเมตร (0 ถึง 100)">ⓘ</span></div><div class="stats" id="hsB"></div></div>
-    <div class="hg"><div class="hl">เวลาโดยประมาณ <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="เวลาตามเพซ = ระยะเทียบเท่าทางราบ × เพซของคุณ ไม่ต้องใช้ UTMB Index (ถ้าใส่ UTMB Index จะเห็นเวลาอีกแบบเพิ่ม) เวลาตาม UTMB Index เป็นค่าประมาณจากเส้นโค้งที่ตั้งเอง เพราะ UTMB ไม่เปิดเผยสูตรแปลงคะแนนเป็นเวลา ส่วนเวลาตามเพซทางราบใช้ระยะเทียบเท่าของแอปนี้">ⓘ</span></div><div class="stats" id="hsC"></div>
+    <div class="hg"><div class="hl">ความยาก <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="คะแนนความยาก = ระยะเทียบเท่าทางราบ × 10 สะสมไม่มีเพดาน คิดจากระยะทาง ความชัน ลักษณะทาง และการขึ้นลงถี่ ส่วนความหนักต่อกม. ดูความโหดต่อหนึ่งกิโลเมตร (0 ถึง 100)">?</span></div><div class="stats" id="hsB"></div></div>
+    <div class="hg"><div class="hl">เวลาโดยประมาณ <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="เวลาตามเพซ = ระยะเทียบเท่าทางราบ × เพซของคุณ ไม่ต้องใช้ UTMB Index (ถ้าใส่ UTMB Index จะเห็นเวลาอีกแบบเพิ่ม) เวลาตาม UTMB Index เป็นค่าประมาณจากเส้นโค้งที่ตั้งเอง เพราะ UTMB ไม่เปิดเผยสูตรแปลงคะแนนเป็นเวลา ส่วนเวลาตามเพซทางราบใช้ระยะเทียบเท่าของแอปนี้">?</span></div><div class="stats" id="hsC"></div>
       <div class="srow2"><label>UTMB Index (ไม่บังคับ)<input type="number" id="ui" min="0" max="1000" step="10" value="" placeholder="เว้นว่างได้" aria-label="UTMB Index 0 ถึง 1000 ไม่บังคับ"></label><label>เพซทางราบ (นาที/กม.)<input type="number" id="pace" value="6" step="0.1" min="2"></label></div></div>
   </div>
 </section>
@@ -157,9 +167,9 @@ th{color:var(--mute);font-weight:500;font-size:.78rem}
       <i class="sep"></i>
       <button class="mb" id="bRev" data-tip="กลับทิศทางเส้นทาง (วิ่งย้อนกลับ)" aria-label="กลับทิศทางเส้นทาง"><span data-ic="swap"></span></button>
       
-      <button class="mb" id="bCut" data-tip="ตัดช่วงบนกราฟ" aria-label="ตัดช่วงบนกราฟ"><span data-ic="cut"></span></button>
+      <button class="mb" id="bCut" data-tip="แบ่งหรือตัดช่วงบนกราฟ" aria-label="แบ่งหรือตัดช่วงบนกราฟ"><span data-ic="cut"></span><span class="tool-label">แบ่งช่วง</span></button>
       <i class="sep"></i>
-      <div class="tabs"><button data-v="p" class="on" data-tip="กราฟโปรไฟล์ความสูง" aria-label="กราฟโปรไฟล์ความสูง"><span data-ic="chart"></span></button><button data-v="m" data-tip="แผนที่เส้นทาง" aria-label="แผนที่เส้นทาง"><span data-ic="map"></span></button><button data-v="3" data-tip="มุมมอง 3D" aria-label="มุมมอง 3D"><span data-ic="cube"></span></button></div>
+      <div class="tabs"><button data-v="p" class="on" data-tip="กราฟโปรไฟล์ความสูง" aria-label="กราฟโปรไฟล์ความสูง"><span data-ic="chart"></span><span class="tool-label">กราฟ</span></button><button data-v="m" data-tip="แผนที่เส้นทาง" aria-label="แผนที่เส้นทาง"><span data-ic="map"></span><span class="tool-label">แผนที่</span></button><button data-v="3" data-tip="มุมมอง 3D" aria-label="มุมมอง 3D"><span data-ic="cube"></span><span class="tool-label">3D</span></button></div>
       <i class="sep"></i>
       <button class="mb" id="bUndo" data-tip="เลิกทำ" aria-label="เลิกทำ" disabled><span data-ic="undo"></span></button>
       <button class="mb" id="bRedo" data-tip="ทำซ้ำ" aria-label="ทำซ้ำ" disabled><span data-ic="redo"></span></button>
@@ -278,9 +288,10 @@ function importPts(pts,name){
       applyTol(Math.max(3,Math.round((hi-lo)*.03)),true);
 }
 $("#bUp").onclick=()=>$("#gpx").click();
-function loadFileText(text,name){
+function loadFileText(text,name,keepShared=true){
   $("#err").textContent="";
   if(/\.fit$/i.test(name)){$("#err").textContent="ยังไม่รองรับไฟล์ .fit ตอนนี้ ส่งออกเป็น GPX หรือ TCX ก่อน";return}
+  if(keepShared){try{sessionStorage.setItem("sharedActivityFile",JSON.stringify({name,text}))}catch(_){$("#err").textContent="นำเข้าไฟล์นี้ได้ แต่เก็บไฟล์ไว้สลับเครื่องมือไม่ได้เพราะไฟล์ใหญ่เกินพื้นที่ชั่วคราว"}}
   try{
     const doc=new DOMParser().parseFromString(text,"application/xml");
     const tcx=/\.tcx$/i.test(name),tx=(p,n)=>{const e=p.getElementsByTagName(n)[0];return e?parseFloat(e.textContent):NaN};
@@ -711,7 +722,7 @@ async function boot(){
   if(act||rid)history.replaceState(null,"",location.pathname);
 }
 SV=lsGet();sync();renderSaved();render();
-try{const pf=sessionStorage.getItem("pendingFile");if(pf){sessionStorage.removeItem("pendingFile");const o=JSON.parse(pf);loadFileText(o.text,o.name)}}catch(_){}
+try{const pf=sessionStorage.getItem("sharedActivityFile");if(pf){const o=JSON.parse(pf);loadFileText(o.text,o.name,false)}}catch(e){$("#err").textContent="เปิดไฟล์ชั่วคราวไม่ได้: "+(e.message||e)}
 initAuth().catch(e=>err("บัญชีใช้งานไม่ได้: "+(e.message||e))).then(boot);
 </script>
 </body>

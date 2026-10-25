@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>วางแผนแข่ง · RunsArt</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#eceee4;--panel:#fafaf4;--ink:#1b2a21;--mute:#667366;--line:#cdd3c3;--accent:#2c5a43;--onaccent:#f4f7ef;--field:#fff;--bad:#c4503f;--warn:#c9964a;--blue:#3b6fb5;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121a15;--panel:#1b2620;--ink:#e5ebdf;--mute:#93a095;--line:#33423a;--accent:#7fc29c;--onaccent:#102017;--field:#141d18;--bad:#e0705e;--warn:#e0b25a;--blue:#7fa8e0;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#121a15;--panel:#1b2620;--ink:#e5ebdf;--mute:#93a095;--line:#33423a;--accent:#7fc29c;--onaccent:#102017;--field:#141d18;--bad:#e0705e;--warn:#e0b25a;--blue:#7fa8e0;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Thai",system-ui,sans-serif;line-height:1.5;font-variant-numeric:tabular-nums}
+main{max-width:1100px;margin:0 auto;padding:18px 14px 48px}
+h1{font-size:1.05rem;font-weight:500;margin:0;color:var(--mute)}
+h2{font-size:1rem;margin:0 0 10px}
+p{margin:0}
+.crumbs{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+.back{color:var(--accent);text-decoration:none;font-size:.9rem;white-space:nowrap}
+.back:hover{text-decoration:underline}
+.toolnav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+.toolnav a{border:1px solid var(--line);border-radius:999px;padding:5px 12px;text-decoration:none;font-size:.84rem;color:var(--mute)}
+.toolnav a[aria-current="page"],.toolnav a:hover{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:6px 12px}
+button:hover:not(:disabled){border-color:var(--accent)}
+button:disabled{opacity:.4;cursor:default}
+.pri{background:var(--accent);color:var(--onaccent);border-color:var(--accent);font-weight:500}
+.sbtn{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 12px;font-size:.85rem}
+.ib{width:34px;height:34px;padding:0;display:inline-flex;align-items:center;justify-content:center;flex:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+input,select{font:inherit;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:8px;padding:7px 9px;width:100%;min-width:0}
+input[type=range]{padding:0;accent-color:var(--accent)}
+label{display:flex;flex-direction:column;font-size:.78rem;color:var(--mute);gap:3px}
+.note{font-size:.8rem;color:var(--mute)}
+.err{color:var(--bad);font-size:.85rem}
+.ic{width:17px;height:17px;display:block}
+[data-ic]{display:inline-flex;align-items:center;justify-content:center;line-height:0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.row>label{width:160px}
+.drop{border:2px dashed var(--line);border-radius:12px;padding:12px 16px;display:flex;flex-direction:row;align-items:center;gap:10px;cursor:pointer;color:var(--mute);flex:1;min-width:240px;font-size:.9rem}
+.drop:hover,.drop.over{border-color:var(--accent)}
+.drop strong{color:var(--ink);font-weight:500}
+.hgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:14px}
+.hg{border-left:1px solid var(--line);padding-left:14px}
+.hg:first-child{border-left:0;padding-left:0}
+.hl2{font-size:.72rem;color:var(--mute);margin-bottom:6px;display:flex;gap:6px;align-items:center}
+.inf{cursor:help}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
+.stats div{font-size:.78rem;color:var(--mute)}
+.stats strong{display:block;font-size:1rem;color:var(--ink);font-weight:500}
+@media(max-width:900px){.hgrid{grid-template-columns:1fr 1fr}.hg{border-left:0;padding-left:0;border-top:1px solid var(--line);padding-top:10px}.hg:nth-child(-n+2){border-top:0;padding-top:0}}
+@media(max-width:560px){.hgrid{grid-template-columns:1fr}.hg:nth-child(2){border-top:1px solid var(--line);padding-top:10px}}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;align-items:center}
+.chips button{display:inline-flex;align-items:center;gap:6px;font-size:.8rem;padding:4px 10px}
+.chips i{width:12px;height:12px;border-radius:50%;display:inline-block}
+.chips button.on{background:var(--accent);color:var(--onaccent);border-color:var(--accent)}
+.zoomtools{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:6px 0}
+.zoomtools button{min-width:34px;padding:4px 9px}
+.zoomtools input{flex:1;min-width:100px}
+.zoomlabel{font-size:.78rem;color:var(--mute);min-width:42px}
+svg.viz{width:100%;height:auto;display:block;touch-action:pan-y}
+.cw{position:relative}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-size:.78rem;line-height:1.4;padding:5px 9px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-125%);z-index:2}
+.leg{display:flex;gap:12px;flex-wrap:wrap;font-size:.76rem;color:var(--mute);margin-top:6px}
+.leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px}
+.slopebar{display:flex;width:100%;height:18px;overflow:hidden;border-radius:6px;background:var(--line);margin:8px 0}
+.slopebar span{min-width:2px;border-right:1px solid var(--panel)}
+.slopebar span:last-child{border-right:0}
+.rangelegend{display:flex;gap:10px 14px;flex-wrap:wrap;color:var(--mute);font-size:.76rem}
+.rangelegend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:900px){.two{grid-template-columns:1fr}}
+.tw{overflow-x:auto;max-height:420px;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-size:.84rem}
+th,td{text-align:left;padding:5px 7px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--mute);font-weight:500;font-size:.75rem;position:sticky;top:0;background:var(--panel)}
+td input,td select{padding:4px 6px;font-size:.82rem}
+tr.sel td{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.badge{display:inline-block;border-radius:99px;padding:1px 10px;font-size:.78rem;font-weight:500;color:#fff}
+.g-A{background:#3a9a5b}.g-B{background:#7aa83a}.g-C{background:#c9964a}.g-D{background:var(--bad)}
+.band{width:100%}
+.two>.box{min-width:0}
+.band table{font-size:.8rem}
+.gt{position:fixed;z-index:80;background:var(--ink);color:var(--bg);font-size:.78rem;padding:4px 9px;border-radius:6px;pointer-events:none;max-width:260px}
+@media print{
+  body{background:#fff;color:#000}
+  .noprint{display:none!important}
+  .band{max-width:none;border:0}
+  .band table{font-size:9pt}
+  #bandTable{column-count:2;column-gap:10px}
+}
+</style>
+</head>
+<body>
+<main>
+<div class="crumbs noprint"><a class="back" href="/">← หน้าแรก</a><h1>วางแผนแข่ง</h1></div>
+<nav class="toolnav noprint" role="toolbar" aria-label="เครื่องมือ">
+  <a href="/">หน้าแรก</a>
+  <a href="/tools/slope/">แผนที่และแบ่งช่วง</a>
+  <a href="/tools/training%20analysis/">วิเคราะห์การซ้อม</a>
+  <a href="/tools/race%20planner/" aria-current="page">วางแผนแข่ง</a>
+</nav>
+
+<section class="box noprint">
+  <div class="row">
+    <label class="drop" id="drop" tabindex="0"><span data-ic="upload"></span><span><strong>ลากไฟล์เส้นทางแข่ง (.gpx / .tcx) มาวาง หรือคลิกเลือกไฟล์</strong><br><span class="note">ไฟล์จากผู้จัดงาน ต้องมีความสูง</span></span><input type="file" id="file" accept=".gpx,.tcx" hidden></label>
+    <label>โหมดสนาม <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="อัตโนมัติเลือกเทรลเมื่อไต่ขึ้นตั้งแต่ 35 ม./กม. หรือมีช่วงชันตั้งแต่ 12% อย่างน้อย 8% ของระยะ; ไม่สามารถรู้พื้นผิวทางจริงจากไฟล์ความสูงได้ หากไม่ตรงให้เลือกถนนหรือเทรลเอง">ⓘ</span><select id="mode"><option value="auto">อัตโนมัติจากความสูง</option><option value="road">ถนน</option><option value="trail">เทรล</option></select></label>
+    <label>กำหนดแผนจาก <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="เลือกเวลาจบเป้าหมายเพื่อคำนวณเพซทางราบที่ต้องทำ หรือเลือกเพซทางราบเพื่อให้ระบบประมาณเวลาเข้าเส้นชัย">ⓘ</span><select id="tsel"><option value="time">เวลาเข้าเส้นชัย</option><option value="pace">เพซทางราบ</option></select></label>
+    <label id="lT">เวลาเป้าหมาย (ชม:นาที:วินาที) <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="เวลาที่ต้องการเข้าเส้นชัย ใช้ปรับเพซในแต่ละความชันให้เวลารวมตรงกับเป้าหมาย">ⓘ</span><input type="text" id="tt" value="4:00:00" inputmode="numeric"></label>
+    <label id="lF" hidden>เพซทางราบ (นาที:วินาที /กม.) <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="เพซสมมติบนทางราบ ก่อนระบบปรับเร็วหรือช้าตามความชันของเส้นทาง">ⓘ</span><input type="text" id="fp" value="5:30" inputmode="numeric"></label>
+  </div>
+  <div class="row" style="margin-top:10px">
+    <label>เตือนล่วงหน้า <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="จุดเตือนในไฟล์ส่งออกจะอยู่ก่อนจุดจริงตามระยะที่ตั้งไว้ เพื่อให้นาฬิกาเตือนก่อนถึงเนินหรือจุดให้น้ำ">ⓘ</span> <span><span id="offV">80</span> ม.</span><input type="range" id="off" min="50" max="100" step="5" value="80"></label>
+    <label style="width:240px">จุดให้น้ำ (กม. คั่นด้วยจุลภาค) <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="ระบุตำแหน่งจุดให้น้ำตามระยะทาง เช่น 5, 10, 15.5 ระบบจะเพิ่มเป็นจุดเตือนให้แก้ไขได้">ⓘ</span><input type="text" id="aid" placeholder="เช่น 5, 10, 15.5"></label>
+    <label>กินเจลทุกกี่นาที (0 = ไม่ใช้) <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="วางจุดกินเจลตามเวลาสะสมของแผน แล้วแปลงเป็นตำแหน่งบนเส้นทาง">ⓘ</span><input type="number" id="gel" value="0" min="0" max="300" step="5"></label>
+    <label>เกลือแร่ทุกกี่นาที (0 = ไม่ใช้) <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="วางจุดเตือนกินเกลือแร่ตามเวลาสะสมของแผน แล้วแปลงเป็นตำแหน่งบนเส้นทาง">ⓘ</span><input type="number" id="salt" value="0" min="0" max="300" step="5"></label>
+    <button class="sbtn pri" id="bAuto"><span data-ic="spark"></span>สร้างจุดเตือนอัตโนมัติ</button>
+    <button class="sbtn" id="bSavePlan"><span data-ic="down"></span>บันทึกแผน</button>
+    <button class="sbtn" id="bLoadPlan"><span data-ic="upload"></span>เปิดแผน</button>
+    <input type="file" id="planFile" accept=".json" hidden>
+    <button class="sbtn" id="bReset">เริ่มใหม่</button>
+  </div>
+  <p class="err" id="err" role="alert"></p>
+</section>
+
+<div id="empty" class="box noprint"><p class="note">นำเข้าไฟล์เส้นทางแข่ง แล้วใส่เวลาเป้าหมาย ระบบจะแบ่งเพซตามความชันของแต่ละช่วง สร้างจุดเตือนบนเนินและจุดให้น้ำ ให้คุณลากแก้ตำแหน่งบนกราฟและแผนที่ได้ แล้วส่งออกไปใช้บนนาฬิกาหรือพิมพ์แถบเพซ</p></div>
+
+<div id="res" hidden>
+  <section class="box noprint"><div class="hgrid" id="hero"></div></section>
+
+  <section class="box noprint">
+    <h2>เส้นทางและจุดเตือน</h2>
+    <div class="chips" id="chips"></div>
+    <div class="zoomtools" role="group" aria-label="ซูมกราฟและแผนที่">
+      <span class="note">ซูมกราฟและแผนที่พร้อมกัน</span>
+      <button type="button" id="zoomOut" aria-label="ซูมออก" title="ซูมออก">−</button>
+      <button type="button" id="zoomIn" aria-label="ซูมเข้า" title="ซูมเข้า">+</button>
+      <button type="button" id="zoomReset">ดูทั้งหมด</button>
+      <span class="zoomlabel" id="zoomLabel">100%</span>
+      <input type="range" id="zoomPan" min="0" max="1000" value="500" aria-label="เลื่อนตำแหน่งที่ซูม">
+    </div>
+    <div class="cw"><svg class="viz" id="cv" viewBox="0 0 700 240" role="img" aria-label="กราฟความสูงของเส้นทาง"></svg><div class="tip" id="tip" hidden></div></div>
+    <div class="leg" id="leg"></div>
+    <div class="cw" style="margin-top:12px"><svg class="viz" id="mv" viewBox="0 0 700 300" role="img" aria-label="แผนที่เส้นทาง"></svg></div>
+    <h2 style="margin-top:14px">ช่วงความชัน <span class="note" id="slopeRangeCount"></span> <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="ใช้ RDP แบบเดียวกับหน้าแผนที่/แบ่งช่วง โดยเก็บจุดที่ระดับความสูงเบี่ยงจากเส้นเชื่อมมากกว่าค่าคลาดเคลื่อน ค่าเริ่มต้นอิง 3% ของช่วงระดับสูงต่ำสุด และเพิ่มค่าอัตโนมัติเมื่อมีเกิน 30 ช่วง">ⓘ</span></h2>
+    <label style="margin-top:8px">ความไวจุดเปลี่ยนความชัน: <span id="rangeTolValue">-</span><input type="range" id="rangeTol" min="1" max="150" step="1" value="10" aria-label="ความไวจุดเปลี่ยนความชัน"></label>
+    <p class="note" style="margin:4px 0 8px">ปรับค่าคลาดเคลื่อนระดับความสูง (เมตร): เลื่อนไปทางซ้ายเพื่อแบ่งละเอียดขึ้น เลื่อนไปทางขวาเพื่อรวมช่วง</p>
+    <div class="slopebar" id="slopeBar" role="img" aria-label="แถบแบ่งช่วงความชัน"></div>
+    <div class="rangelegend" id="slopeLegend"></div>
+    <div class="tw" style="max-height:280px;margin-top:8px" id="slopeRangeTable"></div>
+    <p class="note" id="hint" style="margin-top:6px"></p>
+  </section>
+
+  <div class="two noprint">
+    <section class="box"><h2>จุดเตือน <span class="note" id="wCount"></span></h2><div class="tw" id="wTable"></div></section>
+    <section class="box"><h2>แผนเพซรายกิโลเมตร</h2><div class="tw" id="sTable"></div></section>
+  </div>
+
+  <section class="box noprint">
+    <h2>ส่งออกไปใช้งานจริง</h2>
+    <div class="row">
+      <button class="sbtn pri" id="bGpx"><span data-ic="down"></span>ดาวน์โหลด GPX</button>
+      <button class="sbtn pri" id="bTcx"><span data-ic="down"></span>ดาวน์โหลด TCX (Garmin Connect)</button>
+      <button class="sbtn" id="bPrint"><span data-ic="print"></span>พิมพ์แถบเพซ</button>
+      <label style="width:150px">แถบเพซทุก<select id="bandStep"><option value="1">1 กม.</option><option value="2">2 กม.</option><option value="5" selected>5 กม.</option></select></label>
+    </div>
+    <p class="note" style="margin-top:8px">GPX ฝังจุดเตือนเป็น Waypoint ส่วน TCX เป็น Course ที่มี Course Point (น้ำ อาหาร อันตราย) และเวลาตามแผนสำหรับ Virtual Partner ชื่อจุดเป็นตัวอักษรอังกฤษสั้นๆ เพราะหน้าจอนาฬิกาแสดงภาษาไทยไม่ได้ทุกรุ่น รายละเอียดภาษาไทยอยู่ในช่องบันทึกย่อ ผมยังไม่ได้ทดสอบกับนาฬิกาจริง ลองนำเข้าแล้วตรวจที่ Garmin Connect ก่อนแข่ง</p>
+  </section>
+
+  <section class="box band" id="bandBox"><h2 id="bandT">แถบเพซ</h2><div class="tw" style="max-height:none" id="bandTable"></div></section>
+
+  <section class="box noprint">
+    <h2>เทียบแผนกับที่วิ่งจริง</h2>
+    <label class="drop" id="adrop" tabindex="0" style="margin-bottom:10px"><span data-ic="upload"></span><span><strong>ลากไฟล์ที่วิ่งจริง (.gpx / .tcx) มาวาง หรือคลิกเลือกไฟล์</strong><br><span class="note">ต้องมีเวลาของแต่ละจุด ดาวน์โหลดได้จากนาฬิกาหรือ Strava (Export GPX)</span></span><input type="file" id="afile" accept=".gpx,.tcx" hidden></label>
+    <div id="act"></div>
+  </section>
+</div>
+</main>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const infoTip=t=>'<span class="inf" data-tip="'+esc(t)+'" tabindex="0" role="img" aria-label="คำอธิบาย">ⓘ</span>';
+const P={upload:"M12 16V4m0 0L8 8m4-4l4 4M4 20h16",down:"M12 4v12m0 0l-4-4m4 4l4-4M4 20h16",trash:"M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3",spark:"M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z",print:"M6 9V3h12v6M6 18H4v-7h16v7h-2M7 14h10v7H7z"};
+const ic=n=>'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+P[n]+'"/></svg>';
+const icons=r=>r.querySelectorAll("[data-ic]").forEach(b=>b.innerHTML=ic(b.dataset.ic));icons(document);
+const err=m=>{$("#err").textContent=m||""};
+const fin=isFinite,clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const fmtDur=s=>{if(!fin(s))return"-";s=Math.round(s);const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return h+":"+String(m).padStart(2,"0")+":"+String(x).padStart(2,"0")};
+const fmtPace=s=>{if(!fin(s)||s<=0)return"-";let m=Math.floor(s/60),x=Math.round(s%60);if(x===60){m++;x=0}return m+":"+String(x).padStart(2,"0")};
+const parseHMS=t=>{const a=String(t).trim().split(":").map(Number);if(!a.length||a.some(x=>!fin(x)||x<0))return NaN;return a.length===3?a[0]*3600+a[1]*60+a[2]:a.length===2?a[0]*3600+a[1]*60:a[0]*60};
+const parseMS=t=>{const a=String(t).trim().split(":").map(Number);if(!a.length||a.some(x=>!fin(x)||x<0))return NaN;return a.length===2?a[0]*60+a[1]:a[0]};
+function hav(la1,lo1,la2,lo2){const k=Math.PI/180,dl=(la2-la1)*k,dn=(lo2-lo1)*k,h=Math.sin(dl/2)**2+Math.cos(la1*k)*Math.cos(la2*k)*Math.sin(dn/2)**2;return 12742000*Math.asin(Math.sqrt(h))}
+function cost(g){g=clamp(g/100,-.3,.3);return 155.4*g**5-30.4*g**4-43.3*g**3+46.3*g**2+19.5*g+3.6}
+const TYPES={
+ water:{n:"น้ำ",c:"#3b82c4",ch:"น",tcx:"Water",sym:"Water Source",code:"WATER",txt:"เติมน้ำ"},
+ gel:{n:"เจล",c:"#e08a3c",ch:"จ",tcx:"Food",sym:"Food",code:"GEL",txt:"กินเจล"},
+ salt:{n:"เกลือแร่",c:"#8a8f98",ch:"ก",tcx:"Food",sym:"Food",code:"SALT",txt:"กินเกลือแร่"},
+ poles:{n:"เริ่มใช้โพล",c:"#2f8f5b",ch:"โ",tcx:"Generic",sym:"Flag",code:"POLES",txt:"ใช้โพล"},
+ stow:{n:"เก็บโพล",c:"#2a9d8f",ch:"ก",tcx:"Generic",sym:"Flag",code:"RUN",txt:"เก็บโพล",after:true},
+ pace:{n:"เดินขึ้น",c:"#9a6bb5",ch:"พ",tcx:"Generic",sym:"Flag",code:"PACE",txt:"เดินขึ้น"},
+ top:{n:"พ้นยอด",c:"#555e66",ch:"ย",tcx:"Summit",sym:"Summit",code:"TOP",txt:"พ้นยอด",after:true},
+ danger:{n:"ลงชัน",c:"#c4503f",ch:"!",tcx:"Danger",sym:"Danger Area",code:"DANGER",txt:"ลงชัน ระวังลื่น"}
+};
+const CLS=[{n:"ขึ้นชัน (12% ขึ้นไป)",c:"#c4503f"},{n:"ขึ้น (3 ถึง 12%)",c:"#e0a043"},{n:"ราบ",c:"#5b9a6b"},{n:"ลง (3 ถึง 12%)",c:"#4a90c4"},{n:"ลงชัน (12% ขึ้นไป)",c:"#9a6bb5"}];
+const cls=g=>g>=12?0:g>=3?1:g>-3?2:g>-12?3:4;
+const gradeOf=s=>s>=85?"A":s>=70?"B":s>=55?"C":"D";
+const UTMB_CURVE=[[0,13.5],[100,11.2],[300,8.7],[500,6.8],[700,5.2],[900,3.75],[1000,3.3]];
+function courseMode(C){
+  let steep=0;
+  for(let i=0;i<C.n-1;i++)if(Math.abs(C.grade[i])>=12)steep++;
+  const steepShare=steep/(C.n-1),gainPerKm=C.gain/(C.L/1000);
+  return{mode:gainPerKm>=35||steepShare>=.08?"trail":"road",gainPerKm,steepShare};
+}
+function utmbEstimate(C,finish){
+  const effortKm=C.L/1000+C.gain/100,factor=1+.0012*Math.max(0,effortKm-50);
+  const pace=finish/60/(effortKm*factor);
+  if(pace>=UTMB_CURVE[0][1])return{index:0,bound:"lower"};
+  if(pace<=UTMB_CURVE[UTMB_CURVE.length-1][1])return{index:1000,bound:"upper"};
+  for(let i=1;i<UTMB_CURVE.length;i++){
+    const [ui,p]=UTMB_CURVE[i], [prevUi,prevP]=UTMB_CURVE[i-1];
+    if(pace>=p&&pace<=prevP)return{index:Math.round(prevUi+(prevP-pace)/(prevP-p)*(ui-prevUi)),bound:""};
+  }
+  return{index:0,bound:"lower"};
+}
+
+/* ============ เส้นทาง ============ */
+function parseCourse(text,name){
+  const doc=new DOMParser().parseFromString(text,"application/xml");let pts=[];
+  if(/\.tcx$/i.test(name)){
+    for(const p of doc.getElementsByTagName("Trackpoint")){const o={lat:NaN,lon:NaN,ele:NaN};for(const c of p.getElementsByTagName("*")){const n=c.localName,v=parseFloat(c.textContent);if(n==="LatitudeDegrees")o.lat=v;else if(n==="LongitudeDegrees")o.lon=v;else if(n==="AltitudeMeters")o.ele=v}pts.push(o)}
+  }else{
+    for(const tag of["trkpt","rtept"]){for(const p of doc.getElementsByTagName(tag)){const e=p.getElementsByTagName("ele")[0];pts.push({lat:parseFloat(p.getAttribute("lat")),lon:parseFloat(p.getAttribute("lon")),ele:e?parseFloat(e.textContent):NaN})}if(pts.length)break}
+  }
+  pts=pts.filter(p=>fin(p.lat)&&fin(p.lon));
+  if(pts.length<10)throw new Error("few");
+  return pts;
+}
+function median5(a){const o=new Float64Array(a.length);for(let i=0;i<a.length;i++){const w=[];for(let k=Math.max(0,i-2);k<=Math.min(a.length-1,i+2);k++)w.push(a[k]);w.sort((x,y)=>x-y);o[i]=w[w.length>>1]}return o}
+function avgW(a,h){const n=a.length,o=new Float64Array(n);for(let i=0;i<n;i++){let s=0,c=0;for(let k=Math.max(0,i-h);k<=Math.min(n-1,i+h);k++){s+=a[k];c++}o[i]=s/c}return o}
+function hysteresis(a,T){
+  let g=0,l=0,base=a[0],hi=base,lo=base,m=0;
+  for(let i=1;i<a.length;i++){const y=a[i];if(m>=0&&y>hi)hi=y;if(m<=0&&y<lo)lo=y;
+    if(m<=0&&y-lo>=T){if(m<0)l+=base-lo;base=lo;m=1;hi=y}else if(m>=0&&hi-y>=T){if(m>0)g+=hi-base;base=hi;m=-1;lo=y}}
+  if(m>0)g+=hi-base;else if(m<0)l+=base-lo;
+  return{gain:g,loss:l};
+}
+function buildCourse(pts,name){
+  const c=[0];for(let i=1;i<pts.length;i++)c.push(c[i-1]+hav(pts[i-1].lat,pts[i-1].lon,pts[i].lat,pts[i].lon));
+  const L=c[c.length-1];if(L<500)throw new Error("short");
+  const el=pts.map(p=>p.ele);
+  if(!el.some(fin))throw new Error("noele");
+  let last=NaN;for(let i=0;i<el.length;i++){if(fin(el[i]))last=el[i];else if(fin(last))el[i]=last}
+  let nx=NaN;for(let i=el.length-1;i>=0;i--){if(fin(el[i]))nx=el[i];else el[i]=nx}
+  const n=Math.ceil(L/10)+1,step=L/(n-1),lat=new Float64Array(n),lon=new Float64Array(n),e0=new Float64Array(n);
+  let j=0;
+  for(let i=0;i<n;i++){const s=i*step;while(j<pts.length-2&&c[j+1]<s)j++;const f=clamp((s-c[j])/((c[j+1]-c[j])||1),0,1);lat[i]=pts[j].lat+(pts[j+1].lat-pts[j].lat)*f;lon[i]=pts[j].lon+(pts[j+1].lon-pts[j].lon)*f;e0[i]=el[j]+(el[j+1]-el[j])*f}
+  const ele=avgW(median5(e0),2),grade=new Float64Array(n);
+  for(let i=0;i<n;i++){const a=Math.max(0,i-5),b=Math.min(n-1,i+5);grade[i]=clamp((ele[b]-ele[a])/((b-a)*step)*100,-35,35)}
+  const k=Math.cos(lat[0]*Math.PI/180)*111320,px=new Float64Array(n),py=new Float64Array(n);
+  for(let i=0;i<n;i++){px[i]=(lon[i]-lon[0])*k;py[i]=(lat[i]-lat[0])*111320}
+  const hy=hysteresis(ele,3);
+  return{name,L,n,step,lat,lon,ele,grade,px,py,gain:hy.gain,loss:hy.loss,maxG:Math.max(...grade),minG:Math.min(...grade)};
+}
+/* ============ แผนเพซตามความชัน ============ */
+function makePlan(C,cfg){
+  const n=C.n,f=new Float64Array(n),floor0=cfg.mode==="trail"?.88:.82;
+  let sumF=0;
+  for(let i=0;i<n;i++){const g=C.grade[i];let k=cost(g)/3.6,fl=g<=-15&&cfg.mode==="trail"?1:floor0;if(k<fl)k=fl;f[i]=k;if(i<n-1)sumF+=k*C.step}
+  let p0,T;
+  if(cfg.tsel==="time"){T=cfg.T;p0=T/(sumF/1000)}else{p0=cfg.fp;T=p0*sumF/1000}
+  const time=new Float64Array(n),pace=new Float64Array(n);
+  for(let i=0;i<n;i++){pace[i]=f[i]*p0;time[i+1<n?i+1:i]=(i+1<n?time[i]+f[i]*C.step/1000*p0:time[i])}
+  return{f,p0,T,time,pace,sumF};
+}
+const idxOfM=(C,m)=>clamp(Math.round(m/C.step),0,C.n-1);
+function interp(C,arr,m){const x=clamp(m/C.step,0,C.n-1),i=Math.floor(x),f=x-i;return i>=C.n-1?arr[C.n-1]:arr[i]+(arr[i+1]-arr[i])*f}
+function splitsOf(C,PL){
+  const out=[],K=Math.ceil(C.L/1000);
+  for(let k=1;k<=K;k++){
+    const m0=(k-1)*1000,m1=Math.min(k*1000,C.L),t0=interp(C,PL.time,m0),t1=interp(C,PL.time,m1);
+    let up=0,dn=0;for(let i=idxOfM(C,m0);i<idxOfM(C,m1);i++){const d=C.ele[i+1]-C.ele[i];if(d>0)up+=d;else dn-=d}
+    out.push({k,m0,m1,t:t1,pace:(t1-t0)/((m1-m0)/1000),avgG:(interp(C,C.ele,m1)-interp(C,C.ele,m0))/(m1-m0)*100,up,dn});
+  }
+  return out;
+}
+/* ============ จุดเตือนอัตโนมัติ ============ */
+function runs(arr,pred,minLen,gap){
+  const r=[];let i=0,n=arr.length;
+  while(i<n){if(pred(arr[i])){let j=i;while(j<n&&pred(arr[j]))j++;r.push({a:i,b:j-1});i=j}else i++}
+  const m=[];for(const x of r){if(m.length&&x.a-m[m.length-1].b<=gap)m[m.length-1].b=x.b;else m.push({...x})}
+  return m.filter(x=>x.b-x.a>=minLen);
+}
+function poleClimbs(C){
+  const sections=S.ranges.length?S.ranges:slopeRanges(C).ranges,climbs=[];
+  let current=null;
+  const startOfClimb=(a,b)=>{
+    for(let i=a;i<b;i++)if(C.grade[i]>=1.5)return i;
+    return a;
+  };
+  const finish=()=>{
+    if(!current)return;
+    const length=(current.peak-current.a)*C.step,gain=C.ele[current.peak]-C.ele[current.a];
+    const window=Math.max(1,Math.ceil(100/C.step));
+    let steep=false;
+    for(let i=current.a;i+window<=current.peak;i++){
+      if((C.ele[i+window]-C.ele[i])/(window*C.step)*100>=12){steep=true;break}
+    }
+    if(length>=500&&gain>=60&&steep)climbs.push({a:current.a,b:current.peak});
+    current=null;
+  };
+  for(const section of sections){
+    const rise=C.ele[section.b]-C.ele[section.a];
+    if(!current){
+      if(rise>=5&&section.avgG>=1.5)current={a:startOfClimb(section.a,section.b),peak:section.b};
+      continue;
+    }
+    const peakElevation=C.ele[current.peak],endElevation=C.ele[section.b];
+    if(endElevation<peakElevation-30){
+      finish();
+      if(rise>=5&&section.avgG>=1.5)current={a:startOfClimb(section.a,section.b),peak:section.b};
+    }else if(endElevation>peakElevation)current.peak=section.b;
+  }
+  finish();
+  const merged=[];
+  for(const climb of climbs){
+    const previous=merged[merged.length-1];
+    if(previous&&climb.a-previous.b<=Math.ceil(1500/C.step))previous.b=climb.b;
+    else merged.push({...climb});
+  }
+  return merged;
+}
+function slopeRanges(C,requestedTolerance=null){
+  const simplify=tol=>{
+    const keep=new Uint8Array(C.n);keep[0]=1;keep[C.n-1]=1;const stack=[[0,C.n-1]];
+    while(stack.length){
+      const[a,b]=stack.pop();let max=0,idx=-1;
+      for(let i=a+1;i<b;i++){
+        const f=((i-a)*C.step)/(((b-a)*C.step)||1),delta=Math.abs(C.ele[i]-(C.ele[a]+(C.ele[b]-C.ele[a])*f));
+        if(delta>max){max=delta;idx=i}
+      }
+      if(max>tol&&idx>0){keep[idx]=1;stack.push([a,idx],[idx,b])}
+    }
+    const out=[];keep.forEach((v,i)=>{if(v)out.push(i)});return out;
+  };
+  let lo=Infinity,hi=-Infinity;
+  for(let i=0;i<C.n;i++){lo=Math.min(lo,C.ele[i]);hi=Math.max(hi,C.ele[i])}
+  let tolerance=requestedTolerance==null?clamp(Math.max(3,Math.round((hi-lo)*.03)),1,150):clamp(requestedTolerance,1,150);
+  let indices=simplify(tolerance);
+  if(requestedTolerance==null)while(indices.length>31&&tolerance<150){tolerance=Math.min(150,Math.ceil(tolerance*1.3));indices=simplify(tolerance)}
+  const ranges=indices.slice(1).map((b,i)=>{
+    const a=indices[i],m0=a*C.step,m1=Math.min(C.L,b*C.step),len=m1-m0,ele0=interp(C,C.ele,m0),ele1=interp(C,C.ele,m1);
+    let up=0,down=0;
+    for(let i=a;i<b;i++){const d=C.ele[i+1]-C.ele[i];if(d>0)up+=d;else down-=d}
+    const avgG=len?(ele1-ele0)/len*100:0;
+    return{a,b,type:cls(avgG),m0,m1,len,avgG,up,down};
+  });
+  return{ranges,tolerance};
+}
+let uid=0;
+function autoGen(){
+  const C=S.course,PL=S.plan;if(!C)return;
+  S.wps=S.wps.filter(w=>!w.auto);
+  const add=(m,type,text)=>S.wps.push({id:++uid,m:Math.round(clamp(m,0,C.L)),type,text,auto:true});
+  const trail=(S.mode==="auto"?courseMode(C).mode:S.mode)==="trail";
+  const rs=runs(C.grade,g=>g>=(trail?12:3),trail?30:25,trail?15:20).filter(r=>{
+    const len=(r.b-r.a)*C.step,gain=C.ele[r.b]-C.ele[r.a],avg=len?gain/len*100:0;
+    return trail?len>=300&&gain>=40&&avg>=12:gain>=10;
+  });
+  if(trail)for(const climb of poleClimbs(C)){
+    add(climb.a*C.step,"poles","ใช้โพล");
+    add(climb.b*C.step,"stow","เก็บโพล");
+  }
+  if(!trail)for(const r of rs)add(r.a*C.step,"pace","ผ่อนเนิน");
+  if(trail)for(const r of runs(C.grade,g=>g<=-15,25,20))add(r.a*C.step,"danger","ลงชัน");
+  for(const km of S.aid)if(km>0&&km*1000<=C.L)add(km*1000,"water","เติมน้ำ");
+  const distAt=t=>{
+    let lo=0,hi=C.n-1;
+    while(lo<hi){const mid=(lo+hi)>>1;if(PL.time[mid]<t)lo=mid+1;else hi=mid}
+    const i=Math.max(1,lo),f=(t-PL.time[i-1])/((PL.time[i]-PL.time[i-1])||1);
+    return clamp((i-1+f)*C.step,0,C.L);
+  };
+  const timed=(interval,type)=>{
+    if(interval<=0)return;
+    for(let k=1,t=k*interval*60;t<PL.T-300;k++,t=k*interval*60){
+      const target=distAt(t),candidates=[target];
+      for(let offset=50;offset<=500;offset+=50)candidates.push(target-offset,target+offset);
+      let m=target;
+      for(const candidate of candidates){
+        if(candidate<0||candidate>C.L)continue;
+        const i=idxOfM(C,candidate);
+        const conflict=S.wps.some(w=>Math.abs(w.m-candidate)<120);
+        if(Math.abs(C.grade[i])<8&&!conflict){m=candidate;break}
+      }
+      add(m,type,type==="gel"?"กินเจล":"กินเกลือแร่");
+    }
+  };
+  timed(S.gel,"gel");timed(S.salt,"salt");
+  S.wps.sort((a,b)=>a.m-b.m);
+}
+
+/* ============ สถานะ ============ */
+const S={course:null,plan:null,mode:"auto",tsel:"time",T:14400,fp:330,off:80,aid:[],gel:0,salt:0,wps:[],ranges:[],rangeTol:null,viewZoom:1,viewCenter:.5,autoAlertsEnabled:false,arm:null,sel:-1,actual:null,drag:null,hov:-1};
+function cfgNow(){return{mode:S.mode==="auto"&&S.course?courseMode(S.course).mode:S.mode,tsel:S.tsel,T:S.T,fp:S.fp}}
+function readInputs(){
+  S.mode=$("#mode").value;S.tsel=$("#tsel").value;
+  const T=parseHMS($("#tt").value),fp=parseMS($("#fp").value);
+  if(fin(T)&&T>0)S.T=T;if(fin(fp)&&fp>0)S.fp=fp;
+  S.off=+$("#off").value;$("#offV").textContent=S.off;
+  S.aid=$("#aid").value.split(/[,\s]+/).map(Number).filter(x=>fin(x)&&x>0);
+  S.gel=Math.max(0,parseInt($("#gel").value)||0);
+  S.salt=Math.max(0,parseInt($("#salt").value)||0);
+  $("#lT").hidden=S.tsel!=="time";$("#lF").hidden=S.tsel!=="pace";
+}
+function replan(){if(!S.course)return;readInputs();S.plan=makePlan(S.course,cfgNow());renderAll()}
+function useCourse(pts,name){
+  err("");
+  try{S.course=buildCourse(pts,name);S.rangeTol=null;S.ranges=[];S.viewZoom=1;S.viewCenter=.5;S.autoAlertsEnabled=false;S.wps=[];S.sel=-1;S.actual=null;readInputs();S.plan=makePlan(S.course,cfgNow());renderAll();persist()}
+  catch(e){err(e.message==="noele"?"ไฟล์นี้ไม่มีข้อมูลความสูง วางแผนตามความชันไม่ได้":e.message==="short"?"เส้นทางสั้นเกินไป (ต้องยาวกว่า 500 ม.)":"อ่านไฟล์ไม่ได้ ไฟล์ต้องเป็น GPX หรือ TCX ที่มีพิกัด")}
+}
+function loadFile(text,name){try{useCourse(parseCourse(text,name),name.replace(/\.(gpx|tcx)$/i,""))}catch(e){err("อ่านไฟล์ไม่ได้ ไฟล์ต้องเป็น GPX หรือ TCX ที่มีพิกัด")}}
+function readFileTo(f,cb){if(!f)return;const rd=new FileReader();rd.onload=()=>cb(rd.result,f.name);rd.readAsText(f)}
+
+/* ============ แสดงผล ============ */
+const CW=700,CH=240,CL=40,CR=10,CT=12,CB=22;
+function viewWindow(C){
+  const zoom=clamp(S.viewZoom,1,20),span=C.L/zoom,center=clamp(S.viewCenter,span/(2*C.L),1-span/(2*C.L));
+  S.viewCenter=center;
+  return{m0:center*C.L-span/2,m1:center*C.L+span/2};
+}
+function viewIndices(C){
+  const{m0,m1}=viewWindow(C);
+  return{i0:Math.max(0,Math.floor(m0/C.step)),i1:Math.min(C.n-1,Math.ceil(m1/C.step)),m0,m1};
+}
+function renderZoomControls(){
+  const zoom=S.viewZoom,span=1/zoom;
+  $("#zoomLabel").textContent=Math.round(zoom*100)+"%";
+  $("#zoomPan").disabled=zoom<=1;
+  $("#zoomPan").value=zoom<=1?500:Math.round(clamp((S.viewCenter-span/2)/(1-span),0,1)*1000);
+}
+function setZoom(zoom,anchor=S.viewCenter){
+  const next=clamp(zoom,1,20),old=S.viewZoom;
+  S.viewCenter=anchor+(S.viewCenter-anchor)*old/next;
+  S.viewZoom=next;
+  if(S.course)renderAll();
+}
+function renderAll(){
+  const C=S.course,PL=S.plan;if(!C||!PL)return;
+  $("#empty").hidden=true;$("#res").hidden=false;
+  const cell=(l,v,d)=>'<div>'+l+(d?' '+infoTip(d):'')+'<strong>'+v+'</strong></div>',sp=splitsOf(C,PL),paces=sp.map(s=>s.pace);
+  const segmentation=slopeRanges(C,S.rangeTol);S.ranges=segmentation.ranges;S.rangeTol=segmentation.tolerance;
+  $("#rangeTol").value=S.rangeTol;$("#rangeTolValue").textContent=S.rangeTol+" ม.";
+  const share=[0,0,0,0,0];for(const r of S.ranges)share[r.type]+=r.len;const sh=share.map(x=>x/C.L*100);
+  const cnt={};S.wps.forEach(w=>{cnt[w.type]=(cnt[w.type]||0)+1});
+  const modeInfo=courseMode(C),mode=S.mode==="auto"?modeInfo.mode:S.mode,utmb=utmbEstimate(C,PL.T);
+  const utmbText=utmb.bound==="lower"?"≤0 (นอกช่วง)":utmb.bound==="upper"?"≥1000 (นอกช่วง)":"≈"+utmb.index;
+  $("#hero").innerHTML=
+   '<div class="hg"><div class="hl2">เส้นทาง</div><div class="stats">'+cell("ระยะ",(C.L/1000).toFixed(2)+" กม.","รวมระยะระหว่างพิกัด GPS ในไฟล์")+cell("ไต่ขึ้นรวม",Math.round(C.gain)+" ม.","ไต่ขึ้นสะสมหลังกรองความสูงที่เปลี่ยนน้อยกว่า 3 เมตร")+cell("ลงรวม",Math.round(C.loss)+" ม.","ลงสะสมหลังกรองความสูงที่เปลี่ยนน้อยกว่า 3 เมตร")+cell("ชันสุด (ขึ้น/ลง)",C.maxG.toFixed(0)+"% / "+C.minG.toFixed(0)+"%","คำนวณจากความสูงที่ปรับเรียบในหน้าต่างประมาณ 100 เมตร")+'</div></div>'+
+   '<div class="hg"><div class="hl2">แผนเพซ '+infoTip("ปรับเพซแต่ละช่วงด้วยฟังก์ชันความชัน แล้วคูณเพซตั้งต้นให้เวลารวมตรงกับเป้าหมาย; โหมดเทรลจำกัดความเร็วลงชันเพิ่มเติม")+'</div><div class="stats">'+cell("เวลาเข้าเส้นชัย",fmtDur(PL.T),"เวลาเป้าหมาย หรือเวลาที่คำนวณจากเพซทางราบ")+cell("เพซเฉลี่ย",fmtPace(PL.T/(C.L/1000))+" /กม.","เวลาเข้าเส้นชัยหารด้วยระยะทางทั้งหมด")+cell("เพซทางราบ",fmtPace(PL.p0)+" /กม.","เพซตั้งต้นก่อนปรับตามความชัน")+cell("เพซช้าสุด/เร็วสุด",fmtPace(Math.max(...paces))+" / "+fmtPace(Math.min(...paces)),"เพซช้าที่สุดและเร็วที่สุดในช่วงละ 1 กิโลเมตร")+'</div></div>'+
+   '<div class="hg"><div class="hl2">ภูมิประเทศ</div><div class="stats">'+cell("โหมดสนาม",mode==="trail"?"เทรล":"ถนน",S.mode==="auto"?`ประเมินจากไต่ขึ้น ${modeInfo.gainPerKm.toFixed(0)} ม./กม. และช่วงชัน ${Math.round(modeInfo.steepShare*100)}%; ไม่สามารถรู้พื้นผิวทางจริงจากความสูงได้`:"เลือกโหมดเอง; สัดส่วนความชันคำนวณจากโปรไฟล์ความสูง")+cell("ขึ้นชัน 12%+",sh[0].toFixed(0)+"%","สัดส่วนระยะที่ความชันตั้งแต่ 12% ขึ้นไป")+cell("ขึ้น 3 ถึง 12%",sh[1].toFixed(0)+"%","สัดส่วนระยะที่ความชันตั้งแต่ 3% แต่ต่ำกว่า 12%")+cell("ราบ",sh[2].toFixed(0)+"%","สัดส่วนระยะที่ความชันตั้งแต่ -3% ถึง 3%")+cell("ลง",(sh[3]+sh[4]).toFixed(0)+"%","สัดส่วนระยะที่ความชันต่ำกว่า -3%")+'</div></div>'+
+   (mode==="trail"?'<div class="hg"><div class="hl2">UTMB Index โดยประมาณ '+infoTip("แปลงเวลาแผนเป็นนาทีแล้วหารด้วยระยะเทียบเท่า = ระยะทาง (กม.) + ไต่ขึ้น (ม.)/100 จากนั้นย้อนกลับตามเส้นโค้งประมาณการเดียวกับเครื่องมือความชัน ค่านี้เป็น heuristic ไม่ใช่สูตรหรือคะแนนทางการจาก UTMB และไม่ได้พิจารณาเพศ อายุ สภาพอากาศ หรือผลแข่งจริง")+'</div><div class="stats">'+cell("จากเวลาแผน",utmbText,"คะแนนโดยประมาณที่สัมพันธ์กับเวลาแผนบนสนามนี้; หากอยู่นอกช่วงเส้นโค้งจะแสดงขอบเขต ≤0 หรือ ≥1000")+'</div></div>':"")+
+   '<div class="hg"><div class="hl2">จุดเตือน '+infoTip("หลังนำเข้าไฟล์ จุดเตือนยังไม่ถูกสร้างจนกดปุ่มสร้างจุดเตือนอัตโนมัติ; ถนนเตือนช่วงขึ้นจาก 3%, เทรลเตือนทางลงชันจาก -15% และแนะนำโพลจากช่วงแบ่งภูมิประเทศเมื่อไต่ต่อเนื่องอย่างน้อย 500 ม., สูงขึ้นอย่างน้อย 60 ม. และมีช่วง 100 ม. ที่ชันตั้งแต่ 12% จุดเก็บอยู่ที่ยอดก่อนลง และรวมช่วงขึ้นที่ใกล้กันไม่เกิน 1.5 กม.")+'</div><div class="stats">'+cell("ทั้งหมด",S.wps.length+" จุด","จำนวนจุดเตือนทุกชนิดในแผน")+cell("น้ำ/เจล/เกลือแร่",((cnt.water||0)+(cnt.gel||0)+(cnt.salt||0))+" จุด","จำนวนจุดเตือนด้านการเติมน้ำและพลังงาน")+cell("เนิน/โพล",((cnt.poles||0)+(cnt.pace||0))+" จุด","จำนวนจุดเตือนช่วงขึ้นเนินหรือใช้โพล")+cell("อันตราย",(cnt.danger||0)+" จุด","จำนวนจุดเตือนช่วงลงชันอันตราย")+'</div></div>';
+  const trailTools=["poles","stow","top","danger"],availableTypes=Object.entries(TYPES).filter(([k])=>mode==="trail"||!trailTools.includes(k));
+  if(!availableTypes.some(([k])=>k===S.arm))S.arm=null;
+  $("#chips").innerHTML='<span class="note">เลือกชนิดจุดแล้วคลิกบนกราฟหรือแผนที่เพื่อเพิ่ม:</span>'+availableTypes.map(([k,t])=>'<button data-arm="'+k+'" class="'+(S.arm===k?"on":"")+'"><i style="background:'+t.c+'"></i>'+t.n+'</button>').join("");
+  $("#leg").innerHTML=CLS.map(c=>'<span><i style="background:'+c.c+'"></i>'+c.n+'</span>').join("");
+  $("#hint").textContent=S.arm?"โหมดเพิ่มจุด ("+TYPES[S.arm].n+"): คลิกบนกราฟหรือแผนที่ ลากหมุดเพื่อย้าย":"ลากหมุดบนกราฟหรือแผนที่เพื่อย้ายตำแหน่ง ชี้เมาส์ที่ใดที่หนึ่งแล้วอีกฝั่งจะแสดงจุดเดียวกัน";
+  renderZoomControls();
+  renderSlopeRanges();drawChartBase();drawMapBase();drawMarkers();renderTables(sp);renderBand(sp);renderActual();
+}
+function renderSlopeRanges(){
+  const ranges=S.ranges,labels=CLS.map(x=>x.n);
+  $("#slopeRangeCount").textContent=`· ${ranges.length} ช่วง`;
+  $("#slopeBar").innerHTML=ranges.map((r,i)=>'<span style="flex:'+r.len+' 0 0;background:'+CLS[r.type].c+'" data-tip="ช่วง '+(i+1)+' · กม. '+(r.m0/1000).toFixed(2)+'–'+(r.m1/1000).toFixed(2)+' · '+r.avgG.toFixed(1)+'%" aria-label="'+esc(labels[r.type])+'"></span>').join("");
+  $("#slopeLegend").innerHTML=CLS.map(c=>'<span><i style="background:'+c.c+'"></i>'+c.n+'</span>').join("");
+  $("#slopeRangeTable").innerHTML='<table><tr><th>ช่วง</th><th>ประเภท</th><th>ระยะ</th><th>ความชันเฉลี่ย</th><th>ขึ้น/ลง (ม.)</th></tr>'+ranges.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+labels[r.type]+'</td><td>'+(r.m0/1000).toFixed(2)+'–'+(r.m1/1000).toFixed(2)+' กม. ('+Math.round(r.len)+' ม.)</td><td>'+r.avgG.toFixed(1)+'%</td><td>+'+Math.round(r.up)+' / −'+Math.round(r.down)+'</td></tr>').join("")+'</table>';
+}
+function runPolys(C,X,Y,base,minRun){
+  let h="";
+  const {i0,i1,m0,m1}=viewIndices(C);
+  for(const r of S.ranges){const i=Math.max(i0,r.a),j=Math.min(i1,r.b);if(j<=i)continue;const c=r.type,from=Math.max(m0,i*C.step),to=Math.min(m1,j*C.step),pts=[];
+    pts.push(X(from).toFixed(1)+","+Y(interp(C,C.ele,from)).toFixed(1));
+    for(let k=i+Math.max(1,Math.floor((j-i)/60));k<j;k+=Math.max(1,Math.floor((j-i)/60)))pts.push(X(k*C.step).toFixed(1)+","+Y(C.ele[k]).toFixed(1));
+    pts.push(X(to).toFixed(1)+","+Y(interp(C,C.ele,to)).toFixed(1));
+    h+='<polygon points="'+pts.join(" ")+" "+X(to).toFixed(1)+","+base+" "+X(from).toFixed(1)+","+base+'" fill="'+CLS[c].c+'" fill-opacity=".55"/>'}
+  return h;
+}
+function drawChartBase(){
+  const C=S.course,{i0,i1,m0,m1}=viewIndices(C);let lo=Infinity,hi=-Infinity;
+  for(let i=i0;i<=i1;i++){lo=Math.min(lo,C.ele[i]);hi=Math.max(hi,C.ele[i])}
+  if(hi-lo<20){lo-=10;hi+=10}const pad=(hi-lo)*.08;lo-=pad;hi+=pad;
+  const X=m=>CL+(m-m0)/(m1-m0)*(CW-CL-CR),Y=e=>CT+(1-(e-lo)/(hi-lo))*(CH-CT-CB),base=CH-CB;
+  let h=runPolys(C,X,Y,base);
+  const pts=[[X(m0),Y(interp(C,C.ele,m0))]];const stride=Math.max(1,Math.floor((i1-i0)/500));for(let i=i0+stride;i<i1;i+=stride)pts.push([X(i*C.step),Y(C.ele[i])]);pts.push([X(m1),Y(interp(C,C.ele,m1))]);
+  h+='<polyline fill="none" stroke="var(--ink)" stroke-width="1.5" points="'+pts.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join(" ")+'"/>';
+  for(const e of[lo+pad,(lo+hi)/2,hi-pad])h+='<text x="'+(CL-5)+'" y="'+(Y(e)+4)+'" text-anchor="end" font-size="11" fill="var(--mute)">'+Math.round(e)+'</text>';
+  const kmStep=(m1-m0)/1000>30?5:(m1-m0)/1000>12?2:1,first=Math.ceil(m0/1000/kmStep)*kmStep;
+  for(let k=first;k*1000<=m1;k+=kmStep)h+='<text x="'+X(k*1000)+'" y="'+(CH-6)+'" text-anchor="middle" font-size="11" fill="var(--mute)">'+k+'</text>';
+  h+='<g id="cmk"></g><line id="chl" y1="'+CT+'" y2="'+base+'" stroke="var(--ink)" stroke-opacity=".5" stroke-dasharray="2 3" visibility="hidden"/><circle id="cdot" r="4.5" fill="var(--panel)" stroke="var(--ink)" stroke-width="2.5" visibility="hidden"/>';
+  $("#cv").innerHTML=h;S.cx={X,Y,base,lo,hi,m0,m1};
+}
+function drawMapBase(){
+  const C=S.course,{i0,i1}=viewIndices(C);let x0=1e18,x1=-1e18,y0=1e18,y1=-1e18;
+  for(let i=i0;i<=i1;i++){x0=Math.min(x0,C.px[i]);x1=Math.max(x1,C.px[i]);y0=Math.min(y0,C.py[i]);y1=Math.max(y1,C.py[i])}
+  const sc=Math.min(660/((x1-x0)||1),260/((y1-y0)||1)),ox=350-(x0+x1)/2*sc,oy=150+(y0+y1)/2*sc;
+  const MX=i=>ox+C.px[i]*sc,MY=i=>oy-C.py[i]*sc;
+  let h="";
+  for(const r of S.ranges){
+    const from=Math.max(i0,r.a),to=Math.min(i1,r.b);if(to<=from)continue;
+    const pts=[],stride=Math.max(1,Math.ceil((to-from)/180));
+    for(let k=from;k<to;k+=stride)pts.push(MX(k).toFixed(1)+","+MY(k).toFixed(1));
+    pts.push(MX(to).toFixed(1)+","+MY(to).toFixed(1));
+    h+='<polyline fill="none" stroke="'+CLS[r.type].c+'" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" points="'+pts.join(" ")+'"/>';
+  }
+  if(i0===0)h+='<circle cx="'+MX(0)+'" cy="'+MY(0)+'" r="6" fill="#3a9a5b" stroke="#fff" stroke-width="2"/>';
+  if(i1===C.n-1)h+='<circle cx="'+MX(C.n-1)+'" cy="'+MY(C.n-1)+'" r="6" fill="#c4503f" stroke="#fff" stroke-width="2"/>';
+  h+='<g id="mmk"></g><circle id="mdot" r="5" fill="var(--panel)" stroke="var(--ink)" stroke-width="2.5" visibility="hidden"/>';
+  $("#mv").innerHTML=h;S.mx={MX,MY,i0,i1};
+}
+function drawMarkers(){
+  const C=S.course,cx=S.cx,mx=S.mx;if(!C||!cx)return;
+  let a="",b="";
+  S.wps.forEach(w=>{
+    if(w.m<cx.m0||w.m>cx.m1)return;
+    const i=idxOfM(C,w.m),T=TYPES[w.type],sel=S.sel===w.id,x=cx.X(w.m),y=cx.Y(C.ele[i]);
+    a+='<g data-wi="'+w.id+'" style="cursor:grab"><line x1="'+x+'" x2="'+x+'" y1="'+(y-2)+'" y2="'+(cx.base)+'" stroke="'+T.c+'" stroke-opacity=".6" stroke-width="'+(sel?2:1)+'"/><circle cx="'+x+'" cy="'+(y-9)+'" r="'+(sel?10:8)+'" fill="'+T.c+'" stroke="#fff" stroke-width="'+(sel?2.5:1.5)+'"/><text x="'+x+'" y="'+(y-5.5)+'" text-anchor="middle" font-size="'+(T.ch.length>1?7:9)+'" fill="#fff" pointer-events="none" font-weight="700">'+T.ch+'</text></g>';
+    const px=mx.MX(i),py=mx.MY(i);
+    b+='<g data-wi="'+w.id+'" style="cursor:grab"><circle cx="'+px+'" cy="'+py+'" r="'+(sel?11:9)+'" fill="'+T.c+'" stroke="#fff" stroke-width="'+(sel?3:2)+'"/><text x="'+px+'" y="'+(py+3.5)+'" text-anchor="middle" font-size="'+(T.ch.length>1?7:10)+'" fill="#fff" pointer-events="none" font-weight="700">'+T.ch+'</text></g>';
+  });
+  $("#cmk").innerHTML=a;$("#mmk").innerHTML=b;
+}
+function setHover(i){
+  const C=S.course,cx=S.cx,mx=S.mx;if(!C||!cx)return;
+  if(i==null||i<0||i*C.step<cx.m0||i*C.step>cx.m1){for(const id of["#chl","#cdot","#mdot"])$(id).setAttribute("visibility","hidden");$("#tip").hidden=true;return}
+  const x=cx.X(i*C.step),y=cx.Y(C.ele[i]);
+  $("#chl").setAttribute("x1",x);$("#chl").setAttribute("x2",x);$("#chl").setAttribute("visibility","visible");
+  $("#cdot").setAttribute("cx",x);$("#cdot").setAttribute("cy",y);$("#cdot").setAttribute("visibility","visible");
+  $("#mdot").setAttribute("cx",mx.MX(i));$("#mdot").setAttribute("cy",mx.MY(i));$("#mdot").setAttribute("visibility","visible");
+  const tip=$("#tip"),r=$("#cv").getBoundingClientRect(),w=$("#cv").parentNode.getBoundingClientRect();
+  tip.hidden=false;tip.innerHTML='<b>กม. '+(i*C.step/1000).toFixed(2)+' · สูง '+Math.round(C.ele[i])+' ม.</b><br>ความชัน '+C.grade[i].toFixed(1)+'% · เพซแผน '+fmtPace(S.plan.pace[i])+' /กม.<br>เวลาตามแผน '+fmtDur(S.plan.time[i]);
+  tip.style.left=(r.left+x/CW*r.width-w.left)+"px";tip.style.top=(r.top+y/CH*r.height-w.top)+"px";
+}
+/* ตารางจุดเตือน + สปลิต */
+function wpTime(w){return fmtDur(interp(S.course,S.plan.time,w.m))}
+function renderTables(sp){
+  const wl=S.wps.slice().sort((a,b)=>a.m-b.m);
+  $("#wCount").textContent="("+wl.length+" จุด)";
+  $("#wTable").innerHTML=wl.length?'<table><tr><th>กม. '+infoTip("ตำแหน่งเตือนตามระยะทาง แก้ตัวเลขเพื่อย้ายจุดได้")+'</th><th>ชนิด '+infoTip("เลือกวิธีการเตือนที่จุดนี้")+'</th><th>ข้อความเตือน '+infoTip("แก้ข้อความได้ ระบบจะส่งข้อความนี้ออกไปกับจุดเตือน")+'</th><th>เวลาแผน '+infoTip("เวลาสะสมจากจุดเริ่มตามเพซที่คำนวณไว้")+'</th><th></th></tr>'+wl.map(w=>'<tr data-id="'+w.id+'" class="'+(S.sel===w.id?"sel":"")+'"><td><input type="number" step="0.1" min="0" data-f="km" value="'+(w.m/1000).toFixed(2)+'" style="width:78px"></td><td><select data-f="type">'+Object.entries(TYPES).map(([k,t])=>'<option value="'+k+'"'+(w.type===k?" selected":"")+'>'+t.n+'</option>').join("")+'</select></td><td><input type="text" data-f="text" value="'+esc(w.text)+'" style="min-width:260px"></td><td data-t>'+wpTime(w)+'</td><td><button class="ib" data-del="'+w.id+'" aria-label="ลบจุดนี้" data-tip="ลบจุดนี้">'+ic("trash")+'</button></td></tr>').join("")+'</table>':'<p class="note">ยังไม่มีจุดเตือน กด "สร้างจุดเตือนอัตโนมัติ" หรือเลือกชนิดจุดแล้วคลิกบนกราฟ</p>';
+  const codes=km=>S.wps.filter(w=>w.m>=km.m0&&w.m<km.m1).map(w=>TYPES[w.type].n).join(", ");
+  $("#sTable").innerHTML='<table><tr><th>กม. '+infoTip("ระยะสิ้นสุดของช่วงนี้; ช่วงสุดท้ายอาจน้อยกว่า 1 กม.")+'</th><th>เวลาสะสม '+infoTip("เวลาผ่านจากจุดเริ่มถึงปลายช่วงตามแผน")+'</th><th>เพซแผน '+infoTip("เวลาที่ใช้ในช่วงหารด้วยระยะทางของช่วง")+'</th><th>ชัน '+infoTip("การเปลี่ยนระดับความสูงสุทธิหารด้วยระยะทางช่วง")+'</th><th>ขึ้น/ลง (ม.) '+infoTip("ผลรวมการเปลี่ยนระดับความสูงในแต่ละตัวอย่างของช่วง")+'</th><th>จุดเตือน '+infoTip("ชนิดจุดเตือนที่อยู่ภายในช่วงนี้")+'</th></tr>'+sp.map(s=>'<tr><td>'+(s.m1<s.k*1000?(s.m1/1000).toFixed(2):s.k)+'</td><td>'+fmtDur(s.t)+'</td><td>'+fmtPace(s.pace)+'</td><td>'+(s.avgG>0?"+":"")+s.avgG.toFixed(1)+'%</td><td>+'+Math.round(s.up)+' / −'+Math.round(s.dn)+'</td><td class="note">'+esc(codes(s))+'</td></tr>').join("")+'</table>';
+}
+$("#wTable").addEventListener("input",e=>{
+  const tr=e.target.closest("tr[data-id]"),f=e.target.dataset.f;if(!tr||!f)return;
+  const w=S.wps.find(x=>x.id==tr.dataset.id);if(!w)return;
+  if(f==="km"){const v=parseFloat(e.target.value);if(!fin(v))return;w.m=clamp(Math.round(v*1000),0,S.course.L)}
+  else if(f==="type"){w.type=e.target.value;if(!w.text)w.text=TYPES[w.type].txt}
+  else w.text=e.target.value;
+  w.auto=false;tr.querySelector("[data-t]").textContent=wpTime(w);drawMarkers();persist();
+});
+$("#wTable").addEventListener("change",e=>{if(e.target.dataset.f==="km"||e.target.dataset.f==="type"){S.wps.sort((a,b)=>a.m-b.m);renderAll()}});
+$("#wTable").addEventListener("click",e=>{
+  const d=e.target.closest("[data-del]");
+  if(d){S.wps=S.wps.filter(w=>w.id!=d.dataset.del);if(S.sel==d.dataset.del)S.sel=-1;renderAll();persist();return}
+  const tr=e.target.closest("tr[data-id]");if(tr&&!e.target.closest("input,select")){S.sel=+tr.dataset.id;renderAll()}
+});
+/* เพิ่ม/ย้ายจุดบนกราฟและแผนที่ */
+$("#chips").addEventListener("click",e=>{const b=e.target.closest("[data-arm]");if(!b)return;S.arm=S.arm===b.dataset.arm?null:b.dataset.arm;renderAll()});
+function addWp(m){
+  const t=S.arm;if(!t)return;
+  const w={id:++uid,m:Math.round(clamp(m,0,S.course.L)),type:t,text:TYPES[t].txt,auto:false};
+  S.wps.push(w);S.wps.sort((a,b)=>a.m-b.m);S.sel=w.id;renderAll();persist();
+}
+function chartM(e){const r=$("#cv").getBoundingClientRect(),fx=((e.clientX-r.left)/r.width*CW-CL)/(CW-CL-CR),{m0,m1}=S.cx;return clamp(fx,0,1)*(m1-m0)+m0}
+function mapIdx(e){
+  const C=S.course,mx=S.mx,r=$("#mv").getBoundingClientRect(),x=(e.clientX-r.left)/r.width*700,y=(e.clientY-r.top)/r.height*300;
+  let bi=mx.i0,bd=1e18;for(let i=mx.i0;i<=mx.i1;i+=2){const dx=mx.MX(i)-x,dy=mx.MY(i)-y,d=dx*dx+dy*dy;if(d<bd){bd=d;bi=i}}
+  for(const i of[mx.i0,mx.i1]){const dx=mx.MX(i)-x,dy=mx.MY(i)-y,d=dx*dx+dy*dy;if(d<bd){bd=d;bi=i}}
+  return{i:bi,d:Math.sqrt(bd)};
+}
+function bindViz(svg,getM,getI){
+  svg.addEventListener("pointerdown",e=>{
+    const g=e.target.closest("[data-wi]");
+    if(g){S.drag={id:+g.dataset.wi,moved:false};S.sel=S.drag.id;svg.setPointerCapture(e.pointerId);e.preventDefault();return}
+    S.drag={id:null,moved:false};
+  });
+  svg.addEventListener("pointermove",e=>{
+    const m=getM(e);
+    if(S.drag&&S.drag.id!=null){const w=S.wps.find(x=>x.id===S.drag.id);if(w){w.m=Math.round(m);w.auto=false;S.drag.moved=true;drawMarkers();setHover(idxOfM(S.course,m))}return}
+    setHover(idxOfM(S.course,m));
+  });
+  const up=e=>{
+    const d=S.drag;S.drag=null;if(!d)return;
+    if(d.id!=null){S.wps.sort((a,b)=>a.m-b.m);renderAll();persist();return}
+    if(S.arm&&!e.target.closest("[data-wi]"))addWp(getM(e));
+  };
+  svg.addEventListener("pointerup",up);svg.addEventListener("pointercancel",()=>{S.drag=null});
+  svg.addEventListener("pointerleave",()=>{if(!S.drag)setHover(-1)});
+}
+bindViz($("#cv"),e=>chartM(e));
+bindViz($("#mv"),e=>mapIdx(e).i*S.course.step);
+$("#zoomIn").addEventListener("click",()=>setZoom(S.viewZoom*1.5));
+$("#zoomOut").addEventListener("click",()=>setZoom(S.viewZoom/1.5));
+$("#zoomReset").addEventListener("click",()=>{S.viewZoom=1;S.viewCenter=.5;if(S.course)renderAll()});
+$("#zoomPan").addEventListener("input",e=>{
+  const span=1/S.viewZoom,ratio=+e.target.value/1000;
+  S.viewCenter=span/2+ratio*(1-span);
+  if(S.course)renderAll();
+});
+for(const svg of[$("#cv"),$("#mv")])svg.addEventListener("wheel",e=>{
+if(!S.course||(e.deltaY<0&&S.viewZoom>=20)||(e.deltaY>0&&S.viewZoom<=1))return;
+  e.preventDefault();
+  const anchor=svg.id==="cv"?chartM(e)/S.course.L:mapIdx(e).i/(S.course.n-1);
+  setZoom(S.viewZoom*(e.deltaY<0?1.2:1/1.2),anchor);
+},{passive:false});
+document.addEventListener("keydown",e=>{if((e.key==="Delete"||e.key==="Backspace")&&S.sel>=0&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)){S.wps=S.wps.filter(w=>w.id!==S.sel);S.sel=-1;renderAll();persist()}});
+
+/* ============ ส่งออก ============ */
+function download(name,text,type){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1500)}
+const xesc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&apos;"}[c]));
+function alertM(w){return TYPES[w.type].after?w.m:Math.max(0,w.m-S.off)}
+function notes(w){return TYPES[w.type].n+": "+w.text+" (กม. "+(w.m/1000).toFixed(1)+", เวลาแผน "+wpTime(w)+")"}
+function exportGPX(){
+  const C=S.course,PL=S.plan,safe=C.name.replace(/[^\w\u0E00-\u0E7F-]+/g,"_");
+  let x='<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="RunsArt" xmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>'+xesc(C.name)+'</name></metadata>\n';
+  S.wps.slice().sort((a,b)=>alertM(a)-alertM(b)).forEach(w=>{const i=idxOfM(C,alertM(w));x+='<wpt lat="'+C.lat[i].toFixed(6)+'" lon="'+C.lon[i].toFixed(6)+'"><ele>'+C.ele[i].toFixed(1)+'</ele><name>'+TYPES[w.type].code+'</name><desc>'+xesc(notes(w))+'</desc><sym>'+TYPES[w.type].sym+'</sym><type>'+TYPES[w.type].tcx+'</type></wpt>\n'});
+  x+='<trk><name>'+xesc(C.name)+'</name><trkseg>\n';
+  for(let i=0;i<C.n;i+=Math.max(1,Math.round(25/C.step)))x+='<trkpt lat="'+C.lat[i].toFixed(6)+'" lon="'+C.lon[i].toFixed(6)+'"><ele>'+C.ele[i].toFixed(1)+'</ele></trkpt>\n';
+  x+='</trkseg></trk>\n</gpx>\n';download(safe+"_plan.gpx",x,"application/gpx+xml");
+}
+function exportTCX(){
+  const C=S.course,PL=S.plan,safe=C.name.replace(/[^\w\u0E00-\u0E7F-]+/g,"_"),base=Date.UTC(2000,0,1,6,0,0),iso=t=>new Date(base+t*1000).toISOString().replace(".000Z","Z"),stp=Math.max(1,Math.round(25/C.step));
+  const pos=i=>'<Position><LatitudeDegrees>'+C.lat[i].toFixed(6)+'</LatitudeDegrees><LongitudeDegrees>'+C.lon[i].toFixed(6)+'</LongitudeDegrees></Position>';
+  let x='<?xml version="1.0" encoding="UTF-8"?>\n<TrainingCenterDatabase xmlns="http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2">\n<Folders><Courses><CourseFolder Name="RunsArt"><CourseNameRef><Id>'+xesc(C.name.slice(0,15))+'</Id></CourseNameRef></CourseFolder></Courses></Folders>\n<Courses><Course><Name>'+xesc(C.name.slice(0,15))+'</Name>\n';
+  x+='<Lap><TotalTimeSeconds>'+Math.round(PL.T)+'</TotalTimeSeconds><DistanceMeters>'+C.L.toFixed(1)+'</DistanceMeters><BeginPosition><LatitudeDegrees>'+C.lat[0].toFixed(6)+'</LatitudeDegrees><LongitudeDegrees>'+C.lon[0].toFixed(6)+'</LongitudeDegrees></BeginPosition><EndPosition><LatitudeDegrees>'+C.lat[C.n-1].toFixed(6)+'</LatitudeDegrees><LongitudeDegrees>'+C.lon[C.n-1].toFixed(6)+'</LongitudeDegrees></EndPosition><Intensity>Active</Intensity></Lap>\n<Track>\n';
+  const idx=[];for(let i=0;i<C.n;i+=stp)idx.push(i);if(idx[idx.length-1]!==C.n-1)idx.push(C.n-1);
+  for(const i of idx)x+='<Trackpoint><Time>'+iso(PL.time[i])+'</Time>'+pos(i)+'<AltitudeMeters>'+C.ele[i].toFixed(1)+'</AltitudeMeters><DistanceMeters>'+(i*C.step).toFixed(1)+'</DistanceMeters></Trackpoint>\n';
+  x+='</Track>\n';
+  S.wps.slice().sort((a,b)=>alertM(a)-alertM(b)).forEach(w=>{const i=idxOfM(C,alertM(w));x+='<CoursePoint><Name>'+TYPES[w.type].code.slice(0,10)+'</Name><Time>'+iso(PL.time[i])+'</Time>'+pos(i)+'<AltitudeMeters>'+C.ele[i].toFixed(1)+'</AltitudeMeters><PointType>'+TYPES[w.type].tcx+'</PointType><Notes>'+xesc(notes(w))+'</Notes></CoursePoint>\n'});
+  x+='</Course></Courses>\n</TrainingCenterDatabase>\n';download(safe+"_plan.tcx",x,"application/vnd.garmin.tcx+xml");
+}
+$("#bGpx").onclick=()=>S.course&&exportGPX();$("#bTcx").onclick=()=>S.course&&exportTCX();
+function renderBand(sp){
+  const C=S.course,PL=S.plan,step=+$("#bandStep").value;
+  $("#bandT").innerHTML="แถบเพซ "+infoTip("แถบแสดงเวลาและเพซสะสมตามจุดระยะที่เลือก ค่าทั้งหมดอิงจากแผนเพซที่ปรับตามความชัน")+ " · "+esc(C.name)+" · เป้า "+fmtDur(PL.T);
+  const rows=[];
+  for(let km=step;km<C.L/1000;km+=step){const m=km*1000,w=S.wps.filter(x=>x.m>m-step*1000&&x.m<=m).map(x=>TYPES[x.type].n);rows.push('<tr><td>'+km+'</td><td>'+fmtDur(interp(C,PL.time,m))+'</td><td>'+fmtPace(sp[Math.min(sp.length-1,Math.floor(km)-1)].pace)+'</td><td>'+esc(w.join(" "))+'</td></tr>')}
+  rows.push('<tr><td><b>'+(C.L/1000).toFixed(1)+'</b></td><td><b>'+fmtDur(PL.T)+'</b></td><td></td><td>เส้นชัย</td></tr>');
+  $("#bandTable").innerHTML='<table><tr><th>กม. '+infoTip("ตำแหน่งระยะตามช่วงที่เลือก")+'</th><th>เวลาสะสม '+infoTip("เวลาตามแผนสะสมจากจุดเริ่มถึงระยะนี้")+'</th><th>เพซ '+infoTip("เพซที่คำนวณจากเวลาเดินทางจริงของช่วงซึ่งปรับตามความชัน")+'</th><th>จุดเตือนในช่วง '+infoTip("คำเตือนที่อยู่ระหว่างจุดระยะนี้กับจุดก่อนหน้า")+'</th></tr>'+rows.join("")+'</table>';
+}
+$("#bandStep").onchange=()=>S.course&&renderBand(splitsOf(S.course,S.plan));
+$("#bPrint").onclick=()=>window.print();
+
+/* ============ เทียบแผนกับที่วิ่งจริง ============ */
+function parseActual(text,name){
+  const doc=new DOMParser().parseFromString(text,"application/xml"),a=[];
+  const tc=/\.tcx$/i.test(name);
+  for(const p of doc.getElementsByTagName(tc?"Trackpoint":"trkpt")){
+    const o={lat:tc?NaN:parseFloat(p.getAttribute("lat")),lon:tc?NaN:parseFloat(p.getAttribute("lon")),t:NaN};
+    for(const c of p.getElementsByTagName("*")){const n=c.localName;if(n==="time"||n==="Time")o.t=Date.parse(c.textContent)/1000;else if(n==="LatitudeDegrees")o.lat=parseFloat(c.textContent);else if(n==="LongitudeDegrees")o.lon=parseFloat(c.textContent)}
+    a.push(o);
+  }
+  const g=a.filter(p=>fin(p.lat)&&fin(p.lon)&&fin(p.t)).sort((x,y)=>x.t-y.t);
+  if(g.length<30)throw new Error("few");
+  const d=[0],t=[0];for(let i=1;i<g.length;i++){d.push(d[i-1]+hav(g[i-1].lat,g[i-1].lon,g[i].lat,g[i].lon));t.push(g[i].t-g[0].t)}
+  return{d,t,name};
+}
+function actualOf(A){
+  const C=S.course,PL=S.plan,sp=splitsOf(C,PL),scale=A.d[A.d.length-1]/C.L;
+  const tAt=m=>{const dd=m*scale;let lo=0,hi=A.d.length-1;while(lo<hi){const mid=(lo+hi)>>1;if(A.d[mid]<dd)lo=mid+1;else hi=mid}const i=Math.max(1,lo),f=(dd-A.d[i-1])/((A.d[i]-A.d[i-1])||1);return A.t[i-1]+(A.t[i]-A.t[i-1])*clamp(f,0,1)};
+  const rows=sp.map((s,i)=>{const t0=tAt(s.m0),t1=tAt(s.m1),ap=(t1-t0)/((s.m1-s.m0)/1000);return{k:s.k,full:s.m1-s.m0>=999,plan:s.pace,act:ap,dev:(ap-s.pace)/s.pace*100,cum:t1-s.t,partial:s.m1-s.m0<999}});
+  const full=rows.filter(r=>r.full),mape=full.reduce((a,r)=>a+Math.abs(r.dev),0)/(full.length||1),score=clamp(Math.round(100-mape*4),0,100);
+  let fade=null;
+  if(full.length>=6){const k=Math.floor(full.length/3),first=full.slice(0,k).reduce((a,r)=>a+r.dev,0)/k,last=full.slice(-k).reduce((a,r)=>a+r.dev,0)/k;
+    if(last-first>=4&&last>=3){for(let i=0;i+2<full.length;i++){const m3=(full[i].dev+full[i+1].dev+full[i+2].dev)/3;if(m3>=5){fade={km:full[i].k,avg:last};break}}if(!fade)fade={km:full[full.length-k].k,avg:last}}}
+  return{rows,mape,score,fade,finish:A.t[A.t.length-1],scale};
+}
+function renderActual(){
+  const box=$("#act");if(!S.actual){box.innerHTML='<p class="note">ยังไม่ได้เลือกไฟล์ที่วิ่งจริง</p>';return}
+  const R=actualOf(S.actual),PL=S.plan,gr=gradeOf(R.score),W=700,H=150,max=Math.max(8,...R.rows.map(r=>Math.abs(r.dev))),bw=(W-30)/R.rows.length;
+  let svg='<svg viewBox="0 0 700 150" class="viz" role="img" aria-label="ส่วนต่างเพซรายกิโลเมตรเทียบแผน"><line x1="20" x2="690" y1="75" y2="75" stroke="var(--line)"/>';
+  R.rows.forEach((r,i)=>{const h=Math.abs(r.dev)/max*60,x=20+i*bw;svg+='<rect x="'+(x+1)+'" y="'+(r.dev>0?75:75-h)+'" width="'+Math.max(1,bw-2)+'" height="'+Math.max(1,h)+'" fill="'+(r.dev>0?"var(--bad)":"#3a9a5b")+'" fill-opacity="'+(r.partial?.4:.85)+'"/>'});
+  svg+='<text x="22" y="12" font-size="11" fill="var(--mute)">ช้ากว่าแผน</text><text x="22" y="146" font-size="11" fill="var(--mute)">เร็วกว่าแผน (แท่งแต่ละอันคือ 1 กม.)</text></svg>';
+  const d=R.finish-PL.T;
+  box.innerHTML='<div class="hgrid" style="margin-bottom:12px"><div class="hg"><div class="hl2">คะแนนวินัยการคุมเพซ '+infoTip("คะแนน 0–100 หัก 4 คะแนนต่อส่วนต่างเพซเฉลี่ย 1%; คิดจากกิโลเต็มและนับทั้งเร็วหรือช้ากว่าแผน")+'</div><div class="stats"><div>คะแนน '+infoTip("เกรด A–D แบ่งตามคะแนน: A ตั้งแต่ 85, B ตั้งแต่ 70, C ตั้งแต่ 55 และ D ต่ำกว่า 55")+'<strong><span class="badge g-'+gr+'">'+gr+'</span> '+R.score+'</strong></div><div>ส่วนต่างเฉลี่ย '+infoTip("ค่าเฉลี่ยค่าสัมบูรณ์ของเปอร์เซ็นต์ต่างเพซรายกิโลเมตร ไม่หักล้างกันระหว่างเร็วและช้า")+'<strong>'+R.mape.toFixed(1)+'%</strong></div></div></div><div class="hg"><div class="hl2">เวลา '+infoTip("เวลาจริงคำนวณจากเวลาของแต่ละจุดใน GPX/TCX และเทียบกับเวลาเข้าเส้นชัยตามแผน")+'</div><div class="stats"><div>แผน<strong>'+fmtDur(PL.T)+'</strong></div><div>จริง<strong>'+fmtDur(R.finish)+' ('+(d>=0?"+":"−")+fmtDur(Math.abs(d))+')</strong></div></div></div><div class="hg"><div class="hl2">จุดที่เพซตก (Fade) '+infoTip("แสดงเมื่อช่วงท้ายเฉลี่ยช้าลงตามเกณฑ์เทียบกับช่วงต้น และระบุจุดเริ่มที่เพซช้ากว่าแผนต่อเนื่อง")+'</div><div class="stats"><div>เริ่มตกที่<strong>'+(R.fade?"กม. "+R.fade.km:"ไม่พบ")+'</strong></div><div>ช่วงท้ายช้ากว่าแผน<strong>'+(R.fade?R.fade.avg.toFixed(0)+"%":"-")+'</strong></div></div></div><div class="hg"><div class="hl2">ระยะ GPS '+infoTip("ระยะ GPS ที่วัดได้เทียบกับระยะเส้นทาง แล้วปรับสัดส่วนระยะจริงให้เท่ากับเส้นทางก่อนแบ่งสปลิต")+'</div><div class="stats"><div>ที่วัดได้/ในแผน<strong>'+(R.scale*C_L()/1000).toFixed(2)+" / "+(C_L()/1000).toFixed(2)+' กม.</strong></div></div></div></div>'+svg+'<div class="tw" style="max-height:300px"><table><tr><th>กม. '+infoTip("ลำดับช่วงหนึ่งกิโลเมตรจากจุดเริ่ม; แถวสุดท้ายอาจเป็นระยะไม่เต็มกิโลเมตร")+'</th><th>เพซแผน '+infoTip("เวลาแผนในช่วงหารด้วยระยะทางของช่วง")+'</th><th>เพซจริง '+infoTip("เวลาจริงที่อ่านจากจุด GPS ในช่วงหารด้วยระยะทาง")+'</th><th>ต่าง '+infoTip("เปอร์เซ็นต์ที่เพซจริงช้าหรือเร็วกว่าแผน; ค่าบวกหมายถึงช้ากว่า")+'</th><th>เวลาเสียสะสม '+infoTip("เวลาจริงสะสมลบเวลาแผนสะสม ณ ปลายช่วง")+'</th></tr>'+R.rows.map(r=>'<tr><td>'+r.k+(r.partial?" (ส่วนท้าย)":"")+'</td><td>'+fmtPace(r.plan)+'</td><td>'+fmtPace(r.act)+'</td><td style="color:'+(r.dev>2?"var(--bad)":r.dev<-2?"#3a9a5b":"inherit")+'">'+(r.dev>=0?"+":"")+r.dev.toFixed(1)+'%</td><td>'+(r.cum>=0?"+":"−")+fmtDur(Math.abs(r.cum))+'</td></tr>').join("")+'</table></div><p class="note" style="margin-top:6px">ระยะจริงจาก GPS ถูกปรับสัดส่วนให้เท่ากับระยะเส้นทางก่อนเทียบ เพราะ GPS วัดได้ยาวสั้นต่างจากสนามเล็กน้อย</p>';
+}
+const C_L=()=>S.course.L;
+function takeActual(text,name){try{S.actual=parseActual(text,name);err("");renderActual()}catch(e){err("อ่านไฟล์ที่วิ่งจริงไม่ได้ ต้องเป็น GPX หรือ TCX ที่มีเวลาของแต่ละจุด")}}
+
+/* ============ บันทึก/เปิดแผน ============ */
+function planJSON(){
+  const C=S.course,stp=Math.max(1,Math.round(25/C.step)),pts=[];
+  for(let i=0;i<C.n;i+=stp)pts.push([+C.lat[i].toFixed(6),+C.lon[i].toFixed(6),+C.ele[i].toFixed(1)]);
+  const last=C.n-1;if((C.n-1)%stp)pts.push([+C.lat[last].toFixed(6),+C.lon[last].toFixed(6),+C.ele[last].toFixed(1)]);
+  return{v:3,name:C.name,mode:S.mode,tsel:S.tsel,T:S.T,fp:S.fp,off:S.off,aid:S.aid,gelMinutes:S.gel,saltMinutes:S.salt,slopeTolerance:S.rangeTol,autoAlertsEnabled:S.autoAlertsEnabled,wps:S.wps.map(w=>({m:w.m,type:w.type,text:w.text,auto:w.auto})),course:pts};
+}
+const LSK="trail-race-plan";
+function persist(){if(!S.course)return;try{localStorage.setItem(LSK,JSON.stringify(planJSON()))}catch(_){}}
+function restore(o){
+  try{
+    const pts=o.course.map(p=>({lat:p[0],lon:p[1],ele:p[2]}));
+    S.course=buildCourse(pts,o.name||"แผนที่บันทึกไว้");
+    S.ranges=[];S.viewZoom=1;S.viewCenter=.5;
+    S.rangeTol=Number.isFinite(+o.slopeTolerance)&&+o.slopeTolerance>=1&&+o.slopeTolerance<=150?+o.slopeTolerance:null;
+    S.mode=o.mode==="trail"||o.mode==="road"?o.mode:"auto";S.tsel=o.tsel==="pace"?"pace":"time";S.T=o.T||14400;S.fp=o.fp||330;S.off=o.off||80;S.aid=o.aid||[];S.gel=o.v>=2?o.gelMinutes||0:0;S.salt=o.v>=3?o.saltMinutes||0:0;
+    $("#mode").value=S.mode;$("#tsel").value=S.tsel;$("#tt").value=fmtDur(S.T);$("#fp").value=fmtPace(S.fp);$("#off").value=S.off;$("#aid").value=S.aid.join(", ");$("#gel").value=S.gel;$("#salt").value=S.salt;
+    S.wps=(o.wps||[]).filter(w=>TYPES[w.type]).map(w=>({id:++uid,m:w.m,type:w.type,text:w.text||"",auto:!!w.auto}));S.autoAlertsEnabled=!!o.autoAlertsEnabled||S.wps.some(w=>w.auto);S.sel=-1;S.actual=null;
+    readInputs();S.plan=makePlan(S.course,cfgNow());
+    if(o.v<2){
+      if(Number(o.gel)>0){S.gel=Math.round(Number(o.gel)*(S.plan.T/(S.course.L/1000))/300)*5;$("#gel").value=S.gel}
+    }
+    if(S.autoAlertsEnabled)autoGen();
+    renderAll();persist();return true;
+  }catch(_){return false}
+}
+$("#bSavePlan").onclick=()=>{if(!S.course){err("ยังไม่มีแผนให้บันทึก นำเข้าไฟล์เส้นทางก่อน");return}download(S.course.name.replace(/[^\w\u0E00-\u0E7F-]+/g,"_")+"_plan.json",JSON.stringify(planJSON()),"application/json")};
+$("#bLoadPlan").onclick=()=>$("#planFile").click();
+$("#planFile").onchange=e=>{readFileTo(e.target.files[0],text=>{try{if(!restore(JSON.parse(text)))throw 0;err("");persist()}catch(_){err("เปิดไฟล์แผนไม่ได้")}});e.target.value=""};
+$("#bReset").onclick=()=>{try{localStorage.removeItem(LSK)}catch(_){}S.course=null;S.plan=null;S.wps=[];S.rangeTol=null;S.viewZoom=1;S.viewCenter=.5;S.actual=null;S.sel=-1;$("#res").hidden=true;$("#empty").hidden=false;err("")};
+
+/* ============ ปุ่มและช่องกรอก ============ */
+const drop=(el,inp,cb)=>{el.addEventListener("dragover",e=>{e.preventDefault();el.classList.add("over")});el.addEventListener("dragleave",()=>el.classList.remove("over"));el.addEventListener("drop",e=>{e.preventDefault();el.classList.remove("over");readFileTo(e.dataTransfer.files[0],cb)});el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();inp.click()}});inp.onchange=e=>{readFileTo(e.target.files[0],cb);e.target.value=""}};
+drop($("#drop"),$("#file"),loadFile);drop($("#adrop"),$("#afile"),takeActual);
+function refreshAuto(){
+  if(!S.course){readInputs();return}
+  readInputs();S.plan=makePlan(S.course,cfgNow());if(S.autoAlertsEnabled)autoGen();renderAll();persist();
+}
+["#mode","#tsel"].forEach(id=>$(id).addEventListener("change",refreshAuto));
+["#tt","#fp"].forEach(id=>$(id).addEventListener("change",refreshAuto));
+$("#off").addEventListener("input",()=>{readInputs();persist()});
+$("#aid").addEventListener("change",refreshAuto);$("#gel").addEventListener("change",refreshAuto);$("#salt").addEventListener("change",refreshAuto);
+$("#rangeTol").addEventListener("input",e=>{if(!S.course)return;S.rangeTol=+e.target.value;renderAll();persist()});
+$("#bAuto").onclick=()=>{if(!S.course){err("นำเข้าไฟล์เส้นทางก่อน");return}S.autoAlertsEnabled=true;refreshAuto()};
+
+/* ทูลทิป hover */
+const gt=document.createElement("div");gt.className="gt";gt.hidden=true;document.body.appendChild(gt);
+document.addEventListener("pointerover",e=>{const t=e.target.closest&&e.target.closest("[data-tip]");if(t&&e.pointerType!=="touch"){const r=t.getBoundingClientRect();gt.textContent=t.dataset.tip;gt.hidden=false;const w=gt.offsetWidth;gt.style.left=Math.max(6,Math.min(innerWidth-w-6,r.left+r.width/2-w/2))+"px";gt.style.top=(r.bottom+6)+"px"}else gt.hidden=true});
+document.addEventListener("focusin",e=>{const t=e.target.closest&&e.target.closest("[data-tip]");if(t){const r=t.getBoundingClientRect();gt.textContent=t.dataset.tip;gt.hidden=false;const w=gt.offsetWidth;gt.style.left=Math.max(6,Math.min(innerWidth-w-6,r.left+r.width/2-w/2))+"px";gt.style.top=(r.bottom+6)+"px"}});
+document.addEventListener("focusout",()=>{gt.hidden=true});document.addEventListener("pointerdown",()=>{gt.hidden=true});
+try{const o=JSON.parse(localStorage.getItem(LSK)||"null");if(o&&o.course)restore(o)}catch(_){}
+try{const shared=sessionStorage.getItem("sharedActivityFile");if(shared){const o=JSON.parse(shared);loadFile(o.text,o.name)}}catch(e){err("เปิดไฟล์ชั่วคราวไม่ได้: "+(e.message||e))}
+</script>
+</body>
+</html>

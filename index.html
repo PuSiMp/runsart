@@ -34,6 +34,9 @@ label{display:flex;flex-direction:column;font-size:.8rem;color:var(--mute);gap:3
 .brand small{font-weight:400;color:var(--mute);font-size:.82rem}
 .logo{width:34px;height:34px;border-radius:9px;background:var(--accent);color:var(--onaccent);display:flex;align-items:center;justify-content:center}
 .acct{display:flex;align-items:center;gap:8px}
+.toolnav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+.toolnav a{border:1px solid var(--line);border-radius:999px;padding:5px 12px;text-decoration:none;font-size:.84rem;color:var(--mute)}
+.toolnav a[aria-current="page"],.toolnav a:hover{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,transparent)}
 .sbtn{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 12px;font-size:.85rem}
 .ib{width:36px;height:36px;padding:0;display:inline-flex;align-items:center;justify-content:center}
 .hero{padding:26px 0 18px}
@@ -79,6 +82,9 @@ footer{border-top:1px solid var(--line);padding-top:16px;color:var(--mute);font-
 .tabs2 button{flex:1;border:0;background:none}
 .tabs2 button.on{background:var(--accent);color:var(--onaccent)}
 .gbtn{height:42px}
+.choose-tools{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.choose-tools button{min-height:58px}
+@media(max-width:480px){.choose-tools{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -87,6 +93,12 @@ footer{border-top:1px solid var(--line);padding-top:16px;color:var(--mute);font-
     <a class="brand" href="/"><span class="logo" data-ic="mount"></span><span>RunSart <small>ศาตร์แห่งการวิ่ง</small></span></a>
     <div class="acct" id="acct"></div>
   </header>
+  <nav class="toolnav" role="toolbar" aria-label="เครื่องมือ">
+    <a href="/" aria-current="page">หน้าแรก</a>
+    <a href="/tools/slope/">แผนที่และแบ่งช่วง</a>
+    <a href="/tools/training%20analysis/">วิเคราะห์การซ้อม</a>
+    <a href="/tools/race%20planner/">วางแผนแข่ง</a>
+  </nav>
 
   <section class="hero">
     <h1>วิเคราะห์การวิ่งของคุณ<br>ครบในที่เดียว</h1>
@@ -96,12 +108,13 @@ footer{border-top:1px solid var(--line);padding-top:16px;color:var(--mute);font-
 
   <section class="box" aria-labelledby="hConn">
     <h2 id="hConn">เริ่มจากกิจกรรมของคุณ</h2>
+    <p class="note" style="margin:-6px 0 12px">ใส่ไฟล์ก่อน แล้วเลือกดูแผนที่/แบ่งช่วง วิเคราะห์การซ้อม หรือวางแผนแข่ง</p>
     <div class="cgrid">
       <label class="drop" id="drop" tabindex="0">
         <span data-ic="upload"></span>
         <strong>ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์</strong>
-        <span class="note">รองรับ .gpx และ .tcx (ไฟล์ .fit เร็วๆ นี้)</span>
-        <input type="file" id="file" accept=".gpx,.tcx,.fit" hidden>
+        <span class="note">รองรับ .gpx และ .tcx; วิเคราะห์หลายกิจกรรมได้ในเครื่องมือวิเคราะห์การซ้อม</span>
+        <input type="file" id="file" accept=".gpx,.tcx" multiple hidden>
       </label>
       <div class="cloud">
         <div class="chead">ซิงก์ผ่านบัญชี</div>
@@ -124,6 +137,13 @@ footer{border-top:1px solid var(--line);padding-top:16px;color:var(--mute);font-
         <div class="chips"><span class="chip">GPX / TCX</span><span class="chip">Strava</span><span class="chip">เปรียบเทียบเส้นทาง</span></div>
         <span class="go">เปิดเครื่องมือ →</span>
       </a>
+      <a class="card" href="/tools/race%20planner/" data-kw="วางแผนแข่ง race planner เพซ เทรล จุดเตือน เจล UTMB gpx tcx">
+        <span class="cic" data-ic="mount"></span>
+        <h3>วางแผนแข่ง</h3>
+        <p>วางแผนเพซตามความชัน รวมช่วงเตือนเนิน และกำหนดจุดกินเจลตามเวลา</p>
+        <div class="chips"><span class="chip">GPX / TCX</span><span class="chip">เพซตามเส้นทาง</span><span class="chip">จุดเตือน</span></div>
+        <span class="go">เปิดเครื่องมือ →</span>
+      </a>
       <a class="card" href="/tools/training%20analysis/" data-kw="วิเคราะห์การซ้อม pace เพซ หัวใจ heart rate training intervals โซนหัวใจ โหลดซ้อม gpx tcx strava">
         <span class="cic" data-ic="upload"></span>
         <h3>วิเคราะห์การซ้อม</h3>
@@ -144,7 +164,7 @@ footer{border-top:1px solid var(--line);padding-top:16px;color:var(--mute);font-
     <div id="recentBody"></div>
   </section>
 
-  <footer>ไฟล์ที่ลากมาวางประมวลผลในเบราว์เซอร์ของคุณ ข้อมูลจะถูกเก็บบนเซิร์ฟเวอร์เฉพาะเส้นทางที่คุณกดบันทึก และกิจกรรมที่ดึงจาก Strava ซึ่งเห็นได้เฉพาะบัญชีของคุณเอง</footer>
+  <footer>ไฟล์ที่นำเข้าประมวลผลในเบราว์เซอร์ ผลวิเคราะห์การซ้อมบันทึกอัตโนมัติในเบราว์เซอร์ และเมื่อเข้าสู่ระบบจะเก็บประวัติในบัญชีของคุณบน Supabase; เส้นทางและข้อมูล Strava จัดเก็บตามบัญชีของผู้ใช้</footer>
 </div>
 
 <div id="login" class="modal" hidden><div class="mbox" role="dialog" aria-modal="true" aria-labelledby="lgT">
@@ -158,6 +178,17 @@ footer{border-top:1px solid var(--line);padding-top:16px;color:var(--mute);font-
   <button class="pri big" id="loginGo">เข้าสู่ระบบ</button>
   <button class="lnk" id="lgForgot">ลืมรหัสผ่าน</button>
   <p class="note" id="loginMsg"></p>
+</div></div>
+<div id="chooseTool" class="modal" hidden><div class="mbox wide" role="dialog" aria-modal="true" aria-labelledby="chooseToolTitle">
+  <div class="shd"><strong id="chooseToolTitle">เลือกเครื่องมือสำหรับไฟล์นี้</strong><button class="ib" id="chooseToolClose" aria-label="ปิด">×</button></div>
+  <p class="note" id="chooseToolHint"></p>
+  <p class="note">ตรงนี้เลือกเฉพาะเครื่องมือ ไม่ใช่ชนิดการวิ่ง; ในหน้าวิเคราะห์การซ้อมค่อยเลือกชนิดหลังใส่ไฟล์ได้</p>
+  <div class="choose-tools">
+    <button id="chooseSlope"><b>แผนที่และแบ่งช่วง</b><br><span class="note">ดูเส้นทาง กราฟความสูง และตัดช่วงเอง</span></button>
+    <button id="chooseTraining"><b>วิเคราะห์การซ้อม</b><br><span class="note">ดูเพซ หัวใจ และอินเทอร์วัล</span></button>
+    <button id="choosePlanner"><b>วางแผนแข่ง</b><br><span class="note">วางแผนเพซและจุดเตือนจากเส้นทางสนาม</span></button>
+  </div>
+  <button class="lnk" id="chooseToolCancel">ยกเลิก</button>
 </div></div>
 
 <script>
@@ -213,21 +244,45 @@ $("#loginGo").onclick=async()=>{
 };
 $("#gBtn").onclick=()=>sb.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.origin+"/"}});
 
-/* ---- โยนไฟล์ ส่งต่อไปเครื่องมือความชัน ---- */
-function takeFile(f){
-  if(!f)return;
-  if(/\.fit$/i.test(f.name)){setMsg("ยังไม่รองรับไฟล์ .fit ตอนนี้ ส่งออกเป็น GPX หรือ TCX จากแอปนาฬิกาก่อน");return}
-  if(!/\.(gpx|tcx)$/i.test(f.name)){setMsg("รองรับเฉพาะไฟล์ .gpx และ .tcx");return}
-  const rd=new FileReader();
-  rd.onload=()=>{try{sessionStorage.setItem("pendingFile",JSON.stringify({name:f.name,text:rd.result}));go("/tools/slope/")}catch(_){setMsg("ไฟล์ใหญ่เกินกว่าจะส่งต่อได้ เปิดเครื่องมือแล้วนำเข้าที่ปุ่มอัปโหลดแทน")}};
-  rd.readAsText(f);
+/* ---- เลือกไฟล์ก่อน แล้วค่อยเลือกเครื่องมือ ---- */
+function fileText(f){return new Promise((resolve,reject)=>{const rd=new FileReader();rd.onload=()=>resolve({name:f.name,text:String(rd.result||"")});rd.onerror=()=>reject(new Error("อ่านไฟล์ไม่สำเร็จ: "+f.name));rd.readAsText(f)})}
+let pendingFiles=[];
+function takeFiles(fileList){
+  const files=Array.from(fileList||[]);if(!files.length)return;
+  if(files.some(f=>/\.fit$/i.test(f.name))){setMsg("ยังไม่รองรับไฟล์ .fit ตอนนี้ ส่งออกเป็น GPX หรือ TCX จากแอปนาฬิกาก่อน");return}
+  if(files.some(f=>!/\.(gpx|tcx)$/i.test(f.name))){setMsg("รองรับเฉพาะไฟล์ .gpx และ .tcx");return}
+  pendingFiles=files;setMsg("");
+  $("#chooseSlope").disabled=files.length>1;
+  $("#choosePlanner").disabled=files.length>1;
+  $("#chooseToolHint").textContent=files.length>1?"เลือกไว้ "+files.length+" ไฟล์; เครื่องมือแผนที่รับครั้งละ 1 ไฟล์ ใช้วิเคราะห์การซ้อมเพื่อนำเข้าทั้งชุด":"เลือกเครื่องมือที่ต้องการ ระบบจะส่งไฟล์ที่เลือกไปให้ทันที";
+  $("#chooseTool").hidden=false;
+  $("#chooseSlope").focus();
 }
+async function sendFiles(destination){
+  if(!pendingFiles.length)return;
+  if((destination==="/tools/slope/"||destination==="/tools/race%20planner/")&&pendingFiles.length>1){setMsg("เครื่องมือแผนที่และวางแผนแข่งรับครั้งละ 1 ไฟล์ เลือกวิเคราะห์การซ้อมเพื่อนำเข้าหลายไฟล์");return}
+  try{
+    const imported=await Promise.all(pendingFiles.map(fileText));
+    sessionStorage.setItem("sharedActivityFile",JSON.stringify(imported[imported.length-1]));
+    if(destination==="/tools/training%20analysis/")sessionStorage.setItem("sharedActivityFiles",JSON.stringify(imported));
+    else sessionStorage.removeItem("sharedActivityFiles");
+    pendingFiles=[];$("#chooseTool").hidden=true;
+    go(destination);
+  }catch(e){setMsg("เก็บไฟล์ชั่วคราวไม่สำเร็จ ไฟล์อาจใหญ่เกินไป; เปิดเครื่องมือที่เลือกแล้วลองนำเข้าไฟล์จากในเครื่องมือนั้น")}
+}
+$("#chooseSlope").onclick=()=>sendFiles("/tools/slope/");
+$("#chooseTraining").onclick=()=>sendFiles("/tools/training%20analysis/");
+$("#choosePlanner").onclick=()=>sendFiles("/tools/race%20planner/");
+function closeToolChooser(){pendingFiles=[];$("#chooseTool").hidden=true}
+$("#chooseToolClose").onclick=$("#chooseToolCancel").onclick=closeToolChooser;
+$("#chooseTool").addEventListener("click",e=>{if(e.target.id==="chooseTool")closeToolChooser()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeToolChooser()});
 const drop=$("#drop");
 drop.addEventListener("dragover",e=>{e.preventDefault();drop.classList.add("over")});
 drop.addEventListener("dragleave",()=>drop.classList.remove("over"));
-drop.addEventListener("drop",e=>{e.preventDefault();drop.classList.remove("over");takeFile(e.dataTransfer.files[0])});
+drop.addEventListener("drop",e=>{e.preventDefault();drop.classList.remove("over");takeFiles(e.dataTransfer.files)});
 drop.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();$("#file").click()}});
-$("#file").onchange=e=>{takeFile(e.target.files[0]);e.target.value=""};
+$("#file").onchange=e=>{takeFiles(e.target.files);e.target.value=""};
 
 /* ---- ค้นหาเครื่องมือ ---- */
 $("#tq").oninput=()=>{

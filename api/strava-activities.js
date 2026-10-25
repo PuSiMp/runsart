@@ -31,7 +31,19 @@ module.exports = async (req, res) => {
       });
     }
     const a = await r.json();
-    return res.json(a.map((x) => ({ id: x.id, name: x.name, date: x.start_date_local, dist: x.distance, gain: x.total_elevation_gain, type: x.sport_type || x.type })));
+    return res.json(a.map((x) => ({
+      id: x.id,
+      name: x.name,
+      date: x.start_date_local,
+      dist: x.distance,
+      gain: x.total_elevation_gain,
+      type: x.sport_type || x.type,
+      moving: x.moving_time,
+      elapsed: x.elapsed_time,
+      avgHR: x.average_heartrate,
+      maxHR: x.max_heartrate,
+      avgSpeed: x.average_speed,
+    })));
   } catch (err) {
     console.error("strava-activities failed:", err);
     return res.status(502).json({ error: "strava_activities_failed", message: "ไม่สามารถโหลดกิจกรรมได้ กรุณาตรวจ Vercel Function Logs และการตั้งค่า Supabase/Strava" });

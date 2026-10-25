@@ -62,7 +62,7 @@ label{display:flex;flex-direction:column;font-size:.78rem;color:var(--mute);gap:
 @media(max-width:560px){.hgrid{grid-template-columns:1fr}.hg:nth-child(2){border-top:1px solid var(--line);padding-top:10px}.cr{grid-template-columns:1fr;gap:2px}}
 .badge{display:inline-block;border-radius:99px;padding:1px 10px;font-size:.78rem;font-weight:500;color:#fff}
 .g-A{background:#3a9a5b}.g-B{background:#7aa83a}.g-C{background:#c9964a}.g-D{background:var(--bad)}
-#cv{width:100%;height:auto;display:block;cursor:crosshair}
+#cv{width:100%;height:clamp(180px,22vw,220px);display:block;cursor:crosshair}
 .cw{position:relative}
 .tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-size:.78rem;line-height:1.4;padding:5px 9px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-125%);z-index:2}
 .tw{overflow-x:auto}
@@ -78,6 +78,7 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
 .flag.warn{border-color:var(--warn)}.flag.bad{border-color:var(--bad)}.flag.ok{border-color:#3a9a5b}
 .sv{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--line);font-size:.88rem}
 .sv span{flex:1}
+.sv-actions{display:flex;gap:5px;flex:none}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px}
 .mbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;width:min(380px,100%);display:flex;flex-direction:column;gap:10px;max-height:90vh;overflow:auto}
 .mbox.wide{width:min(560px,100%)}
@@ -88,19 +89,66 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
 .act{display:flex;justify-content:space-between;gap:10px;width:100%;text-align:left;margin-bottom:4px;font-size:.85rem}
 .act small{color:var(--mute)}
 .gt{position:fixed;z-index:80;background:var(--ink);color:var(--bg);font-size:.78rem;padding:4px 9px;border-radius:6px;pointer-events:none;max-width:260px}
+.toolnav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+.toolnav a{border:1px solid var(--line);border-radius:999px;padding:5px 12px;text-decoration:none;font-size:.84rem;color:var(--mute)}
+.toolnav a[aria-current="page"],.toolnav a:hover{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.help-icon{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border:1.5px solid currentColor;border-radius:50%;font-size:.72rem;font-weight:700;line-height:1;flex:none;cursor:help;vertical-align:middle;margin-left:3px}
+.field-title{display:flex;align-items:center;gap:2px}
+.chart-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 8px}
+.chart-tools button.on{background:var(--accent);color:var(--onaccent);border-color:var(--accent)}
+.visual-tools{display:flex;flex-direction:column;align-items:center;gap:2px;border:1px solid var(--line);border-radius:10px;padding:3px;background:var(--bg)}
+.visual-tools button{width:36px;height:36px;min-height:36px;padding:0;display:inline-flex;align-items:center;justify-content:center;border:0;background:transparent}
+.visual-tools button.on{background:var(--accent);color:var(--onaccent);border-color:var(--accent)}
+.visual-tools button:disabled{opacity:.35}
+.visual-sep{width:22px;height:1px;background:var(--line);margin:2px 0}
+.route-panel{display:grid;grid-template-columns:minmax(250px,.42fr) minmax(0,.58fr);align-items:start;gap:10px 0;width:100%}
+.route-panel>h2{grid-column:1/-1}
+.route-content,.route-chart,.distance-scroll{width:100%;min-width:0;margin:0}
+.route-content{aspect-ratio:1;min-height:0}
+.route-panel #routeMap{border:0;border-radius:0;background:color-mix(in srgb,var(--bg) 78%,var(--panel))}
+.route-chart{display:grid;grid-template-columns:minmax(0,1fr) 44px;align-items:start;gap:8px;padding:0}
+.chart-main{min-width:0}
+.tool-status{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.route-panel .distance-scroll{grid-column:1/-1}
+.rep-edit-input{width:82px;padding:4px 6px;text-align:right}
+.rep-handle{cursor:ew-resize;touch-action:none}
+.rep-handle:hover{stroke-width:4}
+.rep-range{cursor:grab;touch-action:none}
+.rep-add-preview{pointer-events:none}
+.cw{position:relative}
+#routeMap{display:block;width:100%;height:100%;aspect-ratio:1;background:var(--bg);border:0;border-radius:0}
+@media(max-width:760px){.route-panel{grid-template-columns:minmax(0,1fr)}.route-panel>h2,.route-panel .distance-scroll{grid-column:auto}.route-chart{grid-template-columns:minmax(0,1fr);gap:8px}.route-chart .visual-tools{grid-row:1;grid-column:1;flex-direction:row;justify-self:start}.route-chart .visual-sep{width:1px;height:22px;margin:0 2px}.route-chart .chart-main{grid-row:2}}
+.distance-scroll{display:flex;align-items:center;gap:10px;margin-top:8px}
+.distance-scroll input{padding:0;accent-color:var(--accent)}
+.distance-scroll output{min-width:105px;text-align:right;font-size:.82rem;color:var(--mute);font-variant-numeric:tabular-nums}
+.no-map{fill:var(--mute);font-size:15px}
 </style>
 </head>
 <body>
 <main>
-<div class="top"><div class="crumbs"><a class="back" href="/">← หน้าแรก</a><h1>วิเคราะห์การซ้อม</h1></div><div class="acct" id="acct"></div></div>
+<div class="top"><div class="crumbs"><a class="back" href="/">← หน้าแรก</a><a class="back" href="/tools/slope/">ใช้ไฟล์เดิมวิเคราะห์ความชัน →</a><h1>วิเคราะห์การซ้อม</h1></div><div class="acct" id="acct"></div></div>
+<nav class="toolnav" role="toolbar" aria-label="เครื่องมือ">
+  <a href="/">หน้าแรก</a>
+  <a href="/tools/slope/">แผนที่และแบ่งช่วง</a>
+  <a href="/tools/training%20analysis/" aria-current="page">วิเคราะห์การซ้อม</a>
+  <a href="/tools/race%20planner/">วางแผนแข่ง</a>
+</nav>
 
 <section class="box">
+  <h2>1. ใส่กิจกรรม</h2>
   <div class="srow">
-    <label class="drop" id="drop" tabindex="0" style="flex-direction:row;color:var(--mute);font-size:.9rem"><span data-ic="upload"></span><span><strong>ลากไฟล์ .gpx / .tcx มาวาง หรือคลิกเลือกไฟล์</strong><br><span class="note">ต้องมีเวลา ถ้ามีหัวใจจะวิเคราะห์ได้ครบ</span></span><input type="file" id="file" accept=".gpx,.tcx,.fit" hidden></label>
+    <label class="drop" id="drop" tabindex="0" style="flex-direction:row;color:var(--mute);font-size:.9rem"><span data-ic="upload"></span><span><strong>ลากไฟล์ .gpx / .tcx มาวาง หรือเลือกหลายไฟล์พร้อมกัน</strong><br><span class="note">ต้องมีเวลา; ระบบเริ่มวิเคราะห์อัตโนมัติและบันทึกผลไว้ให้</span></span><input type="file" id="file" accept=".gpx,.tcx" multiple hidden></label>
     <button class="sbtn" id="bStv"><span data-ic="act"></span>เลือกจาก Strava</button>
-    <label>ชนิดคอร์สตามแผน<select id="plan"><option value="auto">ตรวจจับให้อัตโนมัติ</option><option value="interval">Interval</option><option value="tempo">Tempo</option><option value="long">Long Run</option><option value="easy">Easy Run</option><option value="recovery">Recovery</option></select></label>
-    <label>Max HR (bpm)<input type="number" id="maxhr" value="190" min="120" max="230" step="1"></label>
   </div>
+  <div id="analysisOptions" hidden>
+    <h2 style="margin:14px 0 8px">2. เลือกชนิดการวิ่ง <span class="note">(ไม่บังคับ — เปลี่ยนภายหลังได้)</span></h2>
+    <div class="srow">
+    <label><span class="field-title">ชนิดคอร์สตามแผน <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบายชนิดคอร์ส" data-tip="เลือกชนิดคอร์สเองได้ หากการตรวจจับอัตโนมัติไม่ตรงกับการซ้อม">?</span></span><select id="plan"><option value="auto">ตรวจจับให้อัตโนมัติ</option><option value="trail">วิ่งเทรล / เพซเปลี่ยนตามทาง</option><option value="interval">Interval</option><option value="tempo">Tempo</option><option value="long">Long Run</option><option value="easy">Easy Run</option><option value="recovery">Recovery</option></select></label>
+    <label><span class="field-title">HR threshold (bpm) <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบาย HR threshold" data-tip="ชีพจรใกล้ระดับหนักที่ยังรักษาได้ช่วงหนึ่ง ใช้แบ่งโซนหัวใจโดยประมาณ ไม่ใช่ผลตรวจทางการแพทย์">?</span></span><input type="number" id="hrthreshold" min="100" max="220" step="1" placeholder="ไม่ทราบ เว้นว่างได้"></label>
+    <label><span class="field-title">Max HR (bpm) <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบาย Max HR" data-tip="อัตราการเต้นหัวใจสูงสุด หากไม่ทราบไม่ต้องเดาและเว้นว่างได้ ระบบยังแสดง HR ที่วัดได้ แต่ไม่แบ่งโซน">?</span></span><input type="number" id="maxhr" min="120" max="230" step="1" placeholder="ไม่ทราบ เว้นว่างได้"></label>
+    </div>
+  </div>
+  <p class="note" id="batchStatus" role="status"></p>
   <p class="err" id="err" role="alert"></p>
 </section>
 
@@ -109,17 +157,37 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
 <div id="res" hidden>
   <section class="box coach" id="coach"></section>
   <section class="box"><div class="hgrid" id="hero"></div></section>
-  <section class="box"><h2 id="cvT">กราฟเพซและหัวใจ</h2><div class="cw"><svg id="cv" viewBox="0 0 700 260" role="img" aria-label="กราฟเพซและอัตราการเต้นหัวใจตลอดการซ้อม"></svg><div class="tip" id="tip" hidden></div></div><p class="note" id="cvN"></p></section>
-  <section class="box"><h2 id="repT">รายละเอียดเที่ยววิ่ง</h2><div class="tw" id="reps"></div></section>
+  <section class="box route-panel">
+    <h2>แผนที่และกราฟ</h2>
+    <div class="route-content">
+    <svg id="routeMap" viewBox="0 0 350 350" role="img" aria-label="แผนที่เส้นทางกิจกรรม"></svg>
+    </div>
+    <div class="route-chart">
+    <div class="chart-main">
+      <div class="cw"><svg id="cv" viewBox="0 0 700 190" preserveAspectRatio="none" role="img" aria-label="กราฟเพซและอัตราการเต้นหัวใจตามระยะทาง"></svg><div class="tip" id="tip" hidden></div></div>
+      <p class="note" id="cvN"></p>
+    </div>
+    <div class="visual-tools" role="toolbar" aria-label="เครื่องมือแก้ไขรอบวิ่ง">
+      <button id="bEditReps" type="button" aria-pressed="false" data-tip="ปรับรอบบนกราฟ" aria-label="ปรับรอบบนกราฟ"><span data-ic="cut"></span></button>
+      <button id="bAddRep" type="button" aria-pressed="false" data-tip="เพิ่มรอบโดยลาก" aria-label="เพิ่มรอบโดยลาก"><span data-ic="plus"></span></button>
+      <i class="visual-sep" aria-hidden="true"></i>
+      <button id="bUndo" type="button" disabled data-tip="เลิกทำ" aria-label="เลิกทำ"><span data-ic="undo"></span></button>
+      <button id="bRedo" type="button" disabled data-tip="ทำซ้ำ" aria-label="ทำซ้ำ"><span data-ic="redo"></span></button>
+    </div>
+    <span class="tool-status" id="splitStatus" aria-live="polite"></span>
+    </div>
+    <label class="distance-scroll">เลื่อนตามระยะทาง <input id="distanceScroll" type="range" min="0" max="1" step="1" value="0" disabled><output id="distanceValue">- กม.</output></label>
+  </section>
+  <section class="box"><h2 id="repT">เที่ยววิ่งและช่วงพัก <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบายรายละเอียดเที่ยววิ่ง" data-tip="แต่ละเที่ยวเร็วที่ระบบตรวจพบ แก้เวลาเริ่ม/จบด้วยการลากขอบบนกราฟหรือปรับตัวเลขในตาราง; เพิ่มรอบที่ตกหล่นได้ด้วยการลากเลือกช่วง">?</span></h2><p class="note" id="repEditHelp">ลากขอบซ้าย/ขวาของแถบสีบนกราฟเพื่อแก้รอบ หรือปรับเวลาเริ่ม/จบในตาราง</p><div class="tw" id="reps"></div></section>
   <div class="two">
-    <section class="box"><h2>สัดส่วนโซนหัวใจ</h2><div id="zones"></div></section>
-    <section class="box"><h2>การคุมแผนและโหลด</h2><div id="flags"></div></section>
+    <section class="box"><h2>สัดส่วนโซนหัวใจ <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบายสัดส่วนโซนหัวใจ" data-tip="เวลาที่ใช้ในแต่ละช่วงความหนักซึ่งคำนวณจาก HR threshold หรือ Max HR ที่ตั้งไว้">?</span></h2><div id="zones"></div></section>
+    <section class="box"><h2>การคุมแผนและโหลด <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบายการคุมแผนและโหลด" data-tip="ข้อสังเกตและโหลดเป็นค่าประมาณจากข้อมูลกิจกรรม ไม่ใช่คำวินิจฉัยการบาดเจ็บ">?</span></h2><div id="flags"></div></section>
   </div>
   <div class="two">
-    <section class="box"><h2>พัฒนาการ</h2><div id="prog"></div></section>
-    <section class="box"><h2>คาดการณ์เวลาแข่ง</h2><div id="pred"></div></section>
+    <section class="box"><h2>พัฒนาการ <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบายพัฒนาการ" data-tip="แนวโน้มจากประวัติที่นำเข้าหรือบันทึกไว้ เปรียบเทียบได้เมื่อมีข้อมูลต่อเนื่องพอ">?</span></h2><div id="prog"></div></section>
+    <section class="box"><h2>คาดการณ์เวลาแข่ง <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบายคาดการณ์เวลาแข่ง" data-tip="คำนวณจากผลงานวิ่งต่อเนื่องที่ผ่านมา เป็นช่วงประมาณ ไม่รับประกันผลจริง">?</span></h2><div id="pred"></div></section>
   </div>
-  <section class="box"><div class="shd"><h2 style="margin:0">เซสชันที่บันทึกไว้</h2><button class="sbtn pri" id="bSave"><span data-ic="save"></span>บันทึกเซสชันนี้</button></div><p class="note" id="saveN" style="margin:6px 0"></p><div id="hist"></div></section>
+  <section class="box"><div class="shd"><h2 style="margin:0">เซสชันที่บันทึกไว้ <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบายเซสชันที่บันทึกไว้" data-tip="เปิดไฟล์ต้นฉบับเพื่อวิเคราะห์หรือแก้ชนิดการวิ่ง/รอบ แล้วอัปเดตผลเดิมได้">?</span></h2><button class="sbtn pri" id="bSave"><span data-ic="save"></span><span id="saveLabel">บันทึกเซสชันนี้</span></button></div><p class="note" id="saveN" style="margin:6px 0"></p><p class="note">รายการที่บันทึกก่อนหน้านี้มีเฉพาะผลสรุป หากต้องการเปิดแก้ไข ให้นำเข้าไฟล์ GPX/TCX ต้นฉบับอีกครั้ง</p><div id="hist"></div></section>
 </div>
 </main>
 
@@ -142,13 +210,15 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
   <div class="srow"><label style="flex:1">ประเภท<select id="stvType"><option value="run">วิ่ง / วิ่งเทรล</option><option value="">ทั้งหมด</option><option value="walk">เดิน / เดินป่า</option><option value="ride">ปั่นจักรยาน</option></select></label><label style="flex:1">ตั้งแต่วันที่<input type="date" id="dFrom"></label><label style="flex:1">ถึงวันที่<input type="date" id="dTo"></label></div>
   <p class="note" id="stvMsg"></p>
   <div id="stvList" style="max-height:320px;overflow-y:auto"></div>
+  <button id="stvAll" class="pri" style="margin-top:8px">นำเข้าประวัติการวิ่งทั้งหมดในช่วงวันที่</button>
+  <p class="note">ดึงข้อมูลสรุปทุกหน้า เช่น ระยะ เวลา เพซ และ HR ที่ Strava มีให้ โดยไม่โหลดสตรีมทีละกิจกรรม; ต้องเชื่อมบัญชี Strava ก่อน</p>
   <button id="stvMore" hidden>โหลดเพิ่ม</button>
 </div></div>
 
 <script>
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const P={upload:"M12 16V4m0 0L8 8m4-4l4 4M4 20h16",user:"M20 21a8 8 0 00-16 0M12 12a4 4 0 100-8 4 4 0 000 8z",out:"M9 4H5v16h4M16 8l4 4-4 4M20 12H9",act:"M3 12h4l3-8 4 16 3-8h4",save:"M5 4h11l3 3v13H5zM8 4v5h7V4M8 20v-6h8v6",trash:"M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"};
+const P={upload:"M12 16V4m0 0L8 8m4-4l4 4M4 20h16",user:"M20 21a8 8 0 00-16 0M12 12a4 4 0 100-8 4 4 0 000 8z",out:"M9 4H5v16h4M16 8l4 4-4 4M20 12H9",act:"M3 12h4l3-8 4 16 3-8h4",save:"M5 4h11l3 3v13H5zM8 4v5h7V4M8 20v-6h8v6",trash:"M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3",cut:"M6 6a2 2 0 100 4 2 2 0 000-4zM6 14a2 2 0 100 4 2 2 0 000-4zM8 9l12 9M8 15L20 6",plus:"M12 5v14M5 12h14",undo:"M9 14L4 9l5-5M4 9h10a6 6 0 010 12h-3",redo:"M15 14l5-5-5-5M20 9H10a6 6 0 000 12h3"};
 const ic=n=>'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+P[n]+'"/></svg>';
 const icons=r=>r.querySelectorAll("[data-ic]").forEach(b=>b.innerHTML=ic(b.dataset.ic));icons(document);
 const err=m=>{$("#err").textContent=m||""};
@@ -159,6 +229,7 @@ const fin=isFinite;
 function mean(a){let s=0,n=0;for(const x of a)if(fin(x)){s+=x;n++}return n?s/n:NaN}
 function sd(a){const m=mean(a);let s=0,n=0;for(const x of a)if(fin(x)){s+=(x-m)**2;n++}return n>1?Math.sqrt(s/(n-1)):0}
 function median(a){const b=a.filter(fin).sort((x,y)=>x-y);if(!b.length)return NaN;const m=b.length>>1;return b.length%2?b[m]:(b[m-1]+b[m])/2}
+function percentile(a,p){const b=a.filter(fin).sort((x,y)=>x-y);return b.length?b[Math.min(b.length-1,Math.floor((b.length-1)*p))]:NaN}
 function avgR(arr,a,b){let s=0,n=0;for(let i=Math.max(0,a);i<Math.min(arr.length,b);i++){const x=arr[i];if(fin(x)){s+=x;n++}}return n?s/n:NaN}
 function maxR(arr,a,b){let m=NaN;for(let i=Math.max(0,a);i<Math.min(arr.length,b);i++){const x=arr[i];if(fin(x)&&(!fin(m)||x>m))m=x}return m}
 function hav(la1,lo1,la2,lo2){const k=Math.PI/180,dl=(la2-la1)*k,dn=(lo2-lo1)*k,h=Math.sin(dl/2)**2+Math.cos(la1*k)*Math.cos(la2*k)*Math.sin(dn/2)**2;return 12742000*Math.asin(Math.sqrt(h))}
@@ -202,13 +273,14 @@ function buildSeries(raw){
   if(!a.every(p=>fin(p.d))){let d=0;a[0].d=0;for(let i=1;i<a.length;i++){const q=a[i-1],p=a[i];if(fin(p.lat)&&fin(q.lat))d+=hav(q.lat,q.lon,p.lat,p.lon);p.d=d}}
   for(let i=1;i<a.length;i++)if(a[i].d<a[i-1].d)a[i].d=a[i-1].d;
   const T=Math.floor(a[a.length-1].t),N=T+1;
-  const d=new Float64Array(N),hr=new Float64Array(N).fill(NaN),cad=new Float64Array(N).fill(NaN),ele=new Float64Array(N).fill(NaN);
+  const d=new Float64Array(N),hr=new Float64Array(N).fill(NaN),cad=new Float64Array(N).fill(NaN),ele=new Float64Array(N).fill(NaN),lat=new Float64Array(N).fill(NaN),lon=new Float64Array(N).fill(NaN);
   let j=0;
   const lerp=(x,y,f)=>fin(x)&&fin(y)?x+(y-x)*f:fin(x)?x:NaN;
   for(let s=0;s<N;s++){
     while(j<a.length-2&&a[j+1].t<=s)j++;
     const p=a[j],q=a[j+1],f=clamp((s-p.t)/((q.t-p.t)||1),0,1);
     d[s]=p.d+(q.d-p.d)*f;hr[s]=lerp(p.hr,q.hr,f);cad[s]=lerp(p.cad,q.cad,f);ele[s]=lerp(p.ele,q.ele,f);
+    if(fin(p.lat)&&fin(q.lat)&&fin(p.lon)&&fin(q.lon)){lat[s]=lerp(p.lat,q.lat,f);lon[s]=lerp(p.lon,q.lon,f)}
   }
   const cm=median(Array.from(cad));if(fin(cm)&&cm<120)for(let i=0;i<N;i++)cad[i]*=2;
   const v=new Float64Array(N);
@@ -219,7 +291,7 @@ function buildSeries(raw){
     const g=dd>5&&fin(eleS[x])&&fin(eleS[y])?clamp((eleS[y]-eleS[x])/dd,-.3,.3):0;
     veq[i]=v[i]*cost(g*100)/3.6;mv[i]=v15[i]>0.7?1:0;
   }
-  return{N,d,hr,hrS,cad,ele,v,v15,veq,mv,hasHR:hr.some(fin),hasCad:cad.some(fin)};
+  return{N,d,hr,hrS,cad,ele,lat,lon,v,v15,veq,mv,hasHR:hr.some(fin),hasCad:cad.some(fin)};
 }
 /* แบ่ง 2 กลุ่มเร็ว/ช้าด้วย Otsu */
 function otsu(vals,bins=48){
@@ -239,39 +311,48 @@ function runsOf(mask,N,minLen,maxGap){
 }
 const STD_D=[100,200,300,400,500,600,800,1000,1200,1500,1600,2000,2400,3000,4000,5000];
 const STD_T=[30,45,60,90,120,180,240,300,360,480,600,900];
-const zoneOf=(h,mx)=>{const p=h/mx;return p<.6?0:p<.7?1:p<.8?2:p<.9?3:4};
-const TYPE_TH={interval:"Interval",tempo:"Tempo",long:"Long Run",easy:"Easy Run",recovery:"Recovery"};
+const zoneOf=(h,ref,mode)=>{const p=h/ref;return mode==="threshold"?(p<.85?0:p<.9?1:p<.95?2:p<1?3:4):(p<.6?0:p<.7?1:p<.8?2:p<.9?3:4)};
+const TYPE_TH={interval:"Interval",tempo:"Tempo",long:"Long Run",easy:"Easy Run",recovery:"Recovery",trail:"เทรล/เส้นทางชัน",summary:"กิจกรรม Strava (สรุป)"};
 const gradeOf=s=>s>=85?"A":s>=70?"B":s>=55?"C":"D";
 
 function analyze(S,cfg){
-  const{N,d,hr,hrS,cad,v,v15,veq,mv}=S,maxHR=cfg.maxHR||190,hasHR=S.hasHR;
+  const{N,d,hr,hrS,cad,v,v15,veq,mv,ele}=S,maxHR=cfg.maxHR,hrThreshold=cfg.hrThreshold,hrRef=hrThreshold||maxHR,hrMode=hrThreshold?"threshold":"max",hasHR=S.hasHR,hasZones=hasHR&&!!hrRef;
   let movSec=0;for(let i=0;i<N;i++)if(mv[i])movSec++;
   const dist=d[N-1]-d[0],avgPace=dist>0?movSec/(dist/1000):NaN;
   const zs=[0,0,0,0,0];let hs=0,hn=0;
-  for(let i=0;i<N;i++)if(mv[i]&&fin(hrS[i])){zs[zoneOf(hrS[i],maxHR)]++;hs+=hrS[i];hn++}
+  for(let i=0;i<N;i++)if(mv[i]&&fin(hrS[i])){hs+=hrS[i];hn++;if(hasZones)zs[zoneOf(hrS[i],hrRef,hrMode)]++}
   const zT=zs.reduce((a,b)=>a+b,0)||1,zPct=zs.map(x=>x/zT*100),avgHR=hn?hs/hn:NaN;
-  const load=hasHR?zs.reduce((a,s,k)=>a+s/60*(k+1),0):movSec/60*2;
-  const z3p=zPct[2]+zPct[3]+zPct[4];
+  const load=hasZones?zs.reduce((a,s,k)=>a+s/60*(k+1),0):movSec/60*2;
+  const z3p=hasZones?zPct[2]+zPct[3]+zPct[4]:NaN;
   const maxObs=maxR(hrS,0,N);
+  let terrainGain=0;for(let i=1;i<N;i++)if(fin(ele[i])&&fin(ele[i-1])&&ele[i]-ele[i-1]>.5)terrainGain+=ele[i]-ele[i-1];
+  const gainPerKm=dist>0?terrainGain/(dist/1000):0,trailLike=gainPerKm>=45;
   /* ตรวจจับคอร์ส */
   const vals=[];for(let i=0;i<N;i++)if(mv[i])vals.push(v15[i]);
   const ot=vals.length>60?otsu(vals):null;
   const contrast=ot&&ot.mHi/Math.max(ot.mLo,.1)>=1.25&&ot.mHi-ot.mLo>=.7;
   let runs=[];
   if(contrast){const fast=new Uint8Array(N);for(let i=0;i<N;i++)fast[i]=mv[i]&&v15[i]>ot.thr?1:0;runs=runsOf(fast,N,20,15)}
-  const durs=runs.map(r=>r.b-r.a),sumFast=durs.reduce((a,b)=>a+b,0);
-  const isInt=contrast&&runs.length>=3&&median(durs)<=900;
-  const isTempo=!isInt&&contrast&&runs.length>=1&&runs.length<=2&&sumFast>=900;
+  const durs=runs.map(r=>r.b-r.a),sumFast=durs.reduce((a,b)=>a+b,0),runDists=runs.map(r=>d[Math.min(r.b,N-1)]-d[r.a]),runDistCv=mean(runDists)>0?sd(runDists)/mean(runDists):Infinity;
+  const trailMode=cfg.plan==="trail"||cfg.trailHint;
+  let isInt=!trailMode&&contrast&&runs.length>=3&&(cfg.plan==="interval"||(!trailLike&&runs.length<=20&&median(durs)<=900&&runDistCv<=.35));
+  let isTempo=!trailMode&&!isInt&&contrast&&runs.length>=1&&runs.length<=2&&sumFast>=900&&(cfg.plan==="tempo"||!trailLike);
+  if(REP_RANGES!==null&&cfg.plan==="interval"){isInt=true;isTempo=false;runs=REP_RANGES.map(r=>({a:r.a,b:r.b}))}
+  else if(REP_RANGES!==null&&cfg.plan==="tempo"){isInt=false;isTempo=true;runs=REP_RANGES.map(r=>({a:r.a,b:r.b}))}
+  else if(REP_RANGES!==null&&(isInt||isTempo))runs=REP_RANGES.map(r=>({a:r.a,b:r.b}));
   const durMin=movSec/60;
   let type;
-  if(isInt)type="interval";
+  if(trailMode)type="trail";
+  else if(isInt)type="interval";
   else if(isTempo)type="tempo";
+  else if(trailLike)type="trail";
   else if(movSec>=5400||dist>=18000)type="long";
-  else if(hasHR&&durMin>=20&&durMin<=75&&avgHR/maxHR>=.8)type="tempo";
-  else if(hasHR&&durMin<=50&&zPct[0]+zPct[1]>=85&&avgHR/maxHR<.68)type="recovery";
+  else if(hasZones&&durMin>=20&&durMin<=75&&avgHR/hrRef>=(hrMode==="threshold"?0.9:0.8))type="tempo";
+  else if(hasZones&&durMin<=50&&zPct[0]+zPct[1]>=85&&avgHR/hrRef<(hrMode==="threshold"?0.85:0.68))type="recovery";
   else type="easy";
   const eff=cfg.plan&&cfg.plan!=="auto"?cfg.plan:type;
-  const R={N,dist,movSec,avgPace,avgHR,zs,zPct,load,z3p,maxObs,type,eff,hasHR,maxHR,runs,contrast,thr:ot?ot.thr:NaN,flags:[]};
+  const R={N,dist,movSec,avgPace,avgHR,zs,zPct,load,z3p,maxObs,type,eff,hasHR,hasZones,maxHR,hrThreshold,hrRef,hrMode,runs,contrast,thr:ot?ot.thr:NaN,trailLike,gainPerKm,runDistCv,flags:[]};
+  if(hasZones){const paces=[];for(let i=0;i<N;i++)if(mv[i]&&fin(hrS[i])&&zoneOf(hrS[i],hrRef,hrMode)===1&&v15[i]>.7){const p=1000/v15[i];if(p>=150&&p<=900)paces.push(p)}if(paces.length>=120)R.zone2Pace={low:percentile(paces,.25),high:percentile(paces,.75),n:paces.length}}
 
   /* เที่ยววิ่งและช่วงพัก */
   let reps=[];
@@ -292,17 +373,19 @@ function analyze(S,cfg){
     reps.forEach((r,i)=>{
       r.pace=r.dist>0?r.time/(r.dist/1000):NaN;
       const rs=r.b,re=reps[i+1]?reps[i+1].a:Math.min(N,r.b+180);
-      r.rest=re-rs;r.hrEnd=avgR(hrS,r.b-10,r.b);r.drop={};
-      for(const off of[30,60,90])r.drop[off]=hasHR&&r.rest>=off&&fin(r.hrEnd)?r.hrEnd-avgR(hrS,r.b+off-3,r.b+off+4):NaN;
+      r.rest=re-rs;r.hrEnd=avgR(hrS,r.b-10,r.b);r.drop={};r.hrRecovery={};
+      for(const off of[30,60,90]){r.hrRecovery[off]=hasHR&&r.rest>=off?avgR(hrS,r.b+off-3,r.b+off+4):NaN;r.drop[off]=fin(r.hrEnd)&&fin(r.hrRecovery[off])?r.hrEnd-r.hrRecovery[off]:NaN}
     });
   }
   R.reps=reps;
+  if(isTempo&&reps.length){R.workPace=mean(reps.map(r=>r.pace));R.workHR=mean(reps.map(r=>r.hr))}
   if(isInt&&reps.length){
     const paces=reps.map(r=>r.pace),cv=sd(paces)/mean(paces);
     R.pci=clamp(Math.round(100-cv*800),0,100);R.cv=cv;R.workPace=mean(paces);R.workHR=mean(reps.map(r=>r.hr));R.workCad=mean(reps.map(r=>r.cad));
     const n=reps.length;
     if(n>=4){const k=Math.floor(n/2),f=mean(paces.slice(0,k)),s2=mean(paces.slice(n-k)),dr=(s2-f)/f;R.flyDie={drop:dr,first:f,second:s2,level:dr>=.08?2:dr>=.04?1:0}}
     R.hrDrop={};for(const off of[30,60,90])R.hrDrop[off]=mean(reps.map(r=>r.drop[off]));
+    R.hrRecoveryAvg={};for(const off of[30,60,90])R.hrRecoveryAvg[off]=mean(reps.map(r=>r.hrRecovery[off]));
   }
   /* เส้นทางต่อกิโลเมตร (ปรับตามความชัน) */
   const splits=[];
@@ -324,27 +407,27 @@ function analyze(S,cfg){
     }
   }
   /* ความพยายามที่ดีที่สุด + คาดการณ์เวลาแข่ง (Riegel) */
-  R.best={};
+  R.best={};R.bestHR={};
   for(const D of[1000,3000,5000,10000]){
-    if(dist<D)continue;let bt=Infinity,j=0;
-    for(let i=0;i<N;i++){if(j<i)j=i;while(j<N-1&&d[j]-d[i]<D)j++;if(d[j]-d[i]<D)break;if(j-i<bt)bt=j-i}
-    if(bt<Infinity&&bt/(D/1000)<720)R.best[D]=bt;
-  }
-  R.pred=[];
-  for(const[T,nm]of[[5000,"5 กม."],[10000,"10 กม."],[21097,"ฮาล์ฟมาราธอน"],[42195,"มาราธอน"]]){
-    let bd=null;for(const D of[1000,3000,5000,10000])if(R.best[D]&&D<=T&&D>=T/5)bd=D;
-    R.pred.push({name:nm,D:T,base:bd,time:bd?R.best[bd]*Math.pow(T/bd,1.06):NaN});
+    if(dist<D)continue;let bt=Infinity,j=0,bi=0,bj=0;
+    for(let i=0;i<N;i++){if(j<i)j=i;while(j<N-1&&d[j]-d[i]<D)j++;if(d[j]-d[i]<D)break;if(j-i<bt){bt=j-i;bi=i;bj=j}}
+    if(bt<Infinity&&bt/(D/1000)<720){R.best[D]=bt;R.bestHR[D]=avgR(hrS,bi,bj)}
   }
   /* คุมแผนตามชนิดคอร์ส */
   const F=R.flags,add=(l,t)=>F.push({level:l,text:t});
   if(hasHR){
-    if(eff==="easy"){if(z3p>25)add("warn","หนักเกินเป้าหมาย (Overcooked Easy Run): "+z3p.toFixed(0)+"% ของเวลาอยู่โซน 3 ขึ้นไป ควรชะลอเพซให้หัวใจอยู่โซน 1 ถึง 2");else add("ok","Easy Run คุมหัวใจได้ดี มีเพียง "+z3p.toFixed(0)+"% ของเวลาที่อยู่โซน 3 ขึ้นไป")}
-    else if(eff==="recovery"){if(z3p>10)add("warn","Recovery ไม่เบาพอ: "+z3p.toFixed(0)+"% ของเวลาอยู่โซน 3 ขึ้นไป");else add("ok","Recovery เบาพอ หัวใจอยู่โซนต่ำเกือบตลอด")}
-    else if(eff==="long"){if(z3p>30)add("warn","Long Run หนักไป: "+z3p.toFixed(0)+"% ของเวลาอยู่โซน 3 ขึ้นไป");else add("ok","Long Run คุมความหนักได้ ("+z3p.toFixed(0)+"% ในโซน 3 ขึ้นไป)")}
-    else if(eff==="tempo"){const bh=isTempo&&reps.length?mean(reps.map(r=>r.hr)):avgHR;if(bh/maxHR<.8)add("warn","ความหนักไม่ถึงเป้าหมายเทมโป หัวใจเฉลี่ยเพียง "+(bh/maxHR*100).toFixed(0)+"% ของ Max HR อาจเกิดจากความล้าสะสมหรือเพซช้าไป");else if(bh/maxHR>.92)add("warn","หนักกว่าเทมโปปกติ หัวใจเฉลี่ย "+(bh/maxHR*100).toFixed(0)+"% ของ Max HR");else add("ok","เทมโปอยู่ในช่วงเป้าหมาย หัวใจเฉลี่ย "+(bh/maxHR*100).toFixed(0)+"% ของ Max HR")}
-    else if(eff==="interval"){const long=reps.filter(r=>r.time>=90);if(long.length>=2){const mh=maxR(Float64Array.from(long.map(r=>r.hrMax)),0,long.length);if(mh/maxHR<.88)add("warn","ความหนักไม่ถึงเป้าหมาย หัวใจสูงสุดช่วงเร็วถึงแค่ "+(mh/maxHR*100).toFixed(0)+"% ของ Max HR (ต่ำกว่าโซน 4 ปลาย) อาจเกิดจากความล้าสะสมจนดันหัวใจไม่ขึ้น หรือเพซช้าไป");else add("ok","ช่วงเร็วดันหัวใจถึง "+(mh/maxHR*100).toFixed(0)+"% ของ Max HR ความหนักถึงเป้า")}}
-    if(fin(maxObs)&&maxObs>maxHR+3)add("warn","พบหัวใจ "+Math.round(maxObs)+" bpm สูงกว่า Max HR ที่ตั้งไว้ ลองปรับ Max HR ให้ตรงกับของจริง");
+    if(!hasZones)add("warn","มีข้อมูล HR แต่ยังไม่ได้กำหนด HR threshold หรือ Max HR จึงยังแบ่งโซนและประเมินความหนักเทียบโซนไม่ได้");
+    else{
+      const refName=hrMode==="threshold"?"HR threshold":"Max HR",pct=x=>x/hrRef*100;
+      if(eff==="easy"){if(z3p>25)add("warn","หนักเกินเป้าหมาย Easy Run: "+z3p.toFixed(0)+"% อยู่โซน 3 ขึ้นไป ลองลดเพซโดยยึด HR โซน 1–2");else add("ok","Easy Run คุม HR ได้ มี "+z3p.toFixed(0)+"% ของเวลาอยู่โซน 3 ขึ้นไป")}
+      else if(eff==="recovery"){if(z3p>10)add("warn","Recovery ยังหนักไป: "+z3p.toFixed(0)+"% อยู่โซน 3 ขึ้นไป");else add("ok","Recovery อยู่โซนต่ำเกือบตลอด")}
+      else if(eff==="long"){if(z3p>30)add("warn","Long Run หนักไป: "+z3p.toFixed(0)+"% อยู่โซน 3 ขึ้นไป");else add("ok","Long Run คุมความหนักได้ ("+z3p.toFixed(0)+"% อยู่โซน 3 ขึ้นไป)")}
+      else if(eff==="tempo"){const bh=isTempo&&reps.length?mean(reps.map(r=>r.hr)):avgHR,rel=bh/hrRef,low=hrMode==="threshold"?0.9:0.8,high=hrMode==="threshold"?1:0.92;if(rel<low)add("warn","ความหนักยังไม่ถึงช่วงเทมโป: HR เฉลี่ย "+pct(bh).toFixed(0)+"% ของ "+refName+"; อาจเป็นเพราะเพซหรือการตอบสนอง HR ในวันนี้");else if(rel>high)add("warn","หนักกว่าช่วงเทมโปที่ตั้งไว้: HR เฉลี่ย "+pct(bh).toFixed(0)+"% ของ "+refName);else add("ok","HR เทมโปอยู่ในช่วงประมาณ "+pct(bh).toFixed(0)+"% ของ "+refName)}
+      else if(eff==="interval"){const long=reps.filter(r=>r.time>=90);if(long.length>=2){const mh=maxR(Float64Array.from(long.map(r=>r.hrMax)),0,long.length),low=hrMode==="threshold"?0.95:0.88;if(mh/hrRef<low)add("warn","HR สูงสุดช่วงเร็วอยู่ที่ "+pct(mh).toFixed(0)+"% ของ "+refName);else add("ok","HR ช่วงเร็วสูงสุด "+pct(mh).toFixed(0)+"% ของ "+refName)}}
+    }
+    if(fin(maxObs)&&fin(maxHR)&&maxObs>maxHR+3)add("warn","พบ HR "+Math.round(maxObs)+" bpm สูงกว่า Max HR ที่ตั้งไว้ ลองตรวจค่าวัดและการตั้งค่า");
   }else add("warn","ไฟล์นี้ไม่มีข้อมูลหัวใจ จึงวิเคราะห์โซน หัวใจลอย และการฟื้นตัวไม่ได้ โหลดคิดจากเวลาแบบประมาณ");
+  if(!trailMode&&(trailLike||runs.length>20))add("warn","เพซ/ความสูงของเส้นทางแปรผันมาก ระบบจึงไม่ฟันธงว่าเป็น Interval อัตโนมัติ เลือกชนิดคอร์สเองได้หากเป็นการซ้อมอินเทอร์วัลจริง");
   if(R.decouple!=null){if(R.decouple>5)add("warn","หัวใจลอย (Cardiac Drift) "+R.decouple.toFixed(1)+"% ครึ่งหลังต้องใช้หัวใจมากขึ้นเพื่อเพซเท่าเดิม ลองดูเรื่องน้ำ อากาศร้อน หรือความล้าสะสม");else if(R.decouple>3)add("ok","หัวใจลอย "+R.decouple.toFixed(1)+"% อยู่ในเกณฑ์ที่รับได้");else add("ok","หัวใจนิ่งมาก (ลอยเพียง "+R.decouple.toFixed(1)+"%) แสดงว่าฐานแอโรบิกดี")}
   if(R.flyDie&&R.flyDie.level)add(R.flyDie.level===2?"bad":"warn",(R.flyDie.level===2?"หน้าตึงหลังหลุด (Fly-and-Die): ":"เริ่มตกช่วงหลัง: ")+"เที่ยวหลังช้ากว่าเที่ยวแรกๆ "+(R.flyDie.drop*100).toFixed(0)+"% ("+fmtPace(R.flyDie.first)+" เป็น "+fmtPace(R.flyDie.second)+" ต่อ กม.)");
   if(R.posSplit!=null&&!isInt&&R.posSplit>.05)add("warn","ครึ่งหลังช้ากว่าครึ่งแรก "+(R.posSplit*100).toFixed(0)+"% (ปรับตามความชันแล้ว) ออกตัวแรงไปหรือเริ่มล้า");
@@ -352,8 +435,8 @@ function analyze(S,cfg){
 }
 /* โหลดสะสมและพัฒนาการจากเซสชันที่บันทึกไว้ */
 function progressOf(R,sess,hist){
-  const ref=new Date(sess.date).getTime(),day=864e5,others=hist.filter(h=>h.key!==sess.key);
-  const all=others.map(h=>({t:new Date(h.date).getTime(),load:h.load})).concat([{t:ref,load:R.load}]).filter(x=>fin(x.t)&&ref-x.t>=0&&ref-x.t<28*day);
+  const ref=new Date(sess.date).getTime(),day=864e5,others=hist.filter(h=>h.key!==sess.key),loadOthers=others.filter(h=>h.loadMethod===sess.loadMethod);
+  const all=loadOthers.map(h=>({t:new Date(h.date).getTime(),load:h.load})).concat([{t:ref,load:R.load}]).filter(x=>fin(x.t)&&ref-x.t>=0&&ref-x.t<28*day);
   const acute=all.filter(x=>ref-x.t<7*day).reduce((a,x)=>a+x.load,0),chronic=all.reduce((a,x)=>a+x.load,0)/4;
   const span=all.length?(ref-Math.min(...all.map(x=>x.t)))/day:0;
   const P={acute,chronic,ratio:chronic>0?acute/chronic:NaN,enough:all.length>=4&&span>=14,n:all.length};
@@ -364,6 +447,29 @@ function progressOf(R,sess,hist){
   cand=cand.filter(h=>new Date(h.date).getTime()<ref).sort((a,b)=>new Date(b.date)-new Date(a.date));
   P.cmp=cand[0]||null;
   return P;
+}
+function predictionsOf(R,sess,hist){
+  const end=new Date(sess.date).getTime(),start=end-90*864e5;
+  const rows=hist.filter(h=>h.key!==sess.key).concat([{...sess,best:R.best,bestHR:R.bestHR}]).filter(h=>{
+    const t=new Date(h.date).getTime();
+    return fin(t)&&t>=start&&t<=end&&h.best&&!h.excludeFromPrediction&&h.type!=="interval"&&h.type!=="trail"&&!h.trailLike&&h.type!=="summary";
+  });
+  return [[5000,"5 กม."],[10000,"10 กม."],[21097,"ฮาล์ฟมาราธอน"],[42195,"มาราธอน"]].map(([D,name])=>{
+    let chosen=null;
+    for(const h of rows){
+      const base=[10000,5000,3000].find(k=>k<=D&&k>=D/5&&+(h.best[k]||0)>0);
+      if(!base)continue;
+      const time=+(h.best[base]||0);
+      if(time/(base/1000)>=720)continue;
+      const projected=time*Math.pow(D/base,1.06);
+      if(!chosen||projected<chosen.time)chosen={base,time,projected,activity:h};
+    }
+    if(!chosen)return{name,D,time:NaN};
+    const ratio=D/chosen.base,low=chosen.time*Math.pow(ratio,1.04),high=chosen.time*Math.pow(ratio,1.08);
+    const hr=+(chosen.activity.bestHR&&chosen.activity.bestHR[chosen.base]||NaN);
+    const recentEfforts=rows.filter(h=>h.best&&h.best[chosen.base]).length;
+    return{name,D,base:chosen.base,time:chosen.projected,low,high,hr,recentEfforts,sourceDate:chosen.activity.date};
+  });
 }
 function coachOf(R,sess,P){
   const t=TYPE_TH[R.eff],g=fin(R.pci)?gradeOf(R.pci):null;
@@ -388,6 +494,15 @@ function coachOf(R,sess,P){
   else if(R.flags.find(f=>f.level==="warn"&&/Overcooked|ไม่เบาพอ/.test(f.text)))rec="ครั้งหน้าชะลอเพซให้หัวใจอยู่โซน 2 เพื่อให้ร่างกายฟื้นและพร้อมซ้อมหนักวันถัดไป";
   else if(P.enough&&fin(P.ratio)&&P.ratio<.8)rec="โหลดช่วงนี้ต่ำกว่าปกติ เพิ่มระยะหรือจำนวนวันซ้อมได้อีกเล็กน้อย";
   else rec="วันนี้โหลดกำลังดี ซ้อมตามแผนวันถัดไปได้";
+  if(R.eff==="trail")rec+=" สำหรับเทรลให้คุมความเหนื่อย/HR และปรับเพซตามความชัน ไม่ยึดเพซทางราบ";
+  else if(R.eff==="easy"||R.eff==="recovery"||R.eff==="long"){
+    if(R.eff==="long")rec+=" สำหรับ Long Run เริ่มจาก 60–90 นาทีที่คุยเป็นประโยคได้ โดยไม่เร่งช่วงท้าย";
+    else rec+=" ครั้งหน้าเริ่มวิ่งเบา 30–45 นาที";
+    rec+=" โดยคุม HR โซน 1–2";
+    if(R.zone2Pace)rec+="; ไฟล์นี้พบเพซช่วง HR โซน 2 ราว "+fmtPace(R.zone2Pace.low)+"–"+fmtPace(R.zone2Pace.high)+" นาที/กม. ใช้เป็นจุดอ้างอิง ไม่ใช่เป้าบังคับ";
+    else if(!R.hasZones)rec+="; ยังไม่มีข้อมูลอ้างอิง HR ที่ตั้งไว้ จึงใช้ talk test (พูดเป็นประโยคได้) และความรู้สึกแทนการกำหนดเพซ";
+  }else if(R.eff==="tempo")rec+=" หากซ้อมเทมโปอีกครั้ง ใช้เพซวันนี้ "+fmtPace(fin(R.workPace)?R.workPace:R.avgPace)+" นาที/กม. เป็นข้อมูลตั้งต้น แล้วปรับตาม HR/ความรู้สึก";
+  else if(R.eff==="interval"&&fin(R.workPace))rec+=" เพซช่วงเร็วที่วัดได้วันนี้เฉลี่ย "+fmtPace(R.workPace)+" นาที/กม.; ยึดเวลาพักตามแผน และดู HR ที่ลดระหว่างพักด้านล่าง";
   return{hl,ins,rec};
 }
 
@@ -396,31 +511,120 @@ const CFG=window.APP_CONFIG||{};
 let sb=null,CFGERR="",USER=null,SESS=null;
 try{if(CFG.SUPABASE_URL&&CFG.SUPABASE_ANON_KEY){if(!window.supabase)CFGERR="โหลดไลบรารี Supabase ไม่ได้";else sb=window.supabase.createClient(String(CFG.SUPABASE_URL).trim(),String(CFG.SUPABASE_ANON_KEY).trim())}}catch(e){CFGERR=e.message||String(e)}
 const cloud=()=>!!(sb&&USER);
-let CUR=null,HIST=[],lastR=null,lastSess=null;
+let CUR=null,HIST=[],lastR=null,lastSess=null,REP_RANGES=null,REP_UNDO=[],REP_REDO=[],REP_DRAG=null,repEditMode=false,repAddMode=false,ACTIVE_INDEX=0;
 const ZC=["#8a8f98","#5b9a6b","#c9b44a","#e08a3c","#c4503f"],ZN=["โซน 1","โซน 2","โซน 3","โซน 4","โซน 5"];
-const cell=(l,v)=>'<div>'+l+'<strong>'+v+'</strong></div>';
+const HELP={
+  "ชนิดคอร์ส":"ชนิดการซ้อมที่ระบบตรวจจับหรือคุณเลือกเอง เทรลและทางชันอาจทำให้เพซเปลี่ยนมาก",
+  "ระยะ":"ระยะทางรวมจากไฟล์กิจกรรม",
+  "เวลาเคลื่อนที่":"เวลาที่ระบบประเมินว่ากำลังวิ่ง ไม่รวมช่วงหยุด",
+  "เพซเฉลี่ย":"เวลาเฉลี่ยที่ใช้ต่อ 1 กิโลเมตร ตัวเลขน้อยหมายถึงเร็วกว่า",
+  "หัวใจเฉลี่ย":"อัตราการเต้นหัวใจเฉลี่ย หน่วย bpm; ใช้ประกอบกับความรู้สึกและสภาพเส้นทาง",
+  "ความนิ่งของเพซ":"คะแนน A–D จากความแปรปรวนของเพซ ไม่ใช่คะแนนความฟิต",
+  "รูปแบบเพซ":"เปรียบเทียบเพซช่วงต้นกับช่วงท้ายของกิจกรรม",
+  "หัวใจลอย (Pw:Hr)":"การเปลี่ยนของความสัมพันธ์ระหว่างเพซ/ความชันกับ HR ในการวิ่งต่อเนื่อง",
+  "หัวใจลดใน 60 วิ":"HR ที่ลดลงหลังจบช่วงเร็ว 60 วินาที ไม่ใช่เป้าหมายการพัก",
+  "โหลดเซสชัน":"คะแนนโหลดโดยประมาณ ใช้เทียบแนวโน้มของตัวเอง ไม่ใช่หน่วยสากล",
+  "เวลาโซน 3 ขึ้นไป":"สัดส่วนเวลาที่หัวใจอยู่ในโซน 3–5 ตาม HR threshold หรือ Max HR ที่ตั้งไว้",
+  "ACWR (7/28 วัน)":"โหลด 7 วันเทียบค่าเฉลี่ยรายสัปดาห์จาก 28 วัน; ใช้ดูแนวโน้มเมื่อมีข้อมูลเพียงพอ",
+  "หัวใจสูงสุด":"ค่า HR สูงสุดที่พบในข้อมูลกิจกรรมนี้",
+  "EF (แอโรบิก)":"ความเร็วเทียบกับ HR; ค่าสูงขึ้นอาจบอกประสิทธิภาพแอโรบิกดีขึ้น แต่สภาพแวดล้อมมีผล",
+  "EF เทียบก่อนหน้า":"เปอร์เซ็นต์การเปลี่ยน EF เมื่อเทียบกับเซสชันก่อนหน้า",
+  "คาดการณ์ 10 กม.":"เวลาประมาณจากช่วงวิ่งต่อเนื่องที่ดีที่สุดในประวัติ 90 วัน ไม่ใช่การรับประกัน",
+  "เทียบคอร์สเดิม":"เทียบกับเซสชันก่อนหน้าที่ชนิดและระยะใกล้เคียงกัน",
+  "เที่ยววิ่งและช่วงพัก":"แสดงช่วงวิ่งเร็วและ HR ที่วัดหลังเริ่มพัก",
+  "เที่ยว":"ลำดับของช่วงวิ่งเร็ว",
+  "ระยะ":"ระยะทางของช่วงนี้",
+  "เวลา":"เวลาที่ใช้ในช่วงนี้",
+  "เพซ /กม.":"เวลาเฉลี่ยต่อกิโลเมตรของช่วงนี้",
+  "HR เฉลี่ย":"อัตราการเต้นหัวใจเฉลี่ยในช่วงนี้ หน่วย bpm",
+  "HR สูงสุด":"อัตราการเต้นหัวใจสูงสุดในช่วงนี้ หน่วย bpm",
+  "รอบขา":"จำนวนก้าวต่อนาทีจากอุปกรณ์",
+  "พัก":"เวลาตั้งแต่จบช่วงเร็วนี้จนเริ่มช่วงเร็วถัดไป",
+  "HR หลังพัก 30 วิ (ลด)":"HR ประมาณ 30 วินาทีหลังช่วงเร็ว; ในวงเล็บคือ HR ที่ลดจากช่วงท้ายเที่ยวเร็ว",
+  "60 วิ (ลด)":"HR ประมาณ 60 วินาทีหลังช่วงเร็ว; ในวงเล็บคือ HR ที่ลดจากช่วงท้ายเที่ยวเร็ว",
+  "90 วิ (ลด)":"HR ประมาณ 90 วินาทีหลังช่วงเร็ว; ในวงเล็บคือ HR ที่ลดจากช่วงท้ายเที่ยวเร็ว",
+  "กม.":"หมายเลขกิโลเมตรของสปลิต",
+  "สปลิต":"สรุปเพซของแต่ละกิโลเมตร",
+  "เพซ":"เวลาเฉลี่ยต่อกิโลเมตร; เลขน้อยหมายถึงเร็วกว่า",
+  "เพซปรับชัน":"เพซเทียบทางราบโดยประมาณจากความชัน",
+  "HR":"อัตราการเต้นหัวใจเฉลี่ย หน่วย bpm",
+  "ความสูง":"ระดับความสูงเหนือระดับน้ำทะเลโดยประมาณ",
+  "ไต่ขึ้น":"ผลรวมความสูงที่เพิ่มขึ้นภายในช่วงนี้",
+  "สรุปวันนี้":"ภาพรวมของกิจกรรมปัจจุบันจากข้อมูลที่นำเข้า",
+  "ข้อสังเกต":"จุดที่ระบบพบจากเพซ HR หรือรูปแบบการซ้อม",
+  "คำแนะนำ":"แนวทางทั่วไปสำหรับการซ้อมครั้งถัดไป ปรับตามความรู้สึกและแผนของคุณ",
+  "สปลิต":"สรุปเพซของแต่ละกิโลเมตร",
+  "ภาพรวม Strava":"สรุประยะ เวลา ความสูง และ HR จากข้อมูลกิจกรรมที่ Strava ส่งให้ โดยไม่มีข้อมูลรายวินาที",
+  "โซน 1":"ความหนักต่ำสุดตามค่า HR อ้างอิงที่ตั้งไว้",
+  "โซน 2":"ความหนักเบาถึงปานกลางตามค่า HR อ้างอิงที่ตั้งไว้",
+  "โซน 3":"ความหนักปานกลางถึงหนักตามค่า HR อ้างอิงที่ตั้งไว้",
+  "โซน 4":"ความหนักสูงตามค่า HR อ้างอิงที่ตั้งไว้",
+  "โซน 5":"ความหนักสูงสุดตามค่า HR อ้างอิงที่ตั้งไว้",
+  "เวลาประมาณ (ช่วง)":"เวลาแข่งที่คำนวณและช่วงความไวจากสูตร ไม่ใช่การรับประกัน",
+  "อ้างอิง":"ระยะและเซสชันที่ใช้เป็นข้อมูลคำนวณเวลาแข่ง"
+};
+const helpIcon=text=>'<span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบาย '+esc(text)+'" data-tip="'+esc(HELP[text]||"ค่าที่คำนวณจากข้อมูลกิจกรรม ใช้ประกอบการดูแนวโน้ม")+'">?</span>';
+const cell=(l,v)=>'<div><span>'+esc(l)+helpIcon(l)+'</span><strong>'+v+'</strong></div>';
 
-function setCfg(){return{maxHR:parseFloat($("#maxhr").value)||190,plan:$("#plan").value}}
+function setCfg(){const meta=CUR&&CUR.meta||{},activityType=String(meta.activityType||meta.type||"");return{maxHR:parseFloat($("#maxhr").value)||null,hrThreshold:parseFloat($("#hrthreshold").value)||null,plan:$("#plan").value,trailHint:$("#plan").value==="auto"&&(/trail|เทรล/i.test(String(meta.name||""))||/trail/i.test(activityType))}}
 function ingest(raw,meta){
   err("");
   try{
     const S=buildSeries(raw);
     if(S.d[S.N-1]<500)throw new Error("short");
-    CUR={S,meta};recompute();
-  }catch(e){err(e.message==="few"||e.message==="short"?"ข้อมูลในไฟล์น้อยเกินไปหรือสั้นเกินไปสำหรับวิเคราะห์ (ต้องมีเวลาและระยะอย่างน้อย 500 ม.)":"อ่านข้อมูลไม่สำเร็จ ไฟล์ต้องมีเวลาของแต่ละจุด")}
+    CUR={S,meta};$("#analysisOptions").hidden=false;REP_RANGES=null;REP_UNDO=[];REP_REDO=[];REP_DRAG=null;repEditMode=false;repAddMode=false;ACTIVE_INDEX=0;recompute();return true;
+  }catch(e){err(e.message==="few"||e.message==="short"?"ข้อมูลในไฟล์น้อยเกินไปหรือสั้นเกินไปสำหรับวิเคราะห์ (ต้องมีเวลาและระยะอย่างน้อย 500 ม.)":"อ่านข้อมูลไม่สำเร็จ ไฟล์ต้องมีเวลาของแต่ละจุด");return false}
 }
+function rebuildEditedReps(R,S,ranges){
+  const{N,d,hrS,cad}=S;
+  const mk=({a,b})=>({a,b,time:b-a,dist:d[Math.min(b,N-1)]-d[a],hr:avgR(hrS,a,b),hrMax:maxR(hrS,a,b),cad:avgR(cad,a,b)});
+  R.reps=ranges.filter(r=>r.b-r.a>=5).map(mk).sort((a,b)=>a.a-b.a);
+  R.reps.forEach((r,i)=>{
+    r.pace=r.dist>0?r.time/(r.dist/1000):NaN;
+    const next=R.reps[i+1];
+    r.rest=Math.max(0,(next?next.a:Math.min(N,r.b+180))-r.b);
+    r.hrEnd=avgR(hrS,Math.max(0,r.b-10),r.b);r.drop={};r.hrRecovery={};
+    for(const off of[30,60,90]){
+      r.hrRecovery[off]=R.hasHR&&r.rest>=off?avgR(hrS,r.b+off-3,r.b+off+4):NaN;
+      r.drop[off]=fin(r.hrEnd)&&fin(r.hrRecovery[off])?r.hrEnd-r.hrRecovery[off]:NaN;
+    }
+  });
+  if(R.eff==="interval"){
+    const n=R.reps.length,md=mean(R.reps.map(r=>r.dist));
+    R.sig=n?(n+" × "+(R.snap?(R.snap.kind==="d"?(R.snap.val>=1000?R.snap.val/1000+" กม.":R.snap.val+" ม."):(R.snap.val>=60?R.snap.val/60+" นาที":R.snap.val+" วินาที")):"~"+Math.round(md)+" ม.")):"ยังไม่กำหนดรอบ";
+    R.sigKey=n?(R.snap?"I:"+R.snap.kind+R.snap.val+"x"+n:"I:x"+n):"";
+    const paces=R.reps.map(r=>r.pace).filter(fin),cv=paces.length>1?sd(paces)/mean(paces):0;
+    R.cv=cv;R.pci=paces.length?clamp(Math.round(100-cv*800),0,100):NaN;
+    R.workPace=mean(paces);R.workHR=mean(R.reps.map(r=>r.hr));R.workCad=mean(R.reps.map(r=>r.cad));
+    R.flyDie=null;
+    if(paces.length>=4){const k=Math.floor(paces.length/2),first=mean(paces.slice(0,k)),second=mean(paces.slice(-k)),drop=(second-first)/first;R.flyDie={drop,first,second,level:drop>=.08?2:drop>=.04?1:0}}
+    R.hrDrop={};R.hrRecoveryAvg={};
+    for(const off of[30,60,90]){R.hrDrop[off]=mean(R.reps.map(r=>r.drop[off]));R.hrRecoveryAvg[off]=mean(R.reps.map(r=>r.hrRecovery[off]))}
+  }else{
+    R.sig="";R.sigKey="";
+    R.workPace=mean(R.reps.map(r=>r.pace));R.workHR=mean(R.reps.map(r=>r.hr));
+  }
+}
+function saveRepUndo(snapshot=REP_RANGES||[]){
+  REP_UNDO.push(snapshot.map(r=>({...r})));if(REP_UNDO.length>100)REP_UNDO.shift();REP_REDO=[];syncRepHistory();
+}
+function syncRepHistory(){$("#bUndo").disabled=!REP_UNDO.length;$("#bRedo").disabled=!REP_REDO.length}
+function restoreRepRanges(ranges){REP_RANGES=ranges.map(r=>({...r}));repEditMode=false;repAddMode=false;recompute()}
+function undoRepEdit(){if(!REP_UNDO.length)return;REP_REDO.push((REP_RANGES||[]).map(r=>({...r})));restoreRepRanges(REP_UNDO.pop());syncRepHistory()}
+function redoRepEdit(){if(!REP_REDO.length)return;REP_UNDO.push((REP_RANGES||[]).map(r=>({...r})));restoreRepRanges(REP_REDO.pop());syncRepHistory()}
 function recompute(){
   if(!CUR)return;
-  const R=analyze(CUR.S,setCfg()),m=CUR.meta;
+  const cfg=setCfg(),R=analyze(CUR.S,cfg),m=CUR.meta;
+  if(REP_RANGES===null&&(R.reps.length||cfg.plan==="interval"||cfg.plan==="tempo"))REP_RANGES=R.reps.map(r=>({a:r.a,b:r.b}));
   const date=m.date||new Date().toISOString();
-  const sess={date,name:m.name||"การซ้อม",type:R.type,dist:R.dist/1000,dur:R.movSec/60,pace:R.avgPace,hr:R.avgHR,load:R.load,ef:R.ef!=null?R.ef:NaN,sigKey:R.sigKey||"",repPace:R.workPace!=null?R.workPace:NaN,repHR:R.workHR!=null?R.workHR:NaN,hrDrop60:R.hrDrop&&fin(R.hrDrop[60])?R.hrDrop[60]:NaN,cad:R.workCad!=null&&fin(R.workCad)?R.workCad:NaN,pci:R.pci!=null?R.pci:NaN};
+  const sess={date,name:m.name||"การซ้อม",type:R.type,plan:cfg.plan,repRanges:(REP_RANGES||[]).map(r=>({a:r.a,b:r.b})),sourceText:m.sourceText||null,fileName:m.fileName||null,excludeFromPrediction:["interval","trail"].includes(R.eff)||["interval","trail"].includes(R.type),dist:R.dist/1000,dur:R.movSec/60,pace:R.avgPace,hr:R.avgHR,load:R.load,loadMethod:R.hasZones?"hr-zones:"+R.hrMode+":"+R.hrRef:"duration-estimate",ef:R.ef!=null?R.ef:NaN,sigKey:R.sigKey||"",repPace:R.workPace!=null?R.workPace:NaN,repHR:R.workHR!=null?R.workHR:NaN,hrDrop60:R.hrDrop&&fin(R.hrDrop[60])?R.hrDrop[60]:NaN,cad:R.workCad!=null&&fin(R.workCad)?R.workCad:NaN,pci:R.pci!=null?R.pci:NaN,best:R.best,bestHR:R.bestHR,zone2Pace:R.zone2Pace,trailLike:R.trailLike,gainPerKm:R.gainPerKm};
   sess.key=sess.date+"|"+sess.dist.toFixed(2)+"|"+sess.name;
   lastR=R;lastSess=sess;render();
 }
 function render(){
-  const R=lastR,sess=lastSess,P=progressOf(R,sess,HIST),C=coachOf(R,sess,P);
+  const R=lastR,sess=lastSess,P=progressOf(R,sess,HIST),C=coachOf(R,sess,P),pred=predictionsOf(R,sess,HIST);
   $("#empty").hidden=true;$("#res").hidden=false;
-  $("#coach").innerHTML='<div class="cr"><b>สรุปวันนี้</b><span class="hl"></span></div><div class="cr"><b>ข้อสังเกต</b><span id="ci"></span></div><div class="cr"><b>คำแนะนำ</b><span id="cr"></span></div>';
+  $("#coach").innerHTML='<div class="cr"><b>สรุปวันนี้ '+helpIcon("สรุปวันนี้")+'</b><span class="hl"></span></div><div class="cr"><b>ข้อสังเกต '+helpIcon("ข้อสังเกต")+'</b><span id="ci"></span></div><div class="cr"><b>คำแนะนำ '+helpIcon("คำแนะนำ")+'</b><span id="cr"></span></div>';
   $("#coach .hl").textContent=C.hl;$("#ci").textContent=C.ins;$("#cr").textContent=C.rec;
   const grade=fin(R.pci)?'<span class="badge g-'+gradeOf(R.pci)+'">'+gradeOf(R.pci)+'</span> '+R.pci:"-";
   const fd=R.flyDie?(R.flyDie.level===2?"หน้าตึงหลังหลุด":R.flyDie.level===1?"เริ่มตกช่วงหลัง":"ไม่พบ ("+sg(R.flyDie.drop*100,0)+"%)"):(R.posSplit!=null?(R.posSplit>.05?"ครึ่งหลังช้า "+(R.posSplit*100).toFixed(0)+"%":"สปลิตดี ("+sg(R.posSplit*100,0)+"%)"):"-");
@@ -428,24 +632,29 @@ function render(){
   $("#hero").innerHTML=
    '<div class="hg"><div class="hl2">เซสชัน</div><div class="stats">'+cell("ชนิดคอร์ส",TYPE_TH[R.eff]+(R.eff!==R.type?" (ตรวจพบ "+TYPE_TH[R.type]+")":""))+cell("ระยะ",(R.dist/1000).toFixed(2)+" กม.")+cell("เวลาเคลื่อนที่",fmtDur(R.movSec))+cell("เพซเฉลี่ย",fmtPace(R.avgPace)+" /กม.")+cell("หัวใจเฉลี่ย",fin(R.avgHR)?R.avgHR.toFixed(0)+" bpm":"-")+'</div></div>'+
    '<div class="hg"><div class="hl2">คุณภาพการคุมแผน</div><div class="stats">'+cell("ความนิ่งของเพซ",grade)+cell("รูปแบบเพซ",fd)+cell("หัวใจลอย (Pw:Hr)",R.decouple!=null?R.decouple.toFixed(1)+"%":"-")+cell("หัวใจลดใน 60 วิ",R.hrDrop&&fin(R.hrDrop[60])?R.hrDrop[60].toFixed(0)+" bpm":"-")+'</div></div>'+
-   '<div class="hg"><div class="hl2">โหลดและความหนัก</div><div class="stats">'+cell("โหลดเซสชัน",Math.round(R.load)+" แต้ม")+cell("เวลาโซน 3 ขึ้นไป",R.hasHR?R.z3p.toFixed(0)+"%":"-")+cell("ACWR (7/28 วัน)",acwr)+cell("หัวใจสูงสุด",fin(R.maxObs)?Math.round(R.maxObs)+" bpm":"-")+'</div></div>'+
-   '<div class="hg"><div class="hl2">พัฒนาการ</div><div class="stats">'+cell("EF (แอโรบิก)",R.ef!=null?R.ef.toFixed(2):"-")+cell("EF เทียบก่อนหน้า",P.efChange!=null?sg(P.efChange,1)+"%":"-")+cell("คาดการณ์ 10 กม.",fin(R.pred[1].time)?fmtDur(R.pred[1].time):"-")+cell("เทียบคอร์สเดิม",P.cmp?"พบ 1 ครั้ง":"ยังไม่มี")+'</div></div>';
-  drawChart();
+   '<div class="hg"><div class="hl2">โหลดและความหนัก</div><div class="stats">'+cell("โหลดเซสชัน",Math.round(R.load)+" แต้ม")+cell("เวลาโซน 3 ขึ้นไป",R.hasZones?R.z3p.toFixed(0)+"%":"-")+cell("ACWR (7/28 วัน)",acwr)+cell("หัวใจสูงสุด",fin(R.maxObs)?Math.round(R.maxObs)+" bpm":"-")+'</div></div>'+
+   '<div class="hg"><div class="hl2">พัฒนาการ</div><div class="stats">'+cell("EF (แอโรบิก)",R.ef!=null?R.ef.toFixed(2):"-")+cell("EF เทียบก่อนหน้า",P.efChange!=null?sg(P.efChange,1)+"%":"-")+cell("คาดการณ์ 10 กม.",fin(pred[1].time)?fmtDur(pred[1].time):"-")+cell("เทียบคอร์สเดิม",P.cmp?"พบ 1 ครั้ง":"ยังไม่มี")+'</div></div>';
+  drawChart();drawRouteMap();syncRepTools();syncRepHistory();
   /* ตารางเที่ยววิ่ง / สปลิต */
   if(R.reps.length){
-    $("#repT").textContent=R.type==="interval"&&R.sig?"เที่ยววิ่งและช่วงพัก ("+R.sig+(R.snap&&R.snap.kind==="d"?" · ตัดรอบตามระยะแล้ว":"")+")":"ช่วงที่เร็ว";
-    const hd=R.reps.some(r=>r.drop&&fin(r.drop[60]));
-    $("#reps").innerHTML='<table><tr><th>เที่ยว</th><th>ระยะ</th><th>เวลา</th><th>เพซ /กม.</th><th>HR เฉลี่ย</th><th>HR สูงสุด</th><th>รอบขา</th><th>พัก</th>'+(hd?'<th>HR ลด 30 วิ</th><th>60 วิ</th><th>90 วิ</th>':'')+'</tr>'+R.reps.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+Math.round(r.dist)+' ม.</td><td>'+fmtDur(r.time)+'</td><td>'+fmtPace(r.pace)+'</td><td>'+(fin(r.hr)?r.hr.toFixed(0):"-")+'</td><td>'+(fin(r.hrMax)?r.hrMax.toFixed(0):"-")+'</td><td>'+(fin(r.cad)?r.cad.toFixed(0):"-")+'</td><td>'+fmtDur(r.rest)+'</td>'+(hd?['30','60','90'].map(k=>'<td>'+(fin(r.drop[k])?r.drop[k].toFixed(0):"-")+'</td>').join(""):'')+'</tr>').join("")+(hd&&R.hrDrop?'<tr><td colspan="8"><b>เฉลี่ย</b></td>'+['30','60','90'].map(k=>'<td><b>'+(fin(R.hrDrop[k])?R.hrDrop[k].toFixed(0):"-")+'</b></td>').join("")+'</tr>':'')+'</table>';
+    $("#repT").innerHTML=(R.eff==="interval"&&R.sig?"เที่ยววิ่งและช่วงพัก ("+esc(R.sig)+")":"ช่วงที่เร็ว")+" "+helpIcon("เที่ยววิ่งและช่วงพัก");
+    const hd=R.reps.some(r=>r.hrRecovery&&fin(r.hrRecovery[30]));
+    $("#reps").innerHTML='<table><tr><th>รอบ</th><th>เริ่ม (วินาที)</th><th>จบ (วินาที)</th><th>ระยะ '+helpIcon("ระยะ")+'</th><th>เวลา '+helpIcon("เวลา")+'</th><th>เพซ /กม. '+helpIcon("เพซ /กม.")+'</th><th>HR เฉลี่ย '+helpIcon("HR เฉลี่ย")+'</th><th>HR สูงสุด '+helpIcon("HR สูงสุด")+'</th><th>รอบขา '+helpIcon("รอบขา")+'</th><th>พัก '+helpIcon("พัก")+'</th>'+(hd?'<th>HR หลังพัก 30 วิ (ลด)</th><th>60 วิ (ลด)</th><th>90 วิ (ลด)</th>':'')+'<th>ลบ</th></tr>'+R.reps.map((r,i)=>'<tr><td>'+(i+1)+'</td><td><input class="rep-edit-input" type="number" min="0" max="'+(R.N-1)+'" step="1" value="'+r.a+'" data-rep-start="'+i+'" aria-label="เวลาเริ่มรอบที่ '+(i+1)+' วินาที"></td><td><input class="rep-edit-input" type="number" min="1" max="'+(R.N-1)+'" step="1" value="'+r.b+'" data-rep-end="'+i+'" aria-label="เวลาจบรอบที่ '+(i+1)+' วินาที"></td><td>'+Math.round(r.dist)+' ม.</td><td>'+fmtDur(r.time)+'</td><td>'+fmtPace(r.pace)+'</td><td>'+(fin(r.hr)?r.hr.toFixed(0):"-")+'</td><td>'+(fin(r.hrMax)?r.hrMax.toFixed(0):"-")+'</td><td>'+(fin(r.cad)?r.cad.toFixed(0):"-")+'</td><td>'+fmtDur(r.rest)+'</td>'+(hd?[30,60,90].map(k=>'<td>'+(fin(r.hrRecovery[k])?r.hrRecovery[k].toFixed(0):"-")+(fin(r.drop[k])?" ("+r.drop[k].toFixed(0)+"↓)":"")+'</td>').join(""):'')+'<td><button class="ib" type="button" data-remove-rep="'+i+'" aria-label="ลบรอบที่ '+(i+1)+'">×</button></td></tr>').join("")+(hd&&R.hrRecoveryAvg?'<tr><td colspan="10"><b>เฉลี่ย</b></td>'+[30,60,90].map(k=>'<td><b>'+(fin(R.hrRecoveryAvg[k])?R.hrRecoveryAvg[k].toFixed(0):"-")+(fin(R.hrDrop[k])?" ("+R.hrDrop[k].toFixed(0)+"↓)":"")+'</b></td>').join("")+'<td></td></tr>':'')+'</table><p class="note">เวลาเริ่ม/จบเป็นวินาทีจากต้นกิจกรรม; แก้ได้ตรงนี้หรือปรับขอบแถบบนกราฟ ค่าระยะ เพซ และ HR จะคำนวณใหม่</p><p class="note">ค่าหลังพักคือ HR ที่วัด ณ 30/60/90 วินาทีหลังจบช่วงเร็ว; ตัวเลขในวงเล็บคือ HR ที่ลดลงจากช่วงท้ายเที่ยวเร็ว หน่วย bpm</p>'+(hd?(R.hasZones?'<p class="note">แนวทางช่วงพัก: วิ่ง/เดินเบาและรอให้หายใจควบคุมได้; HR โซน 1–2 เป็นจุดอ้างอิงเมื่อแผนไม่ได้กำหนดเวลาพักตายตัว</p>':'<p class="note">ยังไม่มี HR threshold/Max HR จึงแสดง HR ที่วัดได้ แต่ไม่ตั้งเป้าหมาย HR ช่วงพัก</p>'):'');
   }else{
-    $("#repT").textContent="สปลิตทุก 1 กม.";
-    $("#reps").innerHTML=R.splits.length?'<table><tr><th>กม.</th><th>เพซ</th><th>เพซปรับชัน</th><th>HR</th><th>รอบขา</th></tr>'+R.splits.map(s=>'<tr><td>'+s.km+'</td><td>'+fmtPace(s.pace)+'</td><td>'+fmtPace(s.gap)+'</td><td>'+(fin(s.hr)?s.hr.toFixed(0):"-")+'</td><td>'+(fin(s.cad)?s.cad.toFixed(0):"-")+'</td></tr>').join("")+'</table>':'<p class="note">ระยะไม่ถึง 1 กม.</p>';
+    if(R.eff==="interval"||R.eff==="tempo"){
+      $("#repT").innerHTML="เที่ยววิ่งและช่วงพัก "+helpIcon("เที่ยววิ่งและช่วงพัก");
+      $("#reps").innerHTML='<p class="note">ยังไม่พบรอบที่ชัดเจน เลือก “เพิ่มรอบโดยลาก” แล้วลากครอบช่วงเร็วบนกราฟ หรือปรับชนิดคอร์สเป็น Interval/Tempo</p>';
+    }else{
+      $("#repT").innerHTML="สปลิตทุก 1 กม. "+helpIcon("สปลิต");
+      $("#reps").innerHTML=R.splits.length?'<table><tr><th>กม. '+helpIcon("กม.")+'</th><th>เพซ '+helpIcon("เพซ")+'</th><th>เพซปรับชัน '+helpIcon("เพซปรับชัน")+'</th><th>HR '+helpIcon("HR")+'</th><th>รอบขา '+helpIcon("รอบขา")+'</th></tr>'+R.splits.map(s=>'<tr><td>'+s.km+'</td><td>'+fmtPace(s.pace)+'</td><td>'+fmtPace(s.gap)+'</td><td>'+(fin(s.hr)?s.hr.toFixed(0):"-")+'</td><td>'+(fin(s.cad)?s.cad.toFixed(0):"-")+'</td></tr>').join("")+'</table>':'<p class="note">ระยะไม่ถึง 1 กม.</p>';
+    }
   }
   /* โซน */
-  $("#zones").innerHTML=R.hasHR?'<div class="zbar">'+R.zPct.map((p,i)=>'<div style="width:'+p+'%;background:'+ZC[i]+'"></div>').join("")+'</div><div style="margin-top:8px">'+R.zPct.map((p,i)=>'<div class="zrow"><span><i class="dot" style="background:'+ZC[i]+'"></i>'+ZN[i]+' <span class="note">('+[ "<60","60-70","70-80","80-90","90+"][i]+'% Max HR)</span></span><span>'+p.toFixed(0)+'% · '+fmtDur(R.zs[i])+'</span></div>').join("")+'</div>':'<p class="note">ไม่มีข้อมูลหัวใจ</p>';
+  $("#zones").innerHTML=!R.hasHR?'<p class="note">ไม่มีข้อมูลหัวใจ</p>':!R.hasZones?'<p class="note">มีข้อมูล HR แต่ยังไม่มี HR threshold หรือ Max HR ที่เชื่อถือได้ จึงไม่แบ่งโซน; ตั้งค่าได้ด้านบนโดยเว้นว่างไว้ได้</p>':'<p class="note">คำนวณจาก '+(R.hrMode==="threshold"?"HR threshold":"Max HR")+' ('+Math.round(R.hrRef)+' bpm)</p><div class="zbar">'+R.zPct.map((p,i)=>'<div style="width:'+p+'%;background:'+ZC[i]+'"></div>').join("")+'</div><div style="margin-top:8px">'+R.zPct.map((p,i)=>'<div class="zrow"><span><i class="dot" style="background:'+ZC[i]+'"></i>'+ZN[i]+' '+helpIcon(ZN[i])+' <span class="note">('+(R.hrMode==="threshold"?["<85","85–90","90–95","95–100","100+"][i]:["<60","60–70","70–80","80–90","90+"][i])+'% '+(R.hrMode==="threshold"?"threshold":"Max HR")+')</span></span><span>'+p.toFixed(0)+'% · '+fmtDur(R.zs[i])+'</span></div>').join("")+'</div>';
   $("#flags").innerHTML=R.flags.map(f=>'<div class="flag '+f.level+'"></div>').join("")||'<p class="note">ไม่มีข้อสังเกตพิเศษ</p>';
   $("#flags").querySelectorAll(".flag").forEach((el,i)=>{el.textContent=R.flags[i].text});
   /* พัฒนาการ */
-  let ph='<div class="flag '+(!P.enough?"":(P.ratio>1.5?"bad":P.ratio>1.3?"warn":P.ratio<.8?"warn":"ok"))+'">โหลด 7 วัน '+Math.round(P.acute)+' แต้ม เทียบค่าเฉลี่ยรายสัปดาห์ของ 28 วัน '+Math.round(P.chronic)+' แต้ม (ACWR '+(fin(P.ratio)?P.ratio.toFixed(2):"-")+')'+(P.enough?"":" · ต้องบันทึกเซสชันย้อนหลังอย่างน้อย 4 ครั้งในช่วง 14 วันขึ้นไป ค่านี้จึงจะเชื่อถือได้")+'</div>';
+  let ph='<div class="flag '+(!P.enough?"":(P.ratio>1.5?"bad":P.ratio>1.3?"warn":P.ratio<.8?"warn":"ok"))+'">โหลด 7 วัน '+Math.round(P.acute)+' แต้ม เทียบค่าเฉลี่ยรายสัปดาห์ของ 28 วัน '+Math.round(P.chronic)+' แต้ม (ACWR '+(fin(P.ratio)?P.ratio.toFixed(2):"-")+')'+(P.enough?"":" · ข้อมูลยังไม่พอ ต้องมีอย่างน้อย 4 เซสชันในช่วง 14 วันขึ้นไปที่ใช้วิธีคำนวณโหลดเดียวกัน; การนำเข้าจะบันทึกให้อัตโนมัติ")+'</div>';
   if(P.efs.length>=2){const xs=P.efs,mn=Math.min(...xs.map(x=>x.ef)),mx=Math.max(...xs.map(x=>x.ef)),w=300,h=60;ph+='<div class="note" style="margin:8px 0 2px">แนวโน้ม EF (เร็ว ÷ หัวใจ ยิ่งสูงยิ่งฟิต) '+xs.length+' เซสชันล่าสุด</div><svg viewBox="0 0 '+w+' '+h+'" style="width:100%;max-width:320px" role="img" aria-label="แนวโน้ม EF"><polyline fill="none" stroke="var(--accent)" stroke-width="2.5" points="'+xs.map((x,i)=>(8+i/(xs.length-1)*(w-16))+","+(h-8-(mx>mn?(x.ef-mn)/(mx-mn):.5)*(h-16))).join(" ")+'"/></svg>'}
   else ph+='<p class="note" style="margin-top:8px">แนวโน้ม EF ต้องมีเซสชันแอโรบิกที่บันทึกไว้อย่างน้อย 2 ครั้ง</p>';
   if(P.cmp){const c=P.cmp;ph+='<div class="note" style="margin:10px 0 4px">เทียบกับครั้งก่อนที่คล้ายกัน ('+esc(new Date(c.date).toLocaleDateString("th-TH"))+')</div><table><tr><th></th><th>ครั้งนี้</th><th>ครั้งก่อน</th><th>ต่าง</th></tr>';
@@ -454,15 +663,21 @@ function render(){
     else ph+=row("เพซเฉลี่ย (วิ/กม.)",R.avgPace,c.pace,x=>fmtPace(x),0,R.avgPace<=c.pace)+row("HR เฉลี่ย",R.avgHR,c.hr,x=>x.toFixed(0),0,null)+row("EF",R.ef,c.ef,x=>x.toFixed(2),2,R.ef>=c.ef);
     ph+='</table>'}
   else ph+='<p class="note" style="margin-top:8px">ยังไม่มีเซสชันเก่าที่คล้ายกันให้จับคู่เปรียบเทียบ</p>';
+  const stravaRows=HIST.filter(h=>h.source==="strava-summary");
+  if(stravaRows.length){
+    const distance=stravaRows.reduce((s,h)=>s+(+h.dist||0),0),seconds=stravaRows.reduce((s,h)=>s+(+h.dur||0)*60,0),gain=stravaRows.reduce((s,h)=>s+(+h.elevation||0),0);
+    let hrTotal=0,hrSeconds=0;for(const h of stravaRows)if(h.hr!=null&&fin(+h.hr)&&+h.hr>0){const t=(+h.dur||0)*60;hrTotal+=h.hr*t;hrSeconds+=t}
+    ph='<div class="flag ok">ภาพรวม Strava '+helpIcon("ภาพรวม Strava")+': '+stravaRows.length+' กิจกรรม · '+distance.toFixed(1)+' กม. · '+fmtDur(seconds)+' · เพซรวม '+fmtPace(distance>0?seconds/distance:NaN)+' นาที/กม. · ขึ้น '+Math.round(gain)+' ม.'+(hrSeconds?' · HR เฉลี่ย '+(hrTotal/hrSeconds).toFixed(0)+' bpm':'')+' <span class="note">— ใช้ข้อมูลสรุปที่ Strava ส่งให้ ไม่ใช่การวิเคราะห์สตรีมรายวินาที</span></div>'+ph;
+  }
   $("#prog").innerHTML=ph;
-  const ok=R.pred.filter(p=>fin(p.time));
-  $("#pred").innerHTML=ok.length?'<table><tr><th>ระยะ</th><th>เวลาที่คาด</th><th>เพซ /กม.</th><th>คำนวณจากเพซที่ทำได้</th></tr>'+R.pred.map(p=>'<tr><td>'+p.name+'</td><td>'+(fin(p.time)?fmtDur(p.time):"-")+'</td><td>'+(fin(p.time)?fmtPace(p.time/(p.D/1000)):"-")+'</td><td>'+(p.base?"ช่วงที่ดีที่สุด "+p.base/1000+" กม.":"ไม่มีข้อมูลพอ")+'</td></tr>').join("")+'</table><p class="note" style="margin-top:8px">ประมาณด้วยสูตร Riegel (เลขชี้กำลัง 1.06) จากเพซที่ทำได้จริงในเซสชันนี้ ถ้าวันนี้ไม่ได้ซ้อมหนัก ค่าจะช้ากว่าความสามารถจริง</p>':'<p class="note">ยังคาดการณ์ไม่ได้ ต้องมีช่วงที่วิ่งต่อเนื่องอย่างน้อย 1 กม.</p>';
+  const ok=pred.some(p=>fin(p.time));
+  $("#pred").innerHTML=ok?'<table><tr><th>ระยะ '+helpIcon("ระยะ")+'</th><th>เวลาประมาณ (ช่วง) '+helpIcon("เวลาประมาณ (ช่วง)")+'</th><th>เพซ /กม. '+helpIcon("เพซ /กม.")+'</th><th>อ้างอิง '+helpIcon("อ้างอิง")+'</th></tr>'+pred.map(p=>'<tr><td>'+p.name+'</td><td>'+(fin(p.time)?fmtDur(p.time)+' ('+fmtDur(p.low)+'–'+fmtDur(p.high)+')':"-")+'</td><td>'+(fin(p.time)?fmtPace(p.time/(p.D/1000)):"-")+'</td><td>'+(p.base?("ช่วงต่อเนื่อง "+p.base/1000+" กม. · "+(p.recentEfforts||1)+" เซสชัน"+(fin(p.hr)&&R.hrRef?" · HR "+(p.hr/R.hrRef*100).toFixed(0)+"% ของค่าอ้างอิง":"")):"ยังไม่มีข้อมูลพอ")+'</td></tr>').join("")+'</table><p class="note" style="margin-top:8px">ใช้ช่วงต่อเนื่องที่เร็วที่สุดจากประวัติ 90 วันด้วยสูตร Riegel; ช่วงเวลาแสดงความไวต่อเลขชี้กำลัง 1.04–1.08 ไม่ใช่ช่วงรับประกันผล HR ใช้ประกอบการประเมิน effort/โซน ไม่ได้แปลงเป็นเวลาแข่งโดยตรง'+(pred.some(p=>p.recentEfforts===1)?" ข้อมูลบางระยะมีเพียง 1 เซสชัน จึงควรใช้เป็นกรอบคร่าวๆ":"")+'</p>':'<p class="note">ยังคาดการณ์ไม่ได้ ต้องมีการวิ่งต่อเนื่องอย่างน้อย 3 กม. ที่บันทึกไว้ในประวัติ 90 วัน และไม่ใช่คอร์สที่ตรวจพบเป็น Interval/เทรล</p>';
   renderHist();
 }
 /* กราฟเพซ + หัวใจ */
-const CW=700,CH=260,CL=44,CR=44,CT=14,CB=26;
+const CW=700,CH=190,CL=44,CR=44,CT=14,CB=22;
 function drawChart(){
-  const R=lastR,S=CUR.S,N=S.N,X=t=>CL+t/(N-1)*(CW-CL-CR);
+  const R=lastR,S=CUR.S,N=S.N,totalDist=Math.max(S.d[N-1]-S.d[0],1),X=i=>CL+(S.d[clamp(Math.round(i),0,N-1)]-S.d[0])/totalDist*(CW-CL-CR);
   const pace=new Float64Array(N);let pmin=1e9,pmax=0;
   for(let i=0;i<N;i++){const p=S.v15[i]>0.7?clamp(1000/S.v15[i],150,600):NaN;pace[i]=p;if(fin(p)){pmin=Math.min(pmin,p);pmax=Math.max(pmax,p)}}
   if(!fin(pmin)||pmin>=pmax){pmin=240;pmax=480}
@@ -473,21 +688,143 @@ function drawChart(){
   hmin=Math.floor(hmin/10)*10;hmax=Math.ceil(hmax/10)*10;
   const HY=h=>CT+(1-(h-hmin)/(hmax-hmin))*(CH-CT-CB);
   let h="";
-  (R.type==="interval"||R.type==="tempo"?R.reps:[]).forEach((r,i)=>{h+='<rect x="'+X(r.a)+'" y="'+CT+'" width="'+Math.max(2,X(r.b)-X(r.a))+'" height="'+(CH-CT-CB)+'" fill="var(--accent)" fill-opacity=".14"/>'});
+  (R.eff==="interval"||R.eff==="tempo"?R.reps:[]).forEach((r,i)=>{
+    const x1=X(r.a),x2=X(r.b),w=Math.max(2,x2-x1);
+    h+='<rect class="rep-range" data-rep-index="'+i+'" x="'+x1+'" y="'+CT+'" width="'+w+'" height="'+(CH-CT-CB)+'" fill="var(--accent)" fill-opacity=".14"><title>รอบที่ '+(i+1)+'</title></rect>';
+    if(repEditMode)for(const [edge,x]of[["start",x1],["end",x2]])h+='<line class="rep-handle" data-rep-index="'+i+'" data-rep-edge="'+edge+'" x1="'+x+'" y1="'+CT+'" x2="'+x+'" y2="'+(CH-CB)+'" stroke="var(--accent)" stroke-width="2.5"/><circle class="rep-handle" data-rep-index="'+i+'" data-rep-edge="'+edge+'" cx="'+x+'" cy="'+(CT+5)+'" r="7" fill="var(--panel)" stroke="var(--accent)" stroke-width="2.5"><title>ลากเพื่อปรับจุด'+(edge==="start"?"เริ่ม":"จบ")+'รอบที่ '+(i+1)+'</title></circle>';
+  });
+  if(REP_DRAG&&REP_DRAG.kind==="new"){
+    const x1=X(Math.min(REP_DRAG.start,REP_DRAG.current)),x2=X(Math.max(REP_DRAG.start,REP_DRAG.current));
+    h+='<rect class="rep-add-preview" x="'+x1+'" y="'+CT+'" width="'+Math.max(2,x2-x1)+'" height="'+(CH-CT-CB)+'" fill="var(--blue)" fill-opacity=".18" stroke="var(--blue)" stroke-dasharray="4 3"/>';
+  }
   const line=(arr,Y,col,w)=>{let pts=[],out="";for(let i=0;i<N;i+=Math.max(1,Math.floor(N/700)))if(fin(arr[i]))pts.push(X(i).toFixed(1)+","+Y(arr[i]).toFixed(1));return pts.length?'<polyline fill="none" stroke="'+col+'" stroke-width="'+w+'" stroke-linejoin="round" points="'+pts.join(" ")+'"/>':""};
   if(S.hasHR)h+=line(S.hrS,HY,"var(--bad)",1.8);
+  for(const p of[pmin,(pmin+pmax)/2,pmax])h+='<line x1="'+CL+'" y1="'+PY(p).toFixed(1)+'" x2="'+(CW-CR)+'" y2="'+PY(p).toFixed(1)+'" stroke="var(--line)" stroke-opacity=".55" stroke-width="1"/>';
   h+=line(pace,PY,"var(--accent)",2.2);
   for(const p of[pmin,(pmin+pmax)/2,pmax])h+='<text x="'+(CL-6)+'" y="'+(PY(p)+4)+'" text-anchor="end" font-size="11" fill="var(--accent)">'+fmtPace(p)+'</text>';
   if(S.hasHR)for(const x of[hmin,(hmin+hmax)/2,hmax])h+='<text x="'+(CW-CR+6)+'" y="'+(HY(x)+4)+'" font-size="11" fill="var(--bad)">'+Math.round(x)+'</text>';
-  for(const f of[0,.5,1])h+='<text x="'+X(f*(N-1))+'" y="'+(CH-8)+'" text-anchor="'+(f===0?"start":f===1?"end":"middle")+'" font-size="11" fill="var(--mute)">'+fmtDur(f*(N-1))+'</text>';
-  h+='<line id="hl" y1="'+CT+'" y2="'+(CH-CB)+'" stroke="var(--ink)" stroke-opacity=".5" stroke-dasharray="2 3" visibility="hidden"/><circle id="hd" r="4.5" fill="var(--panel)" stroke="var(--accent)" stroke-width="2.5" visibility="hidden"/><circle id="hd2" r="4.5" fill="var(--panel)" stroke="var(--bad)" stroke-width="2.5" visibility="hidden"/>';
-  $("#cv").innerHTML=h;CUR.cg={X,PY,HY,pace};
+  for(const f of[0,.5,1])h+='<text x="'+X(f*(N-1))+'" y="'+(CH-8)+'" text-anchor="'+(f===0?"start":f===1?"end":"middle")+'" font-size="11" fill="var(--mute)">'+((S.d[0]+totalDist*f)/1000).toFixed(1)+' กม.</text>';
+  h+='<line id="trackLine" y1="'+CT+'" y2="'+(CH-CB)+'" stroke="var(--ink)" stroke-opacity=".7" stroke-dasharray="3 3"/><circle id="trackPace" r="5" fill="var(--panel)" stroke="var(--accent)" stroke-width="2"/><circle id="trackHR" r="5" fill="var(--panel)" stroke="var(--bad)" stroke-width="2" visibility="hidden"/><line id="hl" y1="'+CT+'" y2="'+(CH-CB)+'" stroke="var(--ink)" stroke-opacity=".5" stroke-dasharray="2 3" visibility="hidden"/><circle id="hd" r="4.5" fill="var(--panel)" stroke="var(--accent)" stroke-width="2.5" visibility="hidden"/><circle id="hd2" r="4.5" fill="var(--panel)" stroke="var(--bad)" stroke-width="2.5" visibility="hidden"/>';
+  $("#cv").innerHTML=h;CUR.cg={X,PY,HY,pace,pmin,pmax,hmin,hmax};
   $("#cvN").innerHTML='<span style="color:var(--accent)">●</span> เพซ (แกนซ้าย เร็วอยู่บน) '+(S.hasHR?' <span style="color:var(--bad)">●</span> หัวใจ (แกนขวา)':'')+(R.reps.length?' · แถบเขียวอ่อน = ช่วงเร็ว':'');
 }
+const SEG_COLORS=["#2c5a43","#c4503f","#2877a4","#9a6bb5","#c9964a","#1d8b80"];
+function indexAtDistance(distance){
+  const d=CUR.S.d;let lo=0,hi=d.length-1;
+  while(lo<hi){const mid=(lo+hi)>>1;if(d[mid]<distance)lo=mid+1;else hi=mid}
+  return lo>0&&Math.abs(d[lo-1]-distance)<Math.abs(d[lo]-distance)?lo-1:lo;
+}
+function updateActivePosition(index){
+  if(!CUR)return;
+  const S=CUR.S;ACTIVE_INDEX=clamp(Math.round(index),0,S.N-1);
+  const slider=$("#distanceScroll");slider.disabled=false;slider.min=S.d[0];slider.max=Math.max(S.d[0]+1,S.d[S.N-1]);slider.value=S.d[ACTIVE_INDEX];
+  $("#distanceValue").textContent=(S.d[ACTIVE_INDEX]/1000).toFixed(2)+" กม.";
+  const g=CUR.cg,i=ACTIVE_INDEX;
+  if(g){
+    const x=g.X(i),p=g.pace[i],hr=S.hrS[i],line=$("#trackLine"),dot=$("#trackPace"),hd=$("#trackHR");
+    line.setAttribute("x1",x);line.setAttribute("x2",x);
+    if(fin(p)){dot.setAttribute("cx",x);dot.setAttribute("cy",g.PY(p));dot.setAttribute("visibility","visible")}else dot.setAttribute("visibility","hidden");
+    if(fin(hr)){hd.setAttribute("cx",x);hd.setAttribute("cy",g.HY(hr));hd.setAttribute("visibility","visible")}else hd.setAttribute("visibility","hidden");
+  }
+  if(CUR.routePoints){const pt=CUR.routePoints[i],marker=$("#routeActive");if(pt&&marker){marker.setAttribute("cx",pt.x);marker.setAttribute("cy",pt.y);marker.setAttribute("visibility","visible")}else if(marker)marker.setAttribute("visibility","hidden")}
+}
+function drawRouteMap(){
+  const svg=$("#routeMap"),S=CUR&&CUR.S;
+  if(!S){svg.innerHTML='<text class="no-map" x="175" y="175" text-anchor="middle">นำเข้ากิจกรรมที่มีพิกัด GPS เพื่อแสดงแผนที่</text>';return}
+  const valid=[];for(let i=0;i<S.N;i++)if(fin(S.lat[i])&&fin(S.lon[i]))valid.push(i);
+  if(valid.length<2){CUR.routePoints=null;svg.innerHTML='<text class="no-map" x="175" y="163" text-anchor="middle">กิจกรรมนี้ไม่มีพิกัด GPS จึงแสดงแผนที่เส้นทางไม่ได้</text><text class="no-map" x="175" y="187" text-anchor="middle" font-size="12">ไฟล์สรุป Strava ไม่มีพิกัดรายจุด; ใช้ GPX/TCX หรือสตรีมกิจกรรมที่มี GPS</text>';return}
+  const midLat=mean(valid.map(i=>S.lat[i]))*Math.PI/180,cosLat=Math.cos(midLat);
+  let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+  for(const i of valid){const x=S.lon[i]*cosLat,y=S.lat[i];minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y)}
+  const scale=Math.min(310/Math.max(maxX-minX,1e-8),310/Math.max(maxY-minY,1e-8)),padX=(350-(maxX-minX)*scale)/2,padY=(350-(maxY-minY)*scale)/2;
+  const point=i=>({x:padX+(S.lon[i]*Math.cos(midLat)-minX)*scale,y:350-padY-(S.lat[i]-minY)*scale});
+  CUR.routePoints=Array(S.N).fill(null);for(const i of valid)CUR.routePoints[i]=point(i);
+  const ranges=[];let cursor=0;
+  for(const r of lastR.reps){if(r.a>cursor)ranges.push({a:cursor,b:r.a,fast:false});ranges.push({a:r.a,b:r.b,fast:true});cursor=r.b}
+  if(cursor<S.N-1)ranges.push({a:cursor,b:S.N-1,fast:false});
+  if(!ranges.length)ranges.push({a:0,b:S.N-1,fast:false});
+  const paths=ranges.map((r,i)=>{
+    const step=Math.max(1,Math.floor((r.b-r.a)/500)),points=[];
+    for(let k=r.a;k<=r.b;k+=step)if(fin(S.lat[k])&&fin(S.lon[k])){const p=point(k);points.push(p.x.toFixed(1)+","+p.y.toFixed(1))}
+    if(fin(S.lat[r.b])&&fin(S.lon[r.b])){const p=point(r.b);points.push(p.x.toFixed(1)+","+p.y.toFixed(1))}
+    const color=r.fast?"var(--accent)":"var(--mute)";
+    return points.length>1?'<polyline points="'+points.join(" ")+'" fill="none" stroke="'+color+'" stroke-opacity="'+(r.fast?1:.68)+'" stroke-width="'+(r.fast?5:3)+'" stroke-linecap="round" stroke-linejoin="round"/>':"";
+  }).join("");
+  const first=point(valid[0]),last=point(valid[valid.length-1]);
+  let markers='<circle cx="'+first.x.toFixed(1)+'" cy="'+first.y.toFixed(1)+'" r="7" fill="#3a9a5b" stroke="var(--panel)" stroke-width="2"/><circle cx="'+last.x.toFixed(1)+'" cy="'+last.y.toFixed(1)+'" r="7" fill="var(--bad)" stroke="var(--panel)" stroke-width="2"/>';
+  svg.innerHTML=paths+markers+'<circle id="routeActive" cx="0" cy="0" r="8" fill="var(--panel)" stroke="var(--ink)" stroke-width="3" visibility="hidden"/>';
+  updateActivePosition(ACTIVE_INDEX);
+}
+function syncRepTools(){
+  const enabled=!!CUR&&!!lastR&&(lastR.eff==="interval"||lastR.eff==="tempo");
+  for(const id of["#bEditReps","#bAddRep"])$(id).disabled=!enabled;
+  $("#bEditReps").classList.toggle("on",repEditMode);$("#bEditReps").setAttribute("aria-pressed",String(repEditMode));
+  $("#bAddRep").classList.toggle("on",repAddMode);$("#bAddRep").setAttribute("aria-pressed",String(repAddMode));
+  $("#cv").style.cursor=repAddMode?"crosshair":repEditMode?"ew-resize":"default";
+  $("#splitStatus").textContent=!enabled?"เลือกชนิดคอร์ส Interval หรือ Tempo เพื่อแก้เที่ยววิ่ง":repAddMode?"ลากบนกราฟเพื่อเพิ่มรอบที่ตกหล่น":repEditMode?"ลากขอบซ้าย/ขวาของแถบเพื่อปรับรอบ · กด Undo เพื่อย้อนกลับ":"เปิด “ปรับรอบบนกราฟ” เพื่อแก้รอบที่ตรวจพบ";
+  $("#repEditHelp").textContent=enabled?"ลากขอบซ้าย/ขวาของแถบรอบบนกราฟ หรือแก้เวลาเริ่ม/จบเป็นวินาทีในตาราง; เพิ่มรอบที่พลาดได้ด้วยการลากช่วงใหม่":"เลือกชนิดคอร์สเป็น Interval หรือ Tempo ก่อน หากระบบตรวจไม่พบรอบ ให้ใช้ “เพิ่มรอบโดยลาก”";
+}
+function chartIndexAt(clientX){
+  const rect=$("#cv").getBoundingClientRect(),x=(clientX-rect.left)/rect.width*CW,fx=clamp((x-CL)/(CW-CL-CR),0,1),S=CUR.S;
+  return indexAtDistance(S.d[0]+fx*(S.d[S.N-1]-S.d[0]));
+}
+function validRepBoundary(index,edge,value){
+  const ranges=REP_RANGES||[],r=ranges[index];if(!r)return null;
+  const previous=ranges[index-1],next=ranges[index+1],minLen=5;
+  if(edge==="start")return clamp(Math.round(value),previous?previous.b:0,r.b-minLen);
+  return clamp(Math.round(value),r.a+minLen,next?next.a:S.N-1);
+}
+function updateRepBoundary(index,edge,value){
+  const next=validRepBoundary(index,edge,value);
+  if(next==null)return;
+  const before=REP_RANGES.map(r=>({...r}));
+  if(REP_RANGES[index][edge==="start"?"a":"b"]===next)return;
+  REP_RANGES[index][edge==="start"?"a":"b"]=next;
+  saveRepUndo(before);recompute();
+}
+function removeRep(index){
+  if(!REP_RANGES||!REP_RANGES[index])return;
+  const before=REP_RANGES.map(r=>({...r}));REP_RANGES.splice(index,1);saveRepUndo(before);recompute();
+}
+function addRep(a,b,before){
+  if(b-a<5){$("#splitStatus").textContent="รอบต้องยาวอย่างน้อย 5 วินาที";return}
+  if((REP_RANGES||[]).some(r=>a<r.b&&b>r.a)){$("#splitStatus").textContent="ช่วงที่เลือกทับกับรอบเดิม ให้เลือกช่วงว่างหรือปรับรอบเดิมก่อน";return}
+  const prior=before||(REP_RANGES||[]).map(r=>({...r}));
+  REP_RANGES=(REP_RANGES||[]).concat([{a,b}]).sort((x,y)=>x.a-y.a);saveRepUndo(prior);repAddMode=false;repEditMode=true;recompute();
+}
+$("#distanceScroll").addEventListener("input",e=>{if(CUR)updateActivePosition(indexAtDistance(+e.target.value))});
+$("#bEditReps").onclick=()=>{repEditMode=!repEditMode;repAddMode=false;syncRepTools();drawChart()};
+$("#bAddRep").onclick=()=>{repAddMode=!repAddMode;repEditMode=false;syncRepTools();drawChart()};
+$("#bUndo").onclick=undoRepEdit;$("#bRedo").onclick=redoRepEdit;
+$("#reps").addEventListener("change",e=>{
+  const input=e.target.closest("[data-rep-start],[data-rep-end]");if(!input)return;
+  const index=+(input.dataset.repStart??input.dataset.repEnd),edge=input.hasAttribute("data-rep-start")?"start":"end",value=input.valueAsNumber;
+  if(!Number.isFinite(value)){recompute();return}
+  updateRepBoundary(index,edge,value);
+});
+$("#reps").addEventListener("click",e=>{const b=e.target.closest("[data-remove-rep]");if(b)removeRep(+b.dataset.removeRep)});
+$("#cv").addEventListener("pointerdown",e=>{
+  if(!CUR||!lastR||!(lastR.eff==="interval"||lastR.eff==="tempo"))return;
+  const handle=e.target.closest("[data-rep-index][data-rep-edge]");
+  if(repEditMode&&handle)REP_DRAG={kind:"edge",index:+handle.dataset.repIndex,edge:handle.dataset.repEdge,before:REP_RANGES.map(r=>({...r}))};
+  else if(repAddMode){const index=chartIndexAt(e.clientX);REP_DRAG={kind:"new",start:index,current:index,before:(REP_RANGES||[]).map(r=>({...r}))}}
+  else return;
+  $("#cv").setPointerCapture(e.pointerId);e.preventDefault();
+});
 $("#cv").addEventListener("pointermove",e=>{
   if(!CUR||!CUR.cg)return;const S=CUR.S,r=$("#cv").getBoundingClientRect(),w=$("#cv").parentNode.getBoundingClientRect();
+  if(REP_DRAG){
+    const index=chartIndexAt(e.clientX);
+    if(REP_DRAG.kind==="edge"){
+      const value=validRepBoundary(REP_DRAG.index,REP_DRAG.edge,index);
+      if(value!=null)REP_RANGES[REP_DRAG.index][REP_DRAG.edge==="start"?"a":"b"]=value;
+      rebuildEditedReps(lastR,S,REP_RANGES);
+    }else REP_DRAG.current=index;
+    drawChart();updateActivePosition(ACTIVE_INDEX);
+  }
   const fx=((e.clientX-r.left)/r.width*CW-CL)/(CW-CL-CR);if(fx<0||fx>1)return;
-  const i=Math.round(fx*(S.N-1)),g=CUR.cg,p=g.pace[i],hh=S.hrS[i],px=g.X(i);
+  const distance=S.d[0]+fx*(S.d[S.N-1]-S.d[0]),i=indexAtDistance(distance),g=CUR.cg,p=g.pace[i],hh=S.hrS[i],px=g.X(i);
+  updateActivePosition(i);
   const rep=lastR.reps.findIndex(x=>i>=x.a&&i<x.b);
   $("#hl").setAttribute("x1",px);$("#hl").setAttribute("x2",px);$("#hl").setAttribute("visibility","visible");
   const d1=$("#hd"),d2=$("#hd2");if(fin(p)){d1.setAttribute("cx",px);d1.setAttribute("cy",g.PY(p));d1.setAttribute("visibility","visible")}else d1.setAttribute("visibility","hidden");
@@ -496,59 +833,214 @@ $("#cv").addEventListener("pointermove",e=>{
   tip.innerHTML='<b>'+fmtDur(i)+' · '+(S.d[i]/1000).toFixed(2)+' กม.</b><br>เพซ '+fmtPace(fin(p)?p:NaN)+' /กม.'+(fin(hh)?' · หัวใจ '+Math.round(hh):'')+(fin(S.cad[i])?' · รอบขา '+Math.round(S.cad[i]):'')+(rep>=0?'<br>เที่ยวที่ '+(rep+1):'');
   tip.style.left=(r.left+px/CW*r.width-w.left)+"px";tip.style.top=(r.top+(fin(p)?g.PY(p):60)/CH*r.height-w.top)+"px";
 });
+$("#cv").addEventListener("pointerup",e=>{
+  if(!REP_DRAG)return;
+  const drag=REP_DRAG;REP_DRAG=null;
+  if(drag.kind==="edge"){
+    if(REP_RANGES[drag.index].a!==drag.before[drag.index].a||REP_RANGES[drag.index].b!==drag.before[drag.index].b){saveRepUndo(drag.before);recompute()}
+    else drawChart();
+  }else{
+    const a=Math.min(drag.start,drag.current),b=Math.max(drag.start,drag.current);
+    if(b-a>=5)addRep(a,b,drag.before);
+    else{drawChart();$("#splitStatus").textContent="ลากให้ยาวกว่าหรือเท่ากับ 5 วินาทีเพื่อเพิ่มรอบ"}
+  }
+});
+$("#cv").addEventListener("pointercancel",()=>{
+  if(!REP_DRAG)return;
+  REP_RANGES=REP_DRAG.before.map(r=>({...r}));REP_DRAG=null;recompute();
+});
+$("#routeMap").addEventListener("pointermove",e=>{
+  if(!CUR||!CUR.routePoints)return;const rect=$("#routeMap").getBoundingClientRect(),x=(e.clientX-rect.left)/rect.width*350,y=(e.clientY-rect.top)/rect.height*350;
+  let best=-1,bestD=Infinity;for(let i=0;i<CUR.routePoints.length;i++){const p=CUR.routePoints[i];if(!p)continue;const d=(p.x-x)**2+(p.y-y)**2;if(d<bestD){bestD=d;best=i}}
+  if(best>=0)updateActivePosition(best);
+});
+$("#routeMap").addEventListener("click",e=>{
+  if(!CUR||!CUR.routePoints)return;const rect=$("#routeMap").getBoundingClientRect(),x=(e.clientX-rect.left)/rect.width*350,y=(e.clientY-rect.top)/rect.height*350;
+  let best=-1,bestD=Infinity;for(let i=0;i<CUR.routePoints.length;i++){const p=CUR.routePoints[i];if(!p)continue;const d=(p.x-x)**2+(p.y-y)**2;if(d<bestD){bestD=d;best=i}}
+  if(best<0)return;
+  updateActivePosition(best);
+});
 $("#cv").addEventListener("pointerleave",()=>{$("#tip").hidden=true;for(const id of["#hl","#hd","#hd2"]){const el=$(id);if(el)el.setAttribute("visibility","hidden")}});
 
 /* ประวัติเซสชัน */
 const LSK="trail-workouts",SK2="trail-wk-settings";
 const lsGet=()=>{try{return JSON.parse(localStorage.getItem(LSK)||"[]")}catch(_){return[]}};
-const lsSet=a=>{try{localStorage.setItem(LSK,JSON.stringify(a))}catch(_){err("บันทึกในเบราว์เซอร์นี้ไม่ได้")}};
+const lsSet=a=>{try{localStorage.setItem(LSK,JSON.stringify(a));return true}catch(_){err("บันทึกในเบราว์เซอร์นี้ไม่ได้");return false}};
 async function loadHist(){
-  if(cloud()){const{data,error}=await sb.from("workouts").select("id,data,created_at").order("created_at",{ascending:false});if(error){err("โหลดเซสชันที่บันทึกไว้ไม่สำเร็จ: "+error.message+" (ลองรัน supabase.sql ส่วน workouts)");HIST=lsGet()}else HIST=data.map(r=>({...r.data,id:r.id}))}
+  if(cloud()){
+    const{data,error}=await sb.from("workouts").select("id,data,created_at").order("created_at",{ascending:false});
+    if(error){err("โหลดเซสชันที่บันทึกไว้ไม่สำเร็จ: "+error.message+" (ลองรัน supabase.sql ส่วน workouts)");HIST=lsGet()}
+    else{
+      const cloudHistory=data.map(r=>({...r.data,id:r.id}));
+      if(cloudHistory.length){
+        const{data:files,error:fileError}=await sb.from("workout_files").select("workout_id,file_name").in("workout_id",cloudHistory.map(h=>h.id));
+        if(fileError)err("โหลดไฟล์ต้นฉบับจากบัญชีไม่ได้: "+fileError.message+" (ลองรันส่วน workout_files ใน supabase.sql)");
+        else for(const f of files||[]){const h=cloudHistory.find(x=>x.id===f.workout_id);if(h){h.fileName=f.file_name;h.sourceAvailable=true}}
+      }
+      HIST=mergeHistory(cloudHistory,lsGet());
+    }
+  }
   else HIST=lsGet();
   if(lastR)render();
 }
 function renderHist(){
-  const a=HIST.slice().sort((x,y)=>new Date(y.date)-new Date(x.date));
-  $("#hist").innerHTML=a.length?a.map(h=>'<div class="sv"><span><b></b> · '+esc(new Date(h.date).toLocaleDateString("th-TH"))+' · '+esc(TYPE_TH[h.type]||"")+' · '+(+h.dist||0).toFixed(1)+' กม. · โหลด '+Math.round(h.load||0)+'</span><button class="ib" data-x="'+esc(h.id||h.key)+'" data-tip="ลบ" aria-label="ลบ">'+ic("trash")+'</button></div>').join(""):'<p class="note">ยังไม่มีเซสชันที่บันทึกไว้ บันทึกหลายๆ ครั้งเพื่อให้ ACWR แนวโน้ม EF และการจับคู่เปรียบเทียบทำงาน</p>';
+  const all=HIST.slice().sort((x,y)=>new Date(y.date)-new Date(x.date)),a=all.slice(0,50);
+  $("#hist").innerHTML=a.length?a.map(h=>'<div class="sv"><span><b></b> · '+esc(new Date(h.date).toLocaleDateString("th-TH"))+' · '+esc(TYPE_TH[h.type]||"")+' · '+(+h.dist||0).toFixed(1)+' กม. · โหลด '+Math.round(h.load||0)+(h.type==="summary"?" (ค่าสรุปจาก Strava)":"")+'</span><div class="sv-actions">'+(h.sourceText||h.sourceAvailable?'<button type="button" data-open="'+esc(h.id||h.key)+'">เปิด / แก้ไข</button>':'')+'<button class="ib" data-x="'+esc(h.id||h.key)+'" data-tip="ลบ" aria-label="ลบ">'+ic("trash")+'</button></div></div>').join("")+(all.length>50?'<p class="note">แสดง 50 เซสชันล่าสุดจากทั้งหมด '+all.length+' รายการ; ประวัติทั้งหมดใช้คำนวณแนวโน้ม</p>':''):'<p class="note">ยังไม่มีประวัติที่บันทึกไว้ นำเข้าไฟล์เพื่อบันทึกผลและไฟล์ต้นฉบับไว้เปิดแก้ไขภายหลัง</p>';
   $("#hist").querySelectorAll(".sv b").forEach((el,i)=>{el.textContent=a[i].name||"การซ้อม"});
   const saved=lastSess&&HIST.some(h=>h.key===lastSess.key);
-  $("#bSave").disabled=!!saved;$("#saveN").textContent=saved?"เซสชันนี้บันทึกแล้ว":(sb&&!USER?"ต้องเข้าสู่ระบบก่อนจึงจะบันทึกได้":"");
+  $("#bSave").disabled=!lastSess;$("#saveLabel").textContent=saved?"อัปเดตเซสชันนี้":"บันทึกเซสชันนี้";
+  $("#saveN").textContent=saved?"แก้ไขชนิดการวิ่งหรือรอบ แล้วกดอัปเดตเพื่อแทนที่รายการเดิม":(sb&&!USER?"ต้องเข้าสู่ระบบก่อนจึงจะบันทึกได้":"");
+}
+function workoutData(record){const{sourceText,fileName,...data}=record;return data}
+async function saveCloudSource(id,record){
+  if(!record.sourceText)return true;
+  const{error}=await sb.from("workout_files").upsert({workout_id:id,file_name:record.fileName||record.name+".gpx",source_text:record.sourceText},{onConflict:"workout_id"});
+  if(error){err("บันทึกไฟล์ต้นฉบับไม่ได้: "+error.message+" (ลองรันส่วน workout_files ใน supabase.sql)");return false}
+  return true;
+}
+function localRecord(record,keepSource){
+  if(keepSource||!record.sourceText)return record;
+  return{...workoutData(record),fileName:record.fileName,sourceAvailable:true};
+}
+function replaceSavedRecord(record,keepSource=true){
+  HIST=mergeHistory(HIST.filter(h=>h.key!==record.key),[record]);
+  const local=mergeHistory(lsGet().filter(h=>h.key!==record.key),[localRecord(record,keepSource)]);
+  lsSet(local);
 }
 $("#bSave").onclick=async()=>{
   if(!lastSess)return;
   if(sb&&!USER){openLogin("ต้องเข้าสู่ระบบก่อนจึงจะบันทึกเซสชันได้");return}
-  const rec={...lastSess};
-  if(cloud()){const{data,error}=await sb.from("workouts").insert({data:rec}).select("id").single();if(error){err("บันทึกไม่สำเร็จ: "+error.message);return}rec.id=data.id;HIST.unshift(rec)}
-  else{HIST.unshift(rec);lsSet(HIST)}
+  const existing=HIST.find(h=>h.key===lastSess.key),rec={...lastSess};
+  if(cloud()){
+    let result;
+    if(existing&&existing.id)result=await sb.from("workouts").update({data:workoutData(rec)}).eq("id",existing.id).select("id").single();
+    else result=await sb.from("workouts").insert({data:workoutData(rec)}).select("id").single();
+    if(result.error){err("บันทึกไม่สำเร็จ: "+result.error.message);return}
+    rec.id=result.data.id;
+    const sourceSaved=await saveCloudSource(rec.id,rec);
+    if(!sourceSaved)$("#saveN").textContent="บันทึกผลวิเคราะห์แล้ว แต่ไฟล์ต้นฉบับยังบันทึกไม่สำเร็จ";
+    replaceSavedRecord(rec,!sourceSaved);
+  }else{
+    replaceSavedRecord(rec);
+  }
   render();
 };
 $("#hist").addEventListener("click",async e=>{
+  const open=e.target.closest("[data-open]");
+  if(open){
+    const h=HIST.find(x=>String(x.id||x.key)===open.dataset.open);
+    if(h&&!h.sourceText&&cloud()&&h.id&&h.sourceAvailable){
+      const{data,error}=await sb.from("workout_files").select("source_text").eq("workout_id",h.id).single();
+      if(error){err("เปิดไฟล์ต้นฉบับไม่ได้: "+error.message);return}
+      h.sourceText=data.source_text;
+    }
+    if(!h||!h.sourceText){err("ไม่พบไฟล์ต้นฉบับของเซสชันนี้");return}
+    $("#plan").value=["auto","trail","interval","tempo","long","easy","recovery"].includes(h.plan)?h.plan:"auto";
+    if(!loadFileText(h.sourceText,h.fileName||h.name+".gpx"))return;
+    if(Array.isArray(h.repRanges)){REP_RANGES=h.repRanges.map(r=>({a:r.a,b:r.b}));recompute()}
+    $("#batchStatus").textContent="เปิดไฟล์ที่บันทึกไว้แล้ว แก้ชนิดการวิ่งหรือรอบได้ จากนั้นกด “อัปเดตเซสชันนี้”";
+    $("#res").scrollIntoView({behavior:"smooth",block:"start"});
+    return;
+  }
   const b=e.target.closest("[data-x]");if(!b)return;const k=b.dataset.x,h=HIST.find(x=>String(x.id||x.key)===k);if(!h)return;
   if(cloud()&&h.id){const{error}=await sb.from("workouts").delete().eq("id",h.id);if(error){err("ลบไม่สำเร็จ: "+error.message);return}}
-  HIST=HIST.filter(x=>x!==h);if(!cloud())lsSet(HIST);render();
+  HIST=HIST.filter(x=>x!==h);lsSet(lsGet().filter(x=>x.key!==h.key));render();
 });
 
 /* ตั้งค่า + นำเข้าไฟล์ */
-try{const s=JSON.parse(localStorage.getItem(SK2)||"{}");if(s.maxHR)$("#maxhr").value=s.maxHR}catch(_){}
-$("#maxhr").oninput=()=>{try{localStorage.setItem(SK2,JSON.stringify({maxHR:$("#maxhr").value}))}catch(_){}recompute()};
+try{const s=JSON.parse(localStorage.getItem(SK2)||"{}");if(s.maxHR)$("#maxhr").value=s.maxHR;if(s.hrThreshold)$("#hrthreshold").value=s.hrThreshold}catch(_){}
+function saveSettings(){try{localStorage.setItem(SK2,JSON.stringify({maxHR:$("#maxhr").value,hrThreshold:$("#hrthreshold").value}))}catch(_){err("บันทึกการตั้งค่า HR ในเบราว์เซอร์นี้ไม่ได้")}}
+$("#maxhr").oninput=()=>{saveSettings();recompute()};
+$("#hrthreshold").oninput=()=>{saveSettings();recompute()};
 $("#plan").onchange=recompute;
-function loadFileText(text,name){
-  if(/\.fit$/i.test(name)){err("ยังไม่รองรับไฟล์ .fit ตอนนี้ ส่งออกเป็น GPX หรือ TCX ก่อน");return}
+function storeSharedFile(text,name){try{sessionStorage.setItem("sharedActivityFile",JSON.stringify({name,text}));return true}catch(_){return false}}
+function loadFileText(text,name,keepShared=true){
+  if(!/\.(gpx|tcx)$/i.test(name)){err("รองรับเฉพาะไฟล์ .gpx และ .tcx ตอนนี้ไฟล์ .fit ยังใช้ไม่ได้");return false}
+  if(keepShared&&!storeSharedFile(text,name))$("#batchStatus").textContent="วิเคราะห์ไฟล์นี้ได้ แต่เก็บไฟล์ไว้สลับเครื่องมือไม่ได้เพราะไฟล์ใหญ่เกินพื้นที่ชั่วคราว";
   try{
     const doc=new DOMParser().parseFromString(text,"application/xml"),tcx=/\.tcx$/i.test(name);
     const raw=tcx?parseTCX(doc):parseGPX(doc);
     if(!raw.some(p=>fin(p.t)))throw new Error("notime");
     const t0=raw.find(p=>fin(p.t)).t;
-    ingest(raw,{name:name.replace(/\.(gpx|tcx)$/i,""),date:new Date(t0*1000).toISOString()});
-  }catch(e){err(e.message==="notime"?"ไฟล์นี้ไม่มีเวลาของแต่ละจุด จึงวิเคราะห์การซ้อมไม่ได้ (ไฟล์เส้นทางอย่างเดียวให้ใช้เครื่องมือความชันแทน)":"อ่านไฟล์ไม่ได้ ไฟล์ต้องเป็น GPX หรือ TCX ที่มีเวลา")}
+    return ingest(raw,{name:name.replace(/\.(gpx|tcx)$/i,""),fileName:name,sourceText:text,date:new Date(t0*1000).toISOString()});
+  }catch(e){err(e.message==="notime"?"ไฟล์นี้ไม่มีเวลาของแต่ละจุด จึงวิเคราะห์การซ้อมไม่ได้ (ไฟล์เส้นทางอย่างเดียวให้ใช้เครื่องมือความชันแทน)":"อ่านไฟล์ไม่ได้ ไฟล์ต้องเป็น GPX หรือ TCX ที่มีเวลา");return false}
 }
-function takeFile(f){if(!f)return;const rd=new FileReader();rd.onload=()=>loadFileText(rd.result,f.name);rd.readAsText(f)}
+function mergeHistory(a,b){
+  const out=[],positions=new Map();
+  for(const h of a.concat(b)){
+    if(!h)continue;const k=h.key||h.id;if(k==null)continue;const key=String(k);
+    if(positions.has(key)){
+      const current=out[positions.get(key)];
+      for(const field of["sourceText","fileName","plan","repRanges","sourceAvailable"])if(!current[field]&&h[field])current[field]=h[field];
+      continue;
+    }
+    positions.set(key,out.length);out.push(h);
+  }
+  return out;
+}
+async function autoSaveSessions(records){
+  const known=new Set(HIST.map(h=>String(h.key||h.id))),fresh=[];
+  for(const h of records)if(h&&!known.has(String(h.key))){known.add(String(h.key));fresh.push(h)}
+  let sourceFailed=false;
+  if(cloud())for(const record of records){
+    const existing=HIST.find(h=>h.key===record.key);
+    if(record.sourceText&&existing&&existing.id&&!await saveCloudSource(existing.id,record))sourceFailed=true;
+  }
+  if(!fresh.length){
+    for(const record of records)if(record){const existing=HIST.find(h=>h.key===record.key);if(existing&&record.sourceText)Object.assign(existing,{sourceText:record.sourceText,fileName:record.fileName,plan:record.plan,repRanges:record.repRanges})}
+    let local=lsGet();for(const record of records)if(record)local=mergeHistory(local.filter(h=>h.key!==record.key),[localRecord(record,!cloud()||sourceFailed)]);lsSet(local);
+    if(sourceFailed)err("บันทึกไฟล์ต้นฉบับขึ้นบัญชีไม่สำเร็จ กรุณาตรวจตาราง workout_files");
+    return 0;
+  }
+  let saved=fresh;
+  if(cloud()){
+    saved=[];
+    for(let i=0;i<fresh.length;i+=100){
+      const batch=fresh.slice(i,i+100);
+      const{data,error}=await sb.from("workouts").insert(batch.map(record=>({data:workoutData(record)}))).select("id");
+      if(error){
+        const localOk=lsSet(mergeHistory(lsGet(),fresh));HIST=mergeHistory(HIST,saved.concat(fresh));
+        err("บันทึกขึ้นบัญชีไม่สำเร็จหลังบันทึกแล้ว "+saved.length+" เซสชัน: "+error.message+(localOk?"; เก็บผลไว้ในเบราว์เซอร์นี้แทน":"; บันทึกสำรองในเบราว์เซอร์ก็ไม่สำเร็จ")+" กรุณาตรวจตาราง workouts");
+        return localOk?fresh.length:saved.length;
+      }
+      const inserted=batch.map((record,index)=>({...record,id:data[index].id}));
+      saved=saved.concat(inserted);
+      for(const record of inserted)if(record.sourceText&&!await saveCloudSource(record.id,record))sourceFailed=true;
+    }
+  }
+  HIST=mergeHistory(HIST,saved);
+  let local=lsGet();for(const record of records)if(record)local=mergeHistory(local.filter(h=>h.key!==record.key),[localRecord(record,!cloud()||sourceFailed)]);
+  const localOk=lsSet(local);
+  if(sourceFailed)err("บันทึกผลวิเคราะห์แล้ว แต่ไฟล์ต้นฉบับบางไฟล์บันทึกขึ้นบัญชีไม่สำเร็จ กรุณาตรวจตาราง workout_files");
+  return cloud()||localOk?fresh.length:0;
+}
+function readTextFile(file){return new Promise((resolve,reject)=>{const rd=new FileReader();rd.onload=()=>resolve(String(rd.result||""));rd.onerror=()=>reject(new Error("อ่านไฟล์ไม่สำเร็จ: "+file.name));rd.readAsText(file)})}
+async function takeFiles(fileList){
+  const files=Array.from(fileList||[]);if(!files.length)return;
+  $("#plan").value="auto";
+  $("#batchStatus").textContent="กำลังวิเคราะห์ "+files.length+" ไฟล์…";
+  const records=[],failures=[];
+  for(let i=0;i<files.length;i++){
+    const f=files[i];
+    try{
+      if(!/\.(gpx|tcx)$/i.test(f.name))throw new Error("รองรับเฉพาะ GPX/TCX");
+      const text=await readTextFile(f);
+      if(!loadFileText(text,f.name))throw new Error($("#err").textContent||"วิเคราะห์ไม่สำเร็จ");
+      records.push({...lastSess});
+      $("#batchStatus").textContent="วิเคราะห์แล้ว "+(i+1)+"/"+files.length+" ไฟล์…";
+    }catch(e){failures.push(f.name+": "+e.message)}
+  }
+  const saved=await autoSaveSessions(records);
+  if(records.length)render();
+  $("#batchStatus").textContent="วิเคราะห์ "+records.length+" จาก "+files.length+" ไฟล์; บันทึกอัตโนมัติ "+saved+" เซสชัน"+(failures.length?" · ไฟล์ที่ไม่สำเร็จ: "+failures.join(" | "):"");
+  if(failures.length)err(failures.join(" | "));
+}
 const drop=$("#drop");
 drop.addEventListener("dragover",e=>{e.preventDefault();drop.classList.add("over")});
 drop.addEventListener("dragleave",()=>drop.classList.remove("over"));
-drop.addEventListener("drop",e=>{e.preventDefault();drop.classList.remove("over");takeFile(e.dataTransfer.files[0])});
+drop.addEventListener("drop",e=>{e.preventDefault();drop.classList.remove("over");takeFiles(e.dataTransfer.files)});
 drop.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();$("#file").click()}});
-$("#file").onchange=e=>{takeFile(e.target.files[0]);e.target.value=""};
+$("#file").onchange=e=>{takeFiles(e.target.files);e.target.value=""};
 
 /* บัญชี */
 function renderAcct(){
@@ -606,6 +1098,37 @@ async function loadActs(reset){
   if(!r.ok){$("#stvMsg").textContent="โหลดกิจกรรมไม่สำเร็จ ("+r.status+")";return}
   const a=await r.json();ACT=ACT.concat(a);$("#stvMore").hidden=a.length<100;$("#stvMsg").textContent="";renderActs();
 }
+async function importAllStrava(){
+  const b=$("#stvAll");b.disabled=true;
+  try{
+    const after=$("#dFrom").value?Math.floor(new Date($("#dFrom").value+"T00:00:00").getTime()/1000):null;
+    const before=$("#dTo").value?Math.floor(new Date($("#dTo").value+"T23:59:59").getTime()/1000):null;
+    let page=1,activities=[];
+    while(true){
+      const q=new URLSearchParams({page:String(page)});
+      if(after)q.set("after",String(after));if(before)q.set("before",String(before));
+      $("#stvMsg").textContent="กำลังดึงประวัติ Strava หน้า "+page+"…";
+      const r=await api("/api/strava-activities?"+q);
+      if(r.status===409)throw new Error("ยังไม่ได้เชื่อมต่อ Strava หรือสิทธิ์อ่านกิจกรรมหมดอายุ กรุณาเชื่อมต่อใหม่ก่อน");
+      if(!r.ok)throw new Error("โหลดหน้า "+page+" ไม่สำเร็จ ("+r.status+")");
+      const a=await r.json();activities=activities.concat(a);
+      if(a.length<100)break;
+      page++;
+    }
+    const runs=activities.filter(a=>/run/i.test(String(a.type))&&a.dist>0);
+    const records=runs.map(a=>{
+      const moving=+(a.moving||a.elapsed||0),dist=+a.dist/1000;
+      if(!moving||dist<=0)return null;
+      const hr=a.avgHR!=null&&fin(+a.avgHR)?+a.avgHR:NaN,date=a.date||new Date().toISOString();
+      return{key:"strava:"+a.id,stravaId:String(a.id),source:"strava-summary",date,name:a.name||"Strava run",type:"summary",dist,dur:moving/60,pace:moving/dist,hr,load:moving/60*2,loadMethod:"duration-estimate",ef:NaN,elevation:+a.gain||0,avgSpeed:a.avgSpeed!=null&&fin(+a.avgSpeed)?+a.avgSpeed:NaN,best:{},bestHR:{}};
+    }).filter(Boolean);
+    const saved=await autoSaveSessions(records);
+    $("#stvMsg").textContent="โหลด "+activities.length+" กิจกรรมแล้ว; พบกิจกรรมวิ่ง/เทรล "+runs.length+" รายการ และบันทึกสรุปใหม่ "+saved+". ใช้ระยะ/เวลา/HR เฉลี่ยที่ Strava ส่งให้ ไม่รวมกราฟหรือช่วงอินเทอร์วัลรายวินาที; โหลดกิจกรรมสรุปคิดจากเวลาอย่างเดียวจึงเป็นค่าคร่าวๆ";
+    render();
+  }catch(e){$("#stvMsg").textContent=e.message||"นำเข้าประวัติ Strava ไม่สำเร็จ";err($("#stvMsg").textContent)}
+  finally{b.disabled=false}
+}
+$("#stvAll").onclick=importAllStrava;
 function renderActs(){
   const q=$("#q").value.trim().toLowerCase(),tf=$("#stvType").value,okT=t=>!tf||(tf==="run"?/run/i.test(t):tf==="walk"?/walk|hike/i.test(t):/ride|bike|cycl/i.test(t));
   const L=ACT.filter(a=>a.dist>0&&okT(String(a.type))&&(!q||String(a.name).toLowerCase().includes(q)));
@@ -619,8 +1142,9 @@ $("#stvList").onclick=async e=>{
     const r=await api("/api/strava-stream?full=1&id="+encodeURIComponent(a.id));if(!r.ok)throw 0;const j=await r.json();
     if(!j.time||!j.distance)throw 1;
     const ll=j.latlng||[];
-    ingest(j.time.map((t,i)=>({t,d:j.distance[i],hr:j.heartrate?j.heartrate[i]:NaN,cad:j.cadence?j.cadence[i]:NaN,ele:j.altitude?j.altitude[i]:NaN,lat:ll[i]?ll[i][0]:NaN,lon:ll[i]?ll[i][1]:NaN})),{name:a.name,date:new Date(a.date).toISOString()});
-    $("#stvMsg").textContent="";$("#stv").hidden=true;
+    const ok=ingest(j.time.map((t,i)=>({t,d:j.distance[i],hr:j.heartrate?j.heartrate[i]:NaN,cad:j.cadence?j.cadence[i]:NaN,ele:j.altitude?j.altitude[i]:NaN,lat:ll[i]?ll[i][0]:NaN,lon:ll[i]?ll[i][1]:NaN})),{name:a.name,activityType:a.type,date:new Date(a.date).toISOString()});
+    if(!ok){$("#stvMsg").textContent="ข้อมูลกิจกรรมไม่เพียงพอสำหรับวิเคราะห์ ดูข้อความแจ้งข้อผิดพลาดในหน้า";return}
+    await autoSaveSessions([lastSess]);$("#stvMsg").textContent="วิเคราะห์และบันทึกกิจกรรมแล้ว";$("#stv").hidden=true;render();
   }catch(x){$("#stvMsg").textContent=x===1?"กิจกรรมนี้ไม่มีข้อมูลเวลาและระยะ":"ดึงข้อมูลไม่สำเร็จ"}
 };
 $("#q").oninput=renderActs;$("#stvType").onchange=renderActs;$("#dFrom").onchange=$("#dTo").onchange=()=>loadActs(true);$("#stvMore").onclick=()=>{actPage++;loadActs(false)};
@@ -628,6 +1152,8 @@ $("#q").oninput=renderActs;$("#stvType").onchange=renderActs;$("#dFrom").onchang
 /* ทูลทิป hover */
 const gt=document.createElement("div");gt.className="gt";gt.hidden=true;document.body.appendChild(gt);
 document.addEventListener("pointerover",e=>{const t=e.target.closest&&e.target.closest("[data-tip]");if(t&&e.pointerType!=="touch"){const r=t.getBoundingClientRect();gt.textContent=t.dataset.tip;gt.hidden=false;const w=gt.offsetWidth;gt.style.left=Math.max(6,Math.min(innerWidth-w-6,r.left+r.width/2-w/2))+"px";gt.style.top=(r.bottom+6)+"px"}else gt.hidden=true});
+document.addEventListener("focusin",e=>{const t=e.target.closest&&e.target.closest("[data-tip]");if(!t)return;const r=t.getBoundingClientRect();gt.textContent=t.dataset.tip;gt.hidden=false;const w=gt.offsetWidth;gt.style.left=Math.max(6,Math.min(innerWidth-w-6,r.left+r.width/2-w/2))+"px";gt.style.top=(r.bottom+6)+"px"});
+document.addEventListener("focusout",e=>{if(e.target.closest&&e.target.closest("[data-tip]"))gt.hidden=true});
 document.addEventListener("pointerdown",()=>{gt.hidden=true});
 
 async function init(){
@@ -637,7 +1163,23 @@ async function init(){
   sb.auth.onAuthStateChange((ev,s)=>{const was=USER&&USER.id;SESS=s;USER=s?s.user:null;renderAcct();if((USER&&USER.id)!==was){$("#login").hidden=true;loadHist()}});
   if(new URLSearchParams(location.search).get("strava")==="connected"){history.replaceState(null,"",location.pathname);$("#stv").hidden=false;loadActs(true)}
 }
-init().catch(e=>err("บัญชีใช้งานไม่ได้: "+(e.message||e)));
+async function loadSharedFiles(){
+  try{
+    const batch=sessionStorage.getItem("sharedActivityFiles");
+    if(batch){
+      const files=JSON.parse(batch),records=[],failures=[];
+      sessionStorage.removeItem("sharedActivityFiles");
+      for(const o of files){if(loadFileText(o.text,o.name,false))records.push({...lastSess});else failures.push(o.name)}
+      const n=await autoSaveSessions(records);
+      $("#batchStatus").textContent="วิเคราะห์และบันทึก "+n+" ไฟล์จากหน้าแรกแล้ว"+(failures.length?" · วิเคราะห์ไม่ได้: "+failures.join(", "):"");
+      if(records.length)render();
+    }else{
+      const pf=sessionStorage.getItem("sharedActivityFile");
+      if(pf){const o=JSON.parse(pf);if(loadFileText(o.text,o.name,false)){const n=await autoSaveSessions([lastSess]);$("#batchStatus").textContent=n?"วิเคราะห์และบันทึกไฟล์ที่ส่งมาจากหน้าแรกแล้ว":"ไฟล์นี้มีอยู่ในประวัติแล้ว";render()}}
+    }
+  }catch(e){err("เปิดไฟล์ชั่วคราวไม่ได้: "+(e.message||e))}
+}
+init().catch(e=>err("บัญชีใช้งานไม่ได้: "+(e.message||e))).finally(loadSharedFiles);
 </script>
 </body>
 </html>
