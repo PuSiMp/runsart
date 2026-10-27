@@ -51,7 +51,7 @@ label{display:flex;flex-direction:column;font-size:.78rem;color:var(--mute);gap:
 .cr{display:grid;grid-template-columns:110px 1fr;gap:10px;align-items:baseline}
 .cr b{font-size:.75rem;color:var(--mute);font-weight:500}
 .cr .hl{font-size:1.15rem;font-weight:700;line-height:1.3}
-.hgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.hgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 .hg{border-left:1px solid var(--line);padding-left:14px}
 .hg:first-child{border-left:0;padding-left:0}
 .hl2{font-size:.72rem;color:var(--mute);margin-bottom:6px}
@@ -126,7 +126,7 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
 </head>
 <body>
 <main>
-<div class="top"><div class="crumbs"><a class="back" href="/">← หน้าแรก</a><a class="back" href="/tools/slope/">ใช้ไฟล์เดิมวิเคราะห์ความชัน →</a><h1>วิเคราะห์การซ้อม</h1></div><div class="acct" id="acct"></div></div>
+<div class="top"><div class="crumbs"><h1>วิเคราะห์การซ้อม</h1></div><div class="acct" id="acct"></div></div>
 <nav class="toolnav" role="toolbar" aria-label="เครื่องมือ">
   <a href="/">หน้าแรก</a>
   <a href="/tools/slope/">แผนที่และแบ่งช่วง</a>
@@ -325,7 +325,7 @@ function analyze(S,cfg){
   const load=hasZones?zs.reduce((a,s,k)=>a+s/60*(k+1),0):movSec/60*2;
   const z3p=hasZones?zPct[2]+zPct[3]+zPct[4]:NaN;
   const maxObs=maxR(hrS,0,N);
-  let terrainGain=0;for(let i=1;i<N;i++)if(fin(ele[i])&&fin(ele[i-1])&&ele[i]-ele[i-1]>.5)terrainGain+=ele[i]-ele[i-1];
+  let terrainGain=0;{const es=smooth(ele,25);for(let i=1;i<N;i++)if(fin(es[i])&&fin(es[i-1])&&es[i]>es[i-1])terrainGain+=es[i]-es[i-1]}
   const gainPerKm=dist>0?terrainGain/(dist/1000):0,trailLike=gainPerKm>=45;
   /* ตรวจจับคอร์ส */
   const vals=[];for(let i=0;i<N;i++)if(mv[i])vals.push(v15[i]);
@@ -461,11 +461,11 @@ function predictionsOf(R,sess,hist){
       if(!base)continue;
       const time=+(h.best[base]||0);
       if(time/(base/1000)>=720)continue;
-      const projected=time*Math.pow(D/base,1.06);
+      const projected=time*Math.pow(D/base,D/base>2.5?1.09:1.06);
       if(!chosen||projected<chosen.time)chosen={base,time,projected,activity:h};
     }
     if(!chosen)return{name,D,time:NaN};
-    const ratio=D/chosen.base,low=chosen.time*Math.pow(ratio,1.04),high=chosen.time*Math.pow(ratio,1.08);
+    const ratio=D/chosen.base,low=chosen.time*Math.pow(ratio,ratio>2.5?1.07:1.04),high=chosen.time*Math.pow(ratio,ratio>2.5?1.12:1.08);
     const hr=+(chosen.activity.bestHR&&chosen.activity.bestHR[chosen.base]||NaN);
     const recentEfforts=rows.filter(h=>h.best&&h.best[chosen.base]).length;
     return{name,D,base:chosen.base,time:chosen.projected,low,high,hr,recentEfforts,sourceDate:chosen.activity.date};
@@ -488,10 +488,10 @@ function coachOf(R,sess,P){
   else ins="เพซเฉลี่ย "+fmtPace(R.avgPace)+" ต่อ กม."+(fin(R.avgHR)?" หัวใจเฉลี่ย "+R.avgHR.toFixed(0)+" bpm":"");
   const hard=R.type==="interval"||R.type==="tempo"||R.z3p>40;
   let rec;
-  if(P.enough&&fin(P.ratio)&&P.ratio>1.5)rec="โหลดสัปดาห์นี้พุ่งสูง (ACWR "+P.ratio.toFixed(2)+") เสี่ยงบาดเจ็บ พรุ่งนี้พักเต็มวัน";
+  if(P.enough&&fin(P.ratio)&&P.ratio>1.5)rec="โหลดสัปดาห์นี้พุ่งสูง (ACWR "+P.ratio.toFixed(2)+") สูงกว่าปกติมาก พรุ่งนี้ควรพักเต็มวัน";
   else if(P.enough&&fin(P.ratio)&&P.ratio>1.3)rec="โหลดเริ่มสูง (ACWR "+P.ratio.toFixed(2)+") พรุ่งนี้แนะนำพักหรือวิ่งเบาๆ ไม่เกิน 30 นาที";
   else if(hard)rec="โหลดวันนี้ค่อนข้างสูง พรุ่งนี้แนะนำพักหรือวิ่ง Recovery สั้นๆ ไม่เกิน 30 นาที";
-  else if(R.flags.find(f=>f.level==="warn"&&/Overcooked|ไม่เบาพอ/.test(f.text)))rec="ครั้งหน้าชะลอเพซให้หัวใจอยู่โซน 2 เพื่อให้ร่างกายฟื้นและพร้อมซ้อมหนักวันถัดไป";
+  else if(R.flags.find(f=>f.level==="warn"&&/หนักเกินเป้าหมาย Easy|Recovery ยังหนักไป/.test(f.text)))rec="ครั้งหน้าชะลอเพซให้หัวใจอยู่โซน 2 เพื่อให้ร่างกายฟื้นและพร้อมซ้อมหนักวันถัดไป";
   else if(P.enough&&fin(P.ratio)&&P.ratio<.8)rec="โหลดช่วงนี้ต่ำกว่าปกติ เพิ่มระยะหรือจำนวนวันซ้อมได้อีกเล็กน้อย";
   else rec="วันนี้โหลดกำลังดี ซ้อมตามแผนวันถัดไปได้";
   if(R.eff==="trail")rec+=" สำหรับเทรลให้คุมความเหนื่อย/HR และปรับเพซตามความชัน ไม่ยึดเพซทางราบ";
@@ -563,7 +563,8 @@ const HELP={
   "เวลาประมาณ (ช่วง)":"เวลาแข่งที่คำนวณและช่วงความไวจากสูตร ไม่ใช่การรับประกัน",
   "อ้างอิง":"ระยะและเซสชันที่ใช้เป็นข้อมูลคำนวณเวลาแข่ง"
 };
-const helpIcon=text=>'<span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบาย '+esc(text)+'" data-tip="'+esc(HELP[text]||"ค่าที่คำนวณจากข้อมูลกิจกรรม ใช้ประกอบการดูแนวโน้ม")+'">?</span>';
+const PLAIN=new Set(["ระยะ","เวลา","เวลาเคลื่อนที่","เพซเฉลี่ย","หัวใจเฉลี่ย","เพซ /กม.","HR เฉลี่ย","พัก","กม.","เพซ","เพซปรับชัน","HR","สรุปวันนี้","ข้อสังเกต","คำแนะนำ","โซน 1","โซน 2","โซน 3","โซน 4","โซน 5"]);
+const helpIcon=text=>PLAIN.has(text)?"":'<span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบาย '+esc(text)+'" data-tip="'+esc(HELP[text]||"ค่าที่คำนวณจากข้อมูลกิจกรรม ใช้ประกอบการดูแนวโน้ม")+'">?</span>';
 const cell=(l,v)=>'<div><span>'+esc(l)+helpIcon(l)+'</span><strong>'+v+'</strong></div>';
 
 function setCfg(){const meta=CUR&&CUR.meta||{},activityType=String(meta.activityType||meta.type||"");return{maxHR:parseFloat($("#maxhr").value)||null,hrThreshold:parseFloat($("#hrthreshold").value)||null,plan:$("#plan").value,trailHint:$("#plan").value==="auto"&&(/trail|เทรล/i.test(String(meta.name||""))||/trail/i.test(activityType))}}
@@ -630,16 +631,14 @@ function render(){
   const fd=R.flyDie?(R.flyDie.level===2?"หน้าตึงหลังหลุด":R.flyDie.level===1?"เริ่มตกช่วงหลัง":"ไม่พบ ("+sg(R.flyDie.drop*100,0)+"%)"):(R.posSplit!=null?(R.posSplit>.05?"ครึ่งหลังช้า "+(R.posSplit*100).toFixed(0)+"%":"สปลิตดี ("+sg(R.posSplit*100,0)+"%)"):"-");
   const acwr=fin(P.ratio)?P.ratio.toFixed(2)+(P.enough?(P.ratio>1.5?" · พุ่งสูง":P.ratio>1.3?" · เริ่มเสี่ยง":P.ratio<.8?" · ต่ำกว่าปกติ":" · กำลังดี"):" · ข้อมูลยังไม่พอ"):"-";
   $("#hero").innerHTML=
-   '<div class="hg"><div class="hl2">เซสชัน</div><div class="stats">'+cell("ชนิดคอร์ส",TYPE_TH[R.eff]+(R.eff!==R.type?" (ตรวจพบ "+TYPE_TH[R.type]+")":""))+cell("ระยะ",(R.dist/1000).toFixed(2)+" กม.")+cell("เวลาเคลื่อนที่",fmtDur(R.movSec))+cell("เพซเฉลี่ย",fmtPace(R.avgPace)+" /กม.")+cell("หัวใจเฉลี่ย",fin(R.avgHR)?R.avgHR.toFixed(0)+" bpm":"-")+'</div></div>'+
-   '<div class="hg"><div class="hl2">คุณภาพการคุมแผน</div><div class="stats">'+cell("ความนิ่งของเพซ",grade)+cell("รูปแบบเพซ",fd)+cell("หัวใจลอย (Pw:Hr)",R.decouple!=null?R.decouple.toFixed(1)+"%":"-")+cell("หัวใจลดใน 60 วิ",R.hrDrop&&fin(R.hrDrop[60])?R.hrDrop[60].toFixed(0)+" bpm":"-")+'</div></div>'+
-   '<div class="hg"><div class="hl2">โหลดและความหนัก</div><div class="stats">'+cell("โหลดเซสชัน",Math.round(R.load)+" แต้ม")+cell("เวลาโซน 3 ขึ้นไป",R.hasZones?R.z3p.toFixed(0)+"%":"-")+cell("ACWR (7/28 วัน)",acwr)+cell("หัวใจสูงสุด",fin(R.maxObs)?Math.round(R.maxObs)+" bpm":"-")+'</div></div>'+
-   '<div class="hg"><div class="hl2">พัฒนาการ</div><div class="stats">'+cell("EF (แอโรบิก)",R.ef!=null?R.ef.toFixed(2):"-")+cell("EF เทียบก่อนหน้า",P.efChange!=null?sg(P.efChange,1)+"%":"-")+cell("คาดการณ์ 10 กม.",fin(pred[1].time)?fmtDur(pred[1].time):"-")+cell("เทียบคอร์สเดิม",P.cmp?"พบ 1 ครั้ง":"ยังไม่มี")+'</div></div>';
+   '<div class="hg"><div class="hl2">สรุปเซสชัน</div><div class="stats">'+cell("ชนิดคอร์ส",TYPE_TH[R.eff]+(R.eff!==R.type?" (ตรวจพบ "+TYPE_TH[R.type]+")":""))+cell("ระยะ",(R.dist/1000).toFixed(2)+" กม.")+cell("เวลาเคลื่อนที่",fmtDur(R.movSec))+cell("เพซเฉลี่ย",fmtPace(R.avgPace)+" /กม.")+cell("หัวใจเฉลี่ย",fin(R.avgHR)?R.avgHR.toFixed(0)+" bpm":"-")+'</div></div>'+
+   '<div class="hg"><div class="hl2">ความหนักและการคุมแผน</div><div class="stats">'+cell("ความนิ่งของเพซ",grade)+cell("หัวใจลอย (Pw:Hr)",R.decouple!=null?R.decouple.toFixed(1)+"%":"-")+cell("โหลดเซสชัน",Math.round(R.load)+" แต้ม")+cell("เวลาโซน 3 ขึ้นไป",R.hasZones?R.z3p.toFixed(0)+"%":"-")+'</div></div>';
   drawChart();drawRouteMap();syncRepTools();syncRepHistory();
   /* ตารางเที่ยววิ่ง / สปลิต */
   if(R.reps.length){
     $("#repT").innerHTML=(R.eff==="interval"&&R.sig?"เที่ยววิ่งและช่วงพัก ("+esc(R.sig)+")":"ช่วงที่เร็ว")+" "+helpIcon("เที่ยววิ่งและช่วงพัก");
     const hd=R.reps.some(r=>r.hrRecovery&&fin(r.hrRecovery[30]));
-    $("#reps").innerHTML='<table><tr><th>รอบ</th><th>เริ่ม (วินาที)</th><th>จบ (วินาที)</th><th>ระยะ '+helpIcon("ระยะ")+'</th><th>เวลา '+helpIcon("เวลา")+'</th><th>เพซ /กม. '+helpIcon("เพซ /กม.")+'</th><th>HR เฉลี่ย '+helpIcon("HR เฉลี่ย")+'</th><th>HR สูงสุด '+helpIcon("HR สูงสุด")+'</th><th>รอบขา '+helpIcon("รอบขา")+'</th><th>พัก '+helpIcon("พัก")+'</th>'+(hd?'<th>HR หลังพัก 30 วิ (ลด)</th><th>60 วิ (ลด)</th><th>90 วิ (ลด)</th>':'')+'<th>ลบ</th></tr>'+R.reps.map((r,i)=>'<tr><td>'+(i+1)+'</td><td><input class="rep-edit-input" type="number" min="0" max="'+(R.N-1)+'" step="1" value="'+r.a+'" data-rep-start="'+i+'" aria-label="เวลาเริ่มรอบที่ '+(i+1)+' วินาที"></td><td><input class="rep-edit-input" type="number" min="1" max="'+(R.N-1)+'" step="1" value="'+r.b+'" data-rep-end="'+i+'" aria-label="เวลาจบรอบที่ '+(i+1)+' วินาที"></td><td>'+Math.round(r.dist)+' ม.</td><td>'+fmtDur(r.time)+'</td><td>'+fmtPace(r.pace)+'</td><td>'+(fin(r.hr)?r.hr.toFixed(0):"-")+'</td><td>'+(fin(r.hrMax)?r.hrMax.toFixed(0):"-")+'</td><td>'+(fin(r.cad)?r.cad.toFixed(0):"-")+'</td><td>'+fmtDur(r.rest)+'</td>'+(hd?[30,60,90].map(k=>'<td>'+(fin(r.hrRecovery[k])?r.hrRecovery[k].toFixed(0):"-")+(fin(r.drop[k])?" ("+r.drop[k].toFixed(0)+"↓)":"")+'</td>').join(""):'')+'<td><button class="ib" type="button" data-remove-rep="'+i+'" aria-label="ลบรอบที่ '+(i+1)+'">×</button></td></tr>').join("")+(hd&&R.hrRecoveryAvg?'<tr><td colspan="10"><b>เฉลี่ย</b></td>'+[30,60,90].map(k=>'<td><b>'+(fin(R.hrRecoveryAvg[k])?R.hrRecoveryAvg[k].toFixed(0):"-")+(fin(R.hrDrop[k])?" ("+R.hrDrop[k].toFixed(0)+"↓)":"")+'</b></td>').join("")+'<td></td></tr>':'')+'</table><p class="note">เวลาเริ่ม/จบเป็นวินาทีจากต้นกิจกรรม; แก้ได้ตรงนี้หรือปรับขอบแถบบนกราฟ ค่าระยะ เพซ และ HR จะคำนวณใหม่</p><p class="note">ค่าหลังพักคือ HR ที่วัด ณ 30/60/90 วินาทีหลังจบช่วงเร็ว; ตัวเลขในวงเล็บคือ HR ที่ลดลงจากช่วงท้ายเที่ยวเร็ว หน่วย bpm</p>'+(hd?(R.hasZones?'<p class="note">แนวทางช่วงพัก: วิ่ง/เดินเบาและรอให้หายใจควบคุมได้; HR โซน 1–2 เป็นจุดอ้างอิงเมื่อแผนไม่ได้กำหนดเวลาพักตายตัว</p>':'<p class="note">ยังไม่มี HR threshold/Max HR จึงแสดง HR ที่วัดได้ แต่ไม่ตั้งเป้าหมาย HR ช่วงพัก</p>'):'');
+    $("#reps").innerHTML='<table><tr><th>รอบ</th><th>เริ่ม (วินาที)</th><th>จบ (วินาที)</th><th>ระยะ '+helpIcon("ระยะ")+'</th><th>เวลา '+helpIcon("เวลา")+'</th><th>เพซ /กม. '+helpIcon("เพซ /กม.")+'</th><th>HR เฉลี่ย '+helpIcon("HR เฉลี่ย")+'</th><th>พัก '+helpIcon("พัก")+'</th>'+(hd?'<th>HR หลังพัก 30 วิ (ลด)</th><th>60 วิ (ลด)</th><th>90 วิ (ลด)</th>':'')+'<th>ลบ</th></tr>'+R.reps.map((r,i)=>'<tr><td>'+(i+1)+'</td><td><input class="rep-edit-input" type="number" min="0" max="'+(R.N-1)+'" step="1" value="'+r.a+'" data-rep-start="'+i+'" aria-label="เวลาเริ่มรอบที่ '+(i+1)+' วินาที"></td><td><input class="rep-edit-input" type="number" min="1" max="'+(R.N-1)+'" step="1" value="'+r.b+'" data-rep-end="'+i+'" aria-label="เวลาจบรอบที่ '+(i+1)+' วินาที"></td><td>'+Math.round(r.dist)+' ม.</td><td>'+fmtDur(r.time)+'</td><td>'+fmtPace(r.pace)+'</td><td>'+(fin(r.hr)?r.hr.toFixed(0):"-")+'</td><td>'+fmtDur(r.rest)+'</td>'+(hd?[30,60,90].map(k=>'<td>'+(fin(r.hrRecovery[k])?r.hrRecovery[k].toFixed(0):"-")+(fin(r.drop[k])?" ("+r.drop[k].toFixed(0)+"↓)":"")+'</td>').join(""):'')+'<td><button class="ib" type="button" data-remove-rep="'+i+'" aria-label="ลบรอบที่ '+(i+1)+'">×</button></td></tr>').join("")+(hd&&R.hrRecoveryAvg?'<tr><td colspan="8"><b>เฉลี่ย</b></td>'+[30,60,90].map(k=>'<td><b>'+(fin(R.hrRecoveryAvg[k])?R.hrRecoveryAvg[k].toFixed(0):"-")+(fin(R.hrDrop[k])?" ("+R.hrDrop[k].toFixed(0)+"↓)":"")+'</b></td>').join("")+'<td></td></tr>':'')+'</table><p class="note">เวลาเริ่ม/จบเป็นวินาทีจากต้นกิจกรรม; แก้ได้ตรงนี้หรือปรับขอบแถบบนกราฟ ค่าระยะ เพซ และ HR จะคำนวณใหม่</p><p class="note">ค่าหลังพักคือ HR ที่วัด ณ 30/60/90 วินาทีหลังจบช่วงเร็ว; ตัวเลขในวงเล็บคือ HR ที่ลดลงจากช่วงท้ายเที่ยวเร็ว หน่วย bpm</p>'+(hd?(R.hasZones?'<p class="note">แนวทางช่วงพัก: วิ่ง/เดินเบาและรอให้หายใจควบคุมได้; HR โซน 1–2 เป็นจุดอ้างอิงเมื่อแผนไม่ได้กำหนดเวลาพักตายตัว</p>':'<p class="note">ยังไม่มี HR threshold/Max HR จึงแสดง HR ที่วัดได้ แต่ไม่ตั้งเป้าหมาย HR ช่วงพัก</p>'):'');
   }else{
     if(R.eff==="interval"||R.eff==="tempo"){
       $("#repT").innerHTML="เที่ยววิ่งและช่วงพัก "+helpIcon("เที่ยววิ่งและช่วงพัก");
@@ -671,7 +670,7 @@ function render(){
   }
   $("#prog").innerHTML=ph;
   const ok=pred.some(p=>fin(p.time));
-  $("#pred").innerHTML=ok?'<table><tr><th>ระยะ '+helpIcon("ระยะ")+'</th><th>เวลาประมาณ (ช่วง) '+helpIcon("เวลาประมาณ (ช่วง)")+'</th><th>เพซ /กม. '+helpIcon("เพซ /กม.")+'</th><th>อ้างอิง '+helpIcon("อ้างอิง")+'</th></tr>'+pred.map(p=>'<tr><td>'+p.name+'</td><td>'+(fin(p.time)?fmtDur(p.time)+' ('+fmtDur(p.low)+'–'+fmtDur(p.high)+')':"-")+'</td><td>'+(fin(p.time)?fmtPace(p.time/(p.D/1000)):"-")+'</td><td>'+(p.base?("ช่วงต่อเนื่อง "+p.base/1000+" กม. · "+(p.recentEfforts||1)+" เซสชัน"+(fin(p.hr)&&R.hrRef?" · HR "+(p.hr/R.hrRef*100).toFixed(0)+"% ของค่าอ้างอิง":"")):"ยังไม่มีข้อมูลพอ")+'</td></tr>').join("")+'</table><p class="note" style="margin-top:8px">ใช้ช่วงต่อเนื่องที่เร็วที่สุดจากประวัติ 90 วันด้วยสูตร Riegel; ช่วงเวลาแสดงความไวต่อเลขชี้กำลัง 1.04–1.08 ไม่ใช่ช่วงรับประกันผล HR ใช้ประกอบการประเมิน effort/โซน ไม่ได้แปลงเป็นเวลาแข่งโดยตรง'+(pred.some(p=>p.recentEfforts===1)?" ข้อมูลบางระยะมีเพียง 1 เซสชัน จึงควรใช้เป็นกรอบคร่าวๆ":"")+'</p>':'<p class="note">ยังคาดการณ์ไม่ได้ ต้องมีการวิ่งต่อเนื่องอย่างน้อย 3 กม. ที่บันทึกไว้ในประวัติ 90 วัน และไม่ใช่คอร์สที่ตรวจพบเป็น Interval/เทรล</p>';
+  $("#pred").innerHTML=ok?'<table><tr><th>ระยะ '+helpIcon("ระยะ")+'</th><th>เวลาประมาณ (ช่วง) '+helpIcon("เวลาประมาณ (ช่วง)")+'</th><th>เพซ /กม. '+helpIcon("เพซ /กม.")+'</th><th>อ้างอิง '+helpIcon("อ้างอิง")+'</th></tr>'+pred.map(p=>'<tr><td>'+p.name+'</td><td>'+(fin(p.time)?fmtDur(p.time)+' ('+fmtDur(p.low)+'–'+fmtDur(p.high)+')':"-")+'</td><td>'+(fin(p.time)?fmtPace(p.time/(p.D/1000)):"-")+'</td><td>'+(p.base?("ช่วงต่อเนื่อง "+p.base/1000+" กม. · "+(p.recentEfforts||1)+" เซสชัน"+(fin(p.hr)&&R.hrRef?" · HR "+(p.hr/R.hrRef*100).toFixed(0)+"% ของค่าอ้างอิง":"")):"ยังไม่มีข้อมูลพอ")+'</td></tr>').join("")+'</table><p class="note" style="margin-top:8px">ใช้ช่วงต่อเนื่องที่เร็วที่สุดจากประวัติ 90 วันด้วยสูตร Riegel; ช่วงเวลาแสดงความไวต่อเลขชี้กำลัง 1.04–1.08 (ระยะที่ไกลเกิน 2.5 เท่าของช่วงอ้างอิงใช้ 1.07–1.12 เพราะสูตรมักให้เวลาเร็วเกินจริง) ไม่ใช่ช่วงรับประกันผล HR ใช้ประกอบการประเมิน effort/โซน ไม่ได้แปลงเป็นเวลาแข่งโดยตรง'+(pred.some(p=>p.recentEfforts===1)?" ข้อมูลบางระยะมีเพียง 1 เซสชัน จึงควรใช้เป็นกรอบคร่าวๆ":"")+'</p>':'<p class="note">ยังคาดการณ์ไม่ได้ ต้องมีการวิ่งต่อเนื่องอย่างน้อย 3 กม. ที่บันทึกไว้ในประวัติ 90 วัน และไม่ใช่คอร์สที่ตรวจพบเป็น Interval/เทรล</p>';
   renderHist();
 }
 /* กราฟเพซ + หัวใจ */
