@@ -428,25 +428,26 @@ index 2a57f32..35d9c22 100644
      <div class="info" id="info"></div>
    </section>
 diff --git a/tools/training analysis/index.html b/tools/training analysis/index.html
-index a620c83..bec22ab 100644
+index a620c83..bbc681c 100644
 --- a/tools/training analysis/index.html	
 +++ b/tools/training analysis/index.html	
-@@ -122,6 +122,14 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
+@@ -122,6 +122,15 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
  .distance-scroll input{padding:0;accent-color:var(--accent)}
  .distance-scroll output{min-width:105px;text-align:right;font-size:.82rem;color:var(--mute);font-variant-numeric:tabular-nums}
  .no-map{fill:var(--mute);font-size:15px}
 +
-+/* แผนที่และกราฟ: ให้สองกล่องสูงเท่ากัน และไม่บิดตัวอักษร */
++/* แผนที่และกราฟ: ความสูงของแผนที่ตามคอลัมน์กราฟ ไม่มีที่ว่างใต้กราฟ และไม่บิดตัวอักษร */
 +.route-panel{align-items:stretch;gap:12px 14px}
-+.route-content{aspect-ratio:auto;height:100%;min-height:280px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:color-mix(in srgb,var(--bg) 78%,var(--panel))}
-+#routeMap{aspect-ratio:auto;height:100%;min-height:280px}
-+.route-chart{align-content:start}
++.route-content{position:relative;aspect-ratio:auto;height:auto;min-height:300px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:color-mix(in srgb,var(--bg) 78%,var(--panel))}
++#routeMap{position:absolute;inset:0;width:100%;height:100%;aspect-ratio:auto}
++.route-chart{align-content:center}
 +#cv{height:auto}
-+@media(max-width:760px){.route-content{aspect-ratio:1/1;height:auto;min-height:0;max-height:360px}#routeMap{min-height:0}}
++.route-chart .distance-scroll{margin-top:10px}
++@media(max-width:760px){.route-content{aspect-ratio:1/1;min-height:0;max-height:360px}}
  </style>
  </head>
  <body>
-@@ -143,16 +151,16 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
+@@ -143,16 +152,16 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
    <div id="analysisOptions" hidden>
      <h2 style="margin:14px 0 8px">2. เลือกชนิดการวิ่ง <span class="note">(ไม่บังคับ — เปลี่ยนภายหลังได้)</span></h2>
      <div class="srow">
@@ -467,16 +468,26 @@ index a620c83..bec22ab 100644
  
  <div id="res" hidden>
    <section class="box coach" id="coach"></section>
-@@ -164,7 +172,7 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
+@@ -164,8 +173,9 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
      </div>
      <div class="route-chart">
      <div class="chart-main">
 -      <div class="cw"><svg id="cv" viewBox="0 0 700 190" preserveAspectRatio="none" role="img" aria-label="กราฟเพซและอัตราการเต้นหัวใจตามระยะทาง"></svg><div class="tip" id="tip" hidden></div></div>
 +      <div class="cw"><svg id="cv" viewBox="0 0 700 260" role="img" aria-label="กราฟเพซและอัตราการเต้นหัวใจตามระยะทาง"></svg><div class="tip" id="tip" hidden></div></div>
        <p class="note" id="cvN"></p>
++      <label class="distance-scroll">เลื่อนตามระยะทาง <input id="distanceScroll" type="range" min="0" max="1" step="1" value="0" disabled><output id="distanceValue">- กม.</output></label>
      </div>
      <div class="visual-tools" role="toolbar" aria-label="เครื่องมือแก้ไขรอบวิ่ง">
-@@ -187,7 +195,7 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
+       <button id="bEditReps" type="button" aria-pressed="false" data-tip="ปรับรอบบนกราฟ" aria-label="ปรับรอบบนกราฟ"><span data-ic="cut"></span></button>
+@@ -176,7 +186,6 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
+     </div>
+     <span class="tool-status" id="splitStatus" aria-live="polite"></span>
+     </div>
+-    <label class="distance-scroll">เลื่อนตามระยะทาง <input id="distanceScroll" type="range" min="0" max="1" step="1" value="0" disabled><output id="distanceValue">- กม.</output></label>
+   </section>
+   <section class="box"><h2 id="repT">เที่ยววิ่งและช่วงพัก <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบายรายละเอียดเที่ยววิ่ง" data-tip="แต่ละเที่ยวเร็วที่ระบบตรวจพบ แก้เวลาเริ่ม/จบด้วยการลากขอบบนกราฟหรือปรับตัวเลขในตาราง; เพิ่มรอบที่ตกหล่นได้ด้วยการลากเลือกช่วง">?</span></h2><p class="note" id="repEditHelp">ลากขอบซ้าย/ขวาของแถบสีบนกราฟเพื่อแก้รอบ หรือปรับเวลาเริ่ม/จบในตาราง</p><div class="tw" id="reps"></div></section>
+   <div class="two">
+@@ -187,7 +196,7 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
      <section class="box"><h2>พัฒนาการ <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบายพัฒนาการ" data-tip="แนวโน้มจากประวัติที่นำเข้าหรือบันทึกไว้ เปรียบเทียบได้เมื่อมีข้อมูลต่อเนื่องพอ">?</span></h2><div id="prog"></div></section>
      <section class="box"><h2>คาดการณ์เวลาแข่ง <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบายคาดการณ์เวลาแข่ง" data-tip="คำนวณจากผลงานวิ่งต่อเนื่องที่ผ่านมา เป็นช่วงประมาณ ไม่รับประกันผลจริง">?</span></h2><div id="pred"></div></section>
    </div>
@@ -485,7 +496,7 @@ index a620c83..bec22ab 100644
  </div>
  </main>
  
-@@ -397,7 +405,7 @@ function analyze(S,cfg){
+@@ -397,7 +406,7 @@ function analyze(S,cfg){
      const g=splits.filter(s=>s.moving>=.8).map(s=>s.gap);
      if(g.length>=3){const cv=sd(g)/mean(g);R.cv=cv;R.pci=clamp(Math.round(100-cv*800),0,100);
        const k=Math.floor(g.length/2);R.posSplit=(mean(g.slice(g.length-k))-mean(g.slice(0,k)))/mean(g.slice(0,k))}
@@ -494,7 +505,7 @@ index a620c83..bec22ab 100644
      let sa,sb;
      if(isTempo&&runs.length){sa=runs[0].a;sb=runs[runs.length-1].b}else{sa=Math.min(600,Math.floor(N*.15));sb=N}
      if(hasHR&&sb-sa>=1200){
-@@ -433,7 +441,7 @@ function analyze(S,cfg){
+@@ -433,7 +442,7 @@ function analyze(S,cfg){
    if(R.posSplit!=null&&!isInt&&R.posSplit>.05)add("warn","ครึ่งหลังช้ากว่าครึ่งแรก "+(R.posSplit*100).toFixed(0)+"% (ปรับตามความชันแล้ว) ออกตัวแรงไปหรือเริ่มล้า");
    return R;
  }
@@ -503,7 +514,7 @@ index a620c83..bec22ab 100644
  function progressOf(R,sess,hist){
    const ref=new Date(sess.date).getTime(),day=864e5,others=hist.filter(h=>h.key!==sess.key),loadOthers=others.filter(h=>h.loadMethod===sess.loadMethod);
    const all=loadOthers.map(h=>({t:new Date(h.date).getTime(),load:h.load})).concat([{t:ref,load:R.load}]).filter(x=>fin(x.t)&&ref-x.t>=0&&ref-x.t<28*day);
-@@ -521,16 +529,16 @@ const HELP={
+@@ -521,16 +530,16 @@ const HELP={
    "หัวใจเฉลี่ย":"อัตราการเต้นหัวใจเฉลี่ย หน่วย bpm; ใช้ประกอบกับความรู้สึกและสภาพเส้นทาง",
    "ความนิ่งของเพซ":"คะแนน A–D จากความแปรปรวนของเพซ ไม่ใช่คะแนนความฟิต",
    "รูปแบบเพซ":"เปรียบเทียบเพซช่วงต้นกับช่วงท้ายของกิจกรรม",
@@ -524,7 +535,7 @@ index a620c83..bec22ab 100644
    "เที่ยววิ่งและช่วงพัก":"แสดงช่วงวิ่งเร็วและ HR ที่วัดหลังเริ่มพัก",
    "เที่ยว":"ลำดับของช่วงวิ่งเร็ว",
    "ระยะ":"ระยะทางของช่วงนี้",
-@@ -561,7 +569,7 @@ const HELP={
+@@ -561,7 +570,7 @@ const HELP={
    "โซน 4":"ความหนักสูงตามค่า HR อ้างอิงที่ตั้งไว้",
    "โซน 5":"ความหนักสูงสุดตามค่า HR อ้างอิงที่ตั้งไว้",
    "เวลาประมาณ (ช่วง)":"เวลาแข่งที่คำนวณและช่วงความไวจากสูตร ไม่ใช่การรับประกัน",
@@ -533,7 +544,7 @@ index a620c83..bec22ab 100644
  };
  const PLAIN=new Set(["ระยะ","เวลา","เวลาเคลื่อนที่","เพซเฉลี่ย","หัวใจเฉลี่ย","เพซ /กม.","HR เฉลี่ย","พัก","กม.","เพซ","เพซปรับชัน","HR","สรุปวันนี้","ข้อสังเกต","คำแนะนำ","โซน 1","โซน 2","โซน 3","โซน 4","โซน 5"]);
  const helpIcon=text=>PLAIN.has(text)?"":'<span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบาย '+esc(text)+'" data-tip="'+esc(HELP[text]||"ค่าที่คำนวณจากข้อมูลกิจกรรม ใช้ประกอบการดูแนวโน้ม")+'">?</span>';
-@@ -631,8 +639,8 @@ function render(){
+@@ -631,8 +640,8 @@ function render(){
    const fd=R.flyDie?(R.flyDie.level===2?"หน้าตึงหลังหลุด":R.flyDie.level===1?"เริ่มตกช่วงหลัง":"ไม่พบ ("+sg(R.flyDie.drop*100,0)+"%)"):(R.posSplit!=null?(R.posSplit>.05?"ครึ่งหลังช้า "+(R.posSplit*100).toFixed(0)+"%":"สปลิตดี ("+sg(R.posSplit*100,0)+"%)"):"-");
    const acwr=fin(P.ratio)?P.ratio.toFixed(2)+(P.enough?(P.ratio>1.5?" · พุ่งสูง":P.ratio>1.3?" · เริ่มเสี่ยง":P.ratio<.8?" · ต่ำกว่าปกติ":" · กำลังดี"):" · ข้อมูลยังไม่พอ"):"-";
    $("#hero").innerHTML=
@@ -544,7 +555,7 @@ index a620c83..bec22ab 100644
    drawChart();drawRouteMap();syncRepTools();syncRepHistory();
    /* ตารางเที่ยววิ่ง / สปลิต */
    if(R.reps.length){
-@@ -653,15 +661,15 @@ function render(){
+@@ -653,15 +662,15 @@ function render(){
    $("#flags").innerHTML=R.flags.map(f=>'<div class="flag '+f.level+'"></div>').join("")||'<p class="note">ไม่มีข้อสังเกตพิเศษ</p>';
    $("#flags").querySelectorAll(".flag").forEach((el,i)=>{el.textContent=R.flags[i].text});
    /* พัฒนาการ */
@@ -564,7 +575,7 @@ index a620c83..bec22ab 100644
    const stravaRows=HIST.filter(h=>h.source==="strava-summary");
    if(stravaRows.length){
      const distance=stravaRows.reduce((s,h)=>s+(+h.dist||0),0),seconds=stravaRows.reduce((s,h)=>s+(+h.dur||0)*60,0),gain=stravaRows.reduce((s,h)=>s+(+h.elevation||0),0);
-@@ -670,11 +678,11 @@ function render(){
+@@ -670,11 +679,11 @@ function render(){
    }
    $("#prog").innerHTML=ph;
    const ok=pred.some(p=>fin(p.time));
@@ -578,7 +589,7 @@ index a620c83..bec22ab 100644
  function drawChart(){
    const R=lastR,S=CUR.S,N=S.N,totalDist=Math.max(S.d[N-1]-S.d[0],1),X=i=>CL+(S.d[clamp(Math.round(i),0,N-1)]-S.d[0])/totalDist*(CW-CL-CR);
    const pace=new Float64Array(N);let pmin=1e9,pmax=0;
-@@ -730,22 +738,22 @@ function updateActivePosition(index){
+@@ -730,22 +739,22 @@ function updateActivePosition(index){
  function drawRouteMap(){
    const svg=$("#routeMap"),S=CUR&&CUR.S;
    if(!S){svg.innerHTML='<text class="no-map" x="175" y="175" text-anchor="middle">นำเข้ากิจกรรมที่มีพิกัด GPS เพื่อแสดงแผนที่</text>';return}
@@ -608,7 +619,7 @@ index a620c83..bec22ab 100644
      const color=r.fast?"var(--accent)":"var(--mute)";
      return points.length>1?'<polyline points="'+points.join(" ")+'" fill="none" stroke="'+color+'" stroke-opacity="'+(r.fast?1:.68)+'" stroke-width="'+(r.fast?5:3)+'" stroke-linecap="round" stroke-linejoin="round"/>':"";
    }).join("");
-@@ -861,14 +869,14 @@ $("#routeMap").addEventListener("click",e=>{
+@@ -861,14 +870,14 @@ $("#routeMap").addEventListener("click",e=>{
  });
  $("#cv").addEventListener("pointerleave",()=>{$("#tip").hidden=true;for(const id of["#hl","#hd","#hd2"]){const el=$(id);if(el)el.setAttribute("visibility","hidden")}});
  
@@ -625,7 +636,7 @@ index a620c83..bec22ab 100644
      else{
        const cloudHistory=data.map(r=>({...r.data,id:r.id}));
        if(cloudHistory.length){
-@@ -884,10 +892,10 @@ async function loadHist(){
+@@ -884,10 +893,10 @@ async function loadHist(){
  }
  function renderHist(){
    const all=HIST.slice().sort((x,y)=>new Date(y.date)-new Date(x.date)),a=all.slice(0,50);
@@ -638,7 +649,7 @@ index a620c83..bec22ab 100644
    $("#saveN").textContent=saved?"แก้ไขชนิดการวิ่งหรือรอบ แล้วกดอัปเดตเพื่อแทนที่รายการเดิม":(sb&&!USER?"ต้องเข้าสู่ระบบก่อนจึงจะบันทึกได้":"");
  }
  function workoutData(record){const{sourceText,fileName,...data}=record;return data}
-@@ -908,7 +916,7 @@ function replaceSavedRecord(record,keepSource=true){
+@@ -908,7 +917,7 @@ function replaceSavedRecord(record,keepSource=true){
  }
  $("#bSave").onclick=async()=>{
    if(!lastSess)return;
@@ -647,7 +658,7 @@ index a620c83..bec22ab 100644
    const existing=HIST.find(h=>h.key===lastSess.key),rec={...lastSess};
    if(cloud()){
      let result;
-@@ -933,11 +941,11 @@ $("#hist").addEventListener("click",async e=>{
+@@ -933,11 +942,11 @@ $("#hist").addEventListener("click",async e=>{
        if(error){err("เปิดไฟล์ต้นฉบับไม่ได้: "+error.message);return}
        h.sourceText=data.source_text;
      }
@@ -661,7 +672,7 @@ index a620c83..bec22ab 100644
      $("#res").scrollIntoView({behavior:"smooth",block:"start"});
      return;
    }
-@@ -999,7 +1007,7 @@ async function autoSaveSessions(records){
+@@ -999,7 +1008,7 @@ async function autoSaveSessions(records){
        const{data,error}=await sb.from("workouts").insert(batch.map(record=>({data:workoutData(record)}))).select("id");
        if(error){
          const localOk=lsSet(mergeHistory(lsGet(),fresh));HIST=mergeHistory(HIST,saved.concat(fresh));
@@ -670,7 +681,7 @@ index a620c83..bec22ab 100644
          return localOk?fresh.length:saved.length;
        }
        const inserted=batch.map((record,index)=>({...record,id:data[index].id}));
-@@ -1031,7 +1039,7 @@ async function takeFiles(fileList){
+@@ -1031,7 +1040,7 @@ async function takeFiles(fileList){
    }
    const saved=await autoSaveSessions(records);
    if(records.length)render();
