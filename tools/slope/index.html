@@ -123,7 +123,7 @@ th{color:var(--mute);font-weight:500;font-size:.78rem}
 </head>
 <body>
 <main>
-<div class="top"><div class="crumbs"><a class="back" href="/">← หน้าแรก</a><a class="back" href="/tools/training%20analysis/">ใช้ไฟล์เดิมวิเคราะห์การซ้อม →</a><h1>คำนวณความชันและความยากเส้นทาง</h1></div><div class="acct" id="acct"></div></div>
+<div class="top"><div class="crumbs"><a class="back" href="/">← หน้าแรก</a><a class="back" href="/tools/training%20analysis/">ใช้ไฟล์เดิมวิเคราะห์การซ้อม →</a><h1>แผนที่และแบ่งช่วง</h1></div><div class="acct" id="acct"></div></div>
 <nav class="toolnav" role="toolbar" aria-label="เครื่องมือ">
   <a href="/">หน้าแรก</a>
   <a href="/tools/slope/" aria-current="page">แผนที่และแบ่งช่วง</a>
@@ -179,7 +179,7 @@ th{color:var(--mute);font-weight:500;font-size:.78rem}
     <p class="note" id="hint"></p>
     <div style="position:relative"><svg id="cv" viewBox="0 0 700 270" role="img" aria-label="กราฟโปรไฟล์ความสูง"></svg><div id="tip" class="tip" hidden></div><div class="zc"><button id="zi" data-tip="ซูมเข้า" aria-label="ซูมเข้า"><span data-ic="plus"></span></button><button id="zo" data-tip="ซูมออก" aria-label="ซูมออก"><span data-ic="minus"></span></button><button id="zr" data-tip="รีเซ็ตซูม" aria-label="รีเซ็ตซูม"><span data-ic="fit"></span></button></div></div>
     <input type="range" id="pan" min="0" max="1000" value="0" hidden aria-label="เลื่อนช่วงที่ซูม">
-    <div class="slbox" id="sl" hidden><label>ความไวจุดเปลี่ยนความชัน: <span id="tolV"></span><input type="range" id="tol" min="1" max="150" step="1" value="10" aria-label="ความไวจุดเปลี่ยนความชัน"></label><p class="note">เลื่อนซ้ายแบ่งละเอียดขึ้น เลื่อนขวารวมช่วงที่ความชันใกล้กัน</p></div>
+    <div class="slbox" id="sl" hidden><label>ความละเอียดการแบ่งช่วง: <span id="tolV"></span><input type="range" id="tol" min="1" max="150" step="1" value="10" aria-label="ความไวจุดเปลี่ยนความชัน"></label><p class="note">เลื่อนซ้ายแบ่งละเอียดขึ้น เลื่อนขวารวมช่วงที่ความชันใกล้กัน</p></div>
     <p class="err" id="err" role="alert"></p>
     <div class="info" id="info"></div>
   </section>

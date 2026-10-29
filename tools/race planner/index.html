@@ -85,6 +85,10 @@ tr.sel td{background:color-mix(in srgb,var(--accent) 12%,transparent)}
 .two>.box{min-width:0}
 .band table{font-size:.8rem}
 .gt{position:fixed;z-index:80;background:var(--ink);color:var(--bg);font-size:.78rem;padding:4px 9px;border-radius:6px;pointer-events:none;max-width:260px}
+.tbox{display:flex;align-items:center;gap:6px}
+.tbox input{width:3.4em;flex:none;text-align:center;padding:8px 4px}
+.tbox .u{font-size:.8rem;color:var(--mute);font-weight:400}
+.row>label#lT,.row>label#lF{width:auto}
 @media print{
   body{background:#fff;color:#000}
   .noprint{display:none!important}
@@ -109,8 +113,8 @@ tr.sel td{background:color-mix(in srgb,var(--accent) 12%,transparent)}
     <label class="drop" id="drop" tabindex="0"><span data-ic="upload"></span><span><strong>ลากไฟล์เส้นทางแข่ง (.gpx / .tcx) มาวาง หรือคลิกเลือกไฟล์</strong><br><span class="note">ไฟล์จากผู้จัดงาน ต้องมีความสูง</span></span><input type="file" id="file" accept=".gpx,.tcx" hidden></label>
     <label>โหมดสนาม <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="อัตโนมัติเลือกเทรลเมื่อไต่ขึ้นตั้งแต่ 35 ม./กม. หรือมีช่วงชันตั้งแต่ 12% อย่างน้อย 8% ของระยะ; ไม่สามารถรู้พื้นผิวทางจริงจากไฟล์ความสูงได้ หากไม่ตรงให้เลือกถนนหรือเทรลเอง">ⓘ</span><select id="mode"><option value="auto">อัตโนมัติจากความสูง</option><option value="road">ถนน</option><option value="trail">เทรล</option></select></label>
     <label>กำหนดแผนจาก <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="เลือกเวลาจบเป้าหมายเพื่อคำนวณเพซทางราบที่ต้องทำ หรือเลือกเพซทางราบเพื่อให้ระบบประมาณเวลาเข้าเส้นชัย">ⓘ</span><select id="tsel"><option value="time">เวลาเข้าเส้นชัย</option><option value="pace">เพซทางราบ</option></select></label>
-    <label id="lT">เวลาเป้าหมาย (ชม:นาที:วินาที) <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="เวลาที่ต้องการเข้าเส้นชัย ใช้ปรับเพซในแต่ละความชันให้เวลารวมตรงกับเป้าหมาย">ⓘ</span><input type="text" id="tt" value="4:00:00" inputmode="numeric"></label>
-    <label id="lF" hidden>เพซทางราบ (นาที:วินาที /กม.) <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="เพซสมมติบนทางราบ ก่อนระบบปรับเร็วหรือช้าตามความชันของเส้นทาง">ⓘ</span><input type="text" id="fp" value="5:30" inputmode="numeric"></label>
+    <label id="lT">เวลาเป้าหมาย <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="เวลาที่ต้องการเข้าเส้นชัย ใช้ปรับเพซในแต่ละความชันให้เวลารวมตรงกับเป้าหมาย">ⓘ</span><span class="tbox"><input id="th" type="text" inputmode="numeric" maxlength="3" value="4" aria-label="ชั่วโมง" autocomplete="off"><span class="u">ชม.</span><input id="tm" type="text" inputmode="numeric" maxlength="2" value="00" aria-label="นาที" autocomplete="off"><span class="u">นาที</span><input id="ts" type="text" inputmode="numeric" maxlength="2" value="00" aria-label="วินาที" autocomplete="off"><span class="u">วิ</span></span></label>
+    <label id="lF" hidden>เพซทางราบ (ต่อ กม.) <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="เพซสมมติบนทางราบ ก่อนระบบปรับเร็วหรือช้าตามความชันของเส้นทาง">ⓘ</span><span class="tbox"><input id="pm" type="text" inputmode="numeric" maxlength="2" value="5" aria-label="นาที" autocomplete="off"><span class="u">นาที</span><input id="ps" type="text" inputmode="numeric" maxlength="2" value="30" aria-label="วินาที" autocomplete="off"><span class="u">วิ</span></span></label>
   </div>
   <div class="row" style="margin-top:10px">
     <label>เตือนล่วงหน้า <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="จุดเตือนในไฟล์ส่งออกจะอยู่ก่อนจุดจริงตามระยะที่ตั้งไว้ เพื่อให้นาฬิกาเตือนก่อนถึงเนินหรือจุดให้น้ำ">ⓘ</span> <span><span id="offV">80</span> ม.</span><input type="range" id="off" min="50" max="100" step="5" value="80"></label>
@@ -126,7 +130,7 @@ tr.sel td{background:color-mix(in srgb,var(--accent) 12%,transparent)}
   <p class="err" id="err" role="alert"></p>
 </section>
 
-<div id="empty" class="box noprint"><p class="note">นำเข้าไฟล์เส้นทางแข่ง แล้วใส่เวลาเป้าหมาย ระบบจะแบ่งเพซตามความชันของแต่ละช่วง สร้างจุดเตือนบนเนินและจุดให้น้ำ ให้คุณลากแก้ตำแหน่งบนกราฟและแผนที่ได้ แล้วส่งออกไปใช้บนนาฬิกาหรือพิมพ์แถบเพซ</p></div>
+<div id="empty" class="box noprint"><p class="note">เริ่มยังไง: ① ใส่ไฟล์เส้นทางแข่ง (.gpx / .tcx ที่มีความสูง) ② ใส่เวลาเป้าหมาย ③ กด “สร้างจุดเตือนอัตโนมัติ” (ลากแก้ตำแหน่งบนกราฟหรือแผนที่ได้) ④ ส่งออกไปนาฬิกา หรือพิมพ์แถบเพซพกไปวันแข่ง ระบบจะบอกเพซของแต่ละช่วงตามความชัน เนินวิ่งช้าลง ทางลงเร็วขึ้น</p></div>
 
 <div id="res" hidden>
   <section class="box noprint"><div class="hgrid" id="hero"></div></section>
@@ -146,8 +150,8 @@ tr.sel td{background:color-mix(in srgb,var(--accent) 12%,transparent)}
     <div class="leg" id="leg"></div>
     <div class="cw" style="margin-top:12px"><svg class="viz" id="mv" viewBox="0 0 700 300" role="img" aria-label="แผนที่เส้นทาง"></svg></div>
     <h2 style="margin-top:14px">ช่วงความชัน <span class="note" id="slopeRangeCount"></span> <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="ใช้ RDP แบบเดียวกับหน้าแผนที่/แบ่งช่วง โดยเก็บจุดที่ระดับความสูงเบี่ยงจากเส้นเชื่อมมากกว่าค่าคลาดเคลื่อน ค่าเริ่มต้นอิง 3% ของช่วงระดับสูงต่ำสุด และเพิ่มค่าอัตโนมัติเมื่อมีเกิน 30 ช่วง">ⓘ</span></h2>
-    <label style="margin-top:8px">ความไวจุดเปลี่ยนความชัน: <span id="rangeTolValue">-</span><input type="range" id="rangeTol" min="1" max="150" step="1" value="10" aria-label="ความไวจุดเปลี่ยนความชัน"></label>
-    <p class="note" style="margin:4px 0 8px">ปรับค่าคลาดเคลื่อนระดับความสูง (เมตร): เลื่อนไปทางซ้ายเพื่อแบ่งละเอียดขึ้น เลื่อนไปทางขวาเพื่อรวมช่วง</p>
+    <label style="margin-top:8px">ความละเอียดการแบ่งช่วง: <span id="rangeTolValue">-</span><input type="range" id="rangeTol" min="1" max="150" step="1" value="10" aria-label="ความไวจุดเปลี่ยนความชัน"></label>
+    <p class="note" style="margin:4px 0 8px">เลื่อนซ้าย = แบ่งช่วงละเอียดขึ้น · เลื่อนขวา = รวมช่วงที่ความชันใกล้กัน</p>
     <div class="slopebar" id="slopeBar" role="img" aria-label="แถบแบ่งช่วงความชัน"></div>
     <div class="rangelegend" id="slopeLegend"></div>
     <div class="tw" style="max-height:280px;margin-top:8px" id="slopeRangeTable"></div>
@@ -167,7 +171,7 @@ tr.sel td{background:color-mix(in srgb,var(--accent) 12%,transparent)}
       <button class="sbtn" id="bPrint"><span data-ic="print"></span>พิมพ์แถบเพซ</button>
       <label style="width:150px">แถบเพซทุก<select id="bandStep"><option value="1">1 กม.</option><option value="2">2 กม.</option><option value="5" selected>5 กม.</option></select></label>
     </div>
-    <p class="note" style="margin-top:8px">GPX ฝังจุดเตือนเป็น Waypoint ส่วน TCX เป็น Course ที่มี Course Point (น้ำ อาหาร อันตราย) และเวลาตามแผนสำหรับ Virtual Partner ชื่อจุดเป็นตัวอักษรอังกฤษสั้นๆ เพราะหน้าจอนาฬิกาแสดงภาษาไทยไม่ได้ทุกรุ่น รายละเอียดภาษาไทยอยู่ในช่องบันทึกย่อ ผมยังไม่ได้ทดสอบกับนาฬิกาจริง ลองนำเข้าแล้วตรวจที่ Garmin Connect ก่อนแข่ง</p>
+    <p class="note" style="margin-top:8px">GPX ฝังจุดเตือนเป็น Waypoint ส่วน TCX เป็น Course ที่มี Course Point (น้ำ อาหาร อันตราย) และเวลาตามแผนสำหรับ Virtual Partner ชื่อจุดเป็นตัวอักษรอังกฤษสั้นๆ เพราะหน้าจอนาฬิกาแสดงภาษาไทยไม่ได้ทุกรุ่น รายละเอียดภาษาไทยอยู่ในช่องบันทึกย่อ ยังไม่ได้ทดสอบกับนาฬิกาทุกรุ่น ลองนำเข้าและตรวจใน Garmin Connect ก่อนวันแข่ง</p>
   </section>
 
   <section class="box band" id="bandBox"><h2 id="bandT">แถบเพซ</h2><div class="tw" style="max-height:none" id="bandTable"></div></section>
@@ -191,8 +195,13 @@ const err=m=>{$("#err").textContent=m||""};
 const fin=isFinite,clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const fmtDur=s=>{if(!fin(s))return"-";s=Math.round(s);const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return h+":"+String(m).padStart(2,"0")+":"+String(x).padStart(2,"0")};
 const fmtPace=s=>{if(!fin(s)||s<=0)return"-";let m=Math.floor(s/60),x=Math.round(s%60);if(x===60){m++;x=0}return m+":"+String(x).padStart(2,"0")};
-const parseHMS=t=>{const a=String(t).trim().split(":").map(Number);if(!a.length||a.some(x=>!fin(x)||x<0))return NaN;return a.length===3?a[0]*3600+a[1]*60+a[2]:a.length===2?a[0]*3600+a[1]*60:a[0]*60};
-const parseMS=t=>{const a=String(t).trim().split(":").map(Number);if(!a.length||a.some(x=>!fin(x)||x<0))return NaN;return a.length===2?a[0]*60+a[1]:a[0]};
+const parseHMS=t=>{const a=String(t).trim().split(":").map(Number);if(!a.length||a.length>3||a.some(x=>!fin(x)||x<0)||a.slice(1).some(x=>x>=60))return NaN;return a.length===3?a[0]*3600+a[1]*60+a[2]:a.length===2?a[0]*3600+a[1]*60:a[0]*60};
+const boxNum=el=>{const v=String(el.value).replace(/\D/g,"");return v===""?0:parseInt(v,10)};
+const getTT=()=>boxNum($("#th"))+":"+boxNum($("#tm"))+":"+boxNum($("#ts"));
+const getFP=()=>boxNum($("#pm"))+":"+boxNum($("#ps"));
+const setTT=sec=>{sec=Math.round(sec);$("#th").value=Math.floor(sec/3600);$("#tm").value=String(Math.floor(sec%3600/60)).padStart(2,"0");$("#ts").value=String(sec%60).padStart(2,"0")};
+const setFP=sec=>{sec=Math.round(sec);$("#pm").value=Math.floor(sec/60);$("#ps").value=String(sec%60).padStart(2,"0")};
+const parseMS=t=>{const a=String(t).trim().split(":").map(Number);if(!a.length||a.length>2||a.some(x=>!fin(x)||x<0)||a.slice(1).some(x=>x>=60))return NaN;return a.length===2?a[0]*60+a[1]:a[0]};
 function hav(la1,lo1,la2,lo2){const k=Math.PI/180,dl=(la2-la1)*k,dn=(lo2-lo1)*k,h=Math.sin(dl/2)**2+Math.cos(la1*k)*Math.cos(la2*k)*Math.sin(dn/2)**2;return 12742000*Math.asin(Math.sqrt(h))}
 function cost(g){g=clamp(g/100,-.3,.3);return 155.4*g**5-30.4*g**4-43.3*g**3+46.3*g**2+19.5*g+3.6}
 const TYPES={
@@ -407,8 +416,11 @@ const S={course:null,plan:null,mode:"auto",tsel:"time",T:14400,fp:330,off:80,aid
 function cfgNow(){return{mode:S.mode==="auto"&&S.course?courseMode(S.course).mode:S.mode,tsel:S.tsel,T:S.T,fp:S.fp}}
 function readInputs(){
   S.mode=$("#mode").value;S.tsel=$("#tsel").value;
-  const T=parseHMS($("#tt").value),fp=parseMS($("#fp").value);
-  if(fin(T)&&T>0)S.T=T;if(fin(fp)&&fp>0)S.fp=fp;
+  const T=parseHMS(getTT()),fp=parseMS(getFP());
+  let bad="";
+  if(fin(T)&&T>0&&T<=172800)S.T=T;else if($("#tsel").value==="time"){bad="เวลาเป้าหมายไม่ถูกต้อง นาทีและวินาทีต้องไม่เกิน 59 และเวลาต้องมากกว่า 0 (คงค่าเดิมไว้)";setTT(S.T)}
+  if(fin(fp)&&fp>0&&fp<=1800)S.fp=fp;else if($("#tsel").value==="pace"){bad="เพซไม่ถูกต้อง วินาทีต้องไม่เกิน 59 และเพซต้องมากกว่า 0 (คงค่าเดิมไว้)";setFP(S.fp)}
+  if(bad)err(bad);else if(/^(เวลาเป้าหมาย|เพซไม่ถูกต้อง)/.test($("#err").textContent))err("");
   S.off=+$("#off").value;$("#offV").textContent=S.off;
   S.aid=$("#aid").value.split(/[,\s]+/).map(Number).filter(x=>fin(x)&&x>0);
   S.gel=Math.max(0,parseInt($("#gel").value)||0);
@@ -450,7 +462,7 @@ function setZoom(zoom,anchor=S.viewCenter){
 function renderAll(){
   const C=S.course,PL=S.plan;if(!C||!PL)return;
   $("#empty").hidden=true;$("#res").hidden=false;
-  const cell=(l,v,d)=>'<div>'+l+(d?' '+infoTip(d):'')+'<strong>'+v+'</strong></div>',sp=splitsOf(C,PL),paces=sp.map(s=>s.pace);
+  const OBV=["ระยะ","เวลาเข้าเส้นชัย","เพซเฉลี่ย","ขึ้นชัน 12%+","ขึ้น 3 ถึง 12%","ราบ","ลง","ทั้งหมด","น้ำ/เจล/เกลือแร่","เนิน/โพล","อันตราย"],cell=(l,v,d)=>'<div>'+l+(d&&!OBV.includes(l)?' '+infoTip(d):'')+'<strong>'+v+'</strong></div>',sp=splitsOf(C,PL),paces=sp.map(s=>s.pace);
   const segmentation=slopeRanges(C,S.rangeTol);S.ranges=segmentation.ranges;S.rangeTol=segmentation.tolerance;
   $("#rangeTol").value=S.rangeTol;$("#rangeTolValue").textContent=S.rangeTol+" ม.";
   const share=[0,0,0,0,0];for(const r of S.ranges)share[r.type]+=r.len;const sh=share.map(x=>x/C.L*100);
@@ -505,12 +517,14 @@ function drawChartBase(){
 function drawMapBase(){
   const C=S.course,{i0,i1}=viewIndices(C);let x0=1e18,x1=-1e18,y0=1e18,y1=-1e18;
   for(let i=i0;i<=i1;i++){x0=Math.min(x0,C.px[i]);x1=Math.max(x1,C.px[i]);y0=Math.min(y0,C.py[i]);y1=Math.max(y1,C.py[i])}
-  const sc=Math.min(660/((x1-x0)||1),260/((y1-y0)||1)),ox=350-(x0+x1)/2*sc,oy=150+(y0+y1)/2*sc;
+  const W=700,pad=28,bw=(x1-x0)||1,bh=(y1-y0)||1,H=Math.round(clamp(bh*(W-2*pad)/bw+2*pad,240,480));
+  const sc=Math.min((W-2*pad)/bw,(H-2*pad)/bh),ox=W/2-(x0+x1)/2*sc,oy=H/2+(y0+y1)/2*sc;
+  S.mapH=H;$("#mv").setAttribute("viewBox","0 0 "+W+" "+H);
   const MX=i=>ox+C.px[i]*sc,MY=i=>oy-C.py[i]*sc;
   let h="";
   for(const r of S.ranges){
     const from=Math.max(i0,r.a),to=Math.min(i1,r.b);if(to<=from)continue;
-    const pts=[],stride=Math.max(1,Math.ceil((to-from)/180));
+    const pts=[],stride=Math.max(1,Math.ceil((to-from)/1500));
     for(let k=from;k<to;k+=stride)pts.push(MX(k).toFixed(1)+","+MY(k).toFixed(1));
     pts.push(MX(to).toFixed(1)+","+MY(to).toFixed(1));
     h+='<polyline fill="none" stroke="'+CLS[r.type].c+'" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" points="'+pts.join(" ")+'"/>';
@@ -575,7 +589,7 @@ function addWp(m){
 }
 function chartM(e){const r=$("#cv").getBoundingClientRect(),fx=((e.clientX-r.left)/r.width*CW-CL)/(CW-CL-CR),{m0,m1}=S.cx;return clamp(fx,0,1)*(m1-m0)+m0}
 function mapIdx(e){
-  const C=S.course,mx=S.mx,r=$("#mv").getBoundingClientRect(),x=(e.clientX-r.left)/r.width*700,y=(e.clientY-r.top)/r.height*300;
+  const C=S.course,mx=S.mx,r=$("#mv").getBoundingClientRect(),x=(e.clientX-r.left)/r.width*700,y=(e.clientY-r.top)/r.height*(S.mapH||300);
   let bi=mx.i0,bd=1e18;for(let i=mx.i0;i<=mx.i1;i+=2){const dx=mx.MX(i)-x,dy=mx.MY(i)-y,d=dx*dx+dy*dy;if(d<bd){bd=d;bi=i}}
   for(const i of[mx.i0,mx.i1]){const dx=mx.MX(i)-x,dy=mx.MY(i)-y,d=dx*dx+dy*dy;if(d<bd){bd=d;bi=i}}
   return{i:bi,d:Math.sqrt(bd)};
@@ -631,7 +645,7 @@ function exportGPX(){
   x+='</trkseg></trk>\n</gpx>\n';download(safe+"_plan.gpx",x,"application/gpx+xml");
 }
 function exportTCX(){
-  const C=S.course,PL=S.plan,safe=C.name.replace(/[^\w\u0E00-\u0E7F-]+/g,"_"),base=Date.UTC(2000,0,1,6,0,0),iso=t=>new Date(base+t*1000).toISOString().replace(".000Z","Z"),stp=Math.max(1,Math.round(25/C.step));
+  const C=S.course,PL=S.plan,safe=C.name.replace(/[^\w\u0E00-\u0E7F-]+/g,"_"),base=Date.UTC(2000,0,1,6,0,0),iso=t=>new Date(base+Math.round(t)*1000).toISOString().replace(".000Z","Z"),stp=Math.max(1,Math.round(25/C.step));
   const pos=i=>'<Position><LatitudeDegrees>'+C.lat[i].toFixed(6)+'</LatitudeDegrees><LongitudeDegrees>'+C.lon[i].toFixed(6)+'</LongitudeDegrees></Position>';
   let x='<?xml version="1.0" encoding="UTF-8"?>\n<TrainingCenterDatabase xmlns="http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2">\n<Folders><Courses><CourseFolder Name="RunsArt"><CourseNameRef><Id>'+xesc(C.name.slice(0,15))+'</Id></CourseNameRef></CourseFolder></Courses></Folders>\n<Courses><Course><Name>'+xesc(C.name.slice(0,15))+'</Name>\n';
   x+='<Lap><TotalTimeSeconds>'+Math.round(PL.T)+'</TotalTimeSeconds><DistanceMeters>'+C.L.toFixed(1)+'</DistanceMeters><BeginPosition><LatitudeDegrees>'+C.lat[0].toFixed(6)+'</LatitudeDegrees><LongitudeDegrees>'+C.lon[0].toFixed(6)+'</LongitudeDegrees></BeginPosition><EndPosition><LatitudeDegrees>'+C.lat[C.n-1].toFixed(6)+'</LatitudeDegrees><LongitudeDegrees>'+C.lon[C.n-1].toFixed(6)+'</LongitudeDegrees></EndPosition><Intensity>Active</Intensity></Lap>\n<Track>\n';
@@ -646,9 +660,9 @@ function renderBand(sp){
   const C=S.course,PL=S.plan,step=+$("#bandStep").value;
   $("#bandT").innerHTML="แถบเพซ "+infoTip("แถบแสดงเวลาและเพซสะสมตามจุดระยะที่เลือก ค่าทั้งหมดอิงจากแผนเพซที่ปรับตามความชัน")+ " · "+esc(C.name)+" · เป้า "+fmtDur(PL.T);
   const rows=[];
-  for(let km=step;km<C.L/1000;km+=step){const m=km*1000,w=S.wps.filter(x=>x.m>m-step*1000&&x.m<=m).map(x=>TYPES[x.type].n);rows.push('<tr><td>'+km+'</td><td>'+fmtDur(interp(C,PL.time,m))+'</td><td>'+fmtPace(sp[Math.min(sp.length-1,Math.floor(km)-1)].pace)+'</td><td>'+esc(w.join(" "))+'</td></tr>')}
+  for(let km=step;km<C.L/1000;km+=step){const m=km*1000,w=S.wps.filter(x=>x.m>m-step*1000&&x.m<=m).map(x=>TYPES[x.type].n);rows.push('<tr><td>'+km+'</td><td>'+fmtDur(interp(C,PL.time,m))+'</td><td>'+fmtPace((interp(C,PL.time,m)-interp(C,PL.time,Math.max(0,m-step*1000)))/step)+'</td><td>'+esc(w.join(" "))+'</td></tr>')}
   rows.push('<tr><td><b>'+(C.L/1000).toFixed(1)+'</b></td><td><b>'+fmtDur(PL.T)+'</b></td><td></td><td>เส้นชัย</td></tr>');
-  $("#bandTable").innerHTML='<table><tr><th>กม. '+infoTip("ตำแหน่งระยะตามช่วงที่เลือก")+'</th><th>เวลาสะสม '+infoTip("เวลาตามแผนสะสมจากจุดเริ่มถึงระยะนี้")+'</th><th>เพซ '+infoTip("เพซที่คำนวณจากเวลาเดินทางจริงของช่วงซึ่งปรับตามความชัน")+'</th><th>จุดเตือนในช่วง '+infoTip("คำเตือนที่อยู่ระหว่างจุดระยะนี้กับจุดก่อนหน้า")+'</th></tr>'+rows.join("")+'</table>';
+  $("#bandTable").innerHTML='<table><tr><th>กม. '+infoTip("ตำแหน่งระยะตามช่วงที่เลือก")+'</th><th>เวลาสะสม '+infoTip("เวลาตามแผนสะสมจากจุดเริ่มถึงระยะนี้")+'</th><th>เพซ '+infoTip("เพซเฉลี่ยของช่วงตั้งแต่จุดก่อนหน้าถึงจุดนี้ (ปรับตามความชันแล้ว)")+'</th><th>จุดเตือนในช่วง '+infoTip("คำเตือนที่อยู่ระหว่างจุดระยะนี้กับจุดก่อนหน้า")+'</th></tr>'+rows.join("")+'</table>';
 }
 $("#bandStep").onchange=()=>S.course&&renderBand(splitsOf(S.course,S.plan));
 $("#bPrint").onclick=()=>window.print();
@@ -705,7 +719,7 @@ function restore(o){
     S.ranges=[];S.viewZoom=1;S.viewCenter=.5;
     S.rangeTol=Number.isFinite(+o.slopeTolerance)&&+o.slopeTolerance>=1&&+o.slopeTolerance<=150?+o.slopeTolerance:null;
     S.mode=o.mode==="trail"||o.mode==="road"?o.mode:"auto";S.tsel=o.tsel==="pace"?"pace":"time";S.T=o.T||14400;S.fp=o.fp||330;S.off=o.off||80;S.aid=o.aid||[];S.gel=o.v>=2?o.gelMinutes||0:0;S.salt=o.v>=3?o.saltMinutes||0:0;
-    $("#mode").value=S.mode;$("#tsel").value=S.tsel;$("#tt").value=fmtDur(S.T);$("#fp").value=fmtPace(S.fp);$("#off").value=S.off;$("#aid").value=S.aid.join(", ");$("#gel").value=S.gel;$("#salt").value=S.salt;
+    $("#mode").value=S.mode;$("#tsel").value=S.tsel;setTT(S.T);setFP(S.fp);$("#off").value=S.off;$("#aid").value=S.aid.join(", ");$("#gel").value=S.gel;$("#salt").value=S.salt;
     S.wps=(o.wps||[]).filter(w=>TYPES[w.type]).map(w=>({id:++uid,m:w.m,type:w.type,text:w.text||"",auto:!!w.auto}));S.autoAlertsEnabled=!!o.autoAlertsEnabled||S.wps.some(w=>w.auto);S.sel=-1;S.actual=null;
     readInputs();S.plan=makePlan(S.course,cfgNow());
     if(o.v<2){
@@ -728,7 +742,7 @@ function refreshAuto(){
   readInputs();S.plan=makePlan(S.course,cfgNow());if(S.autoAlertsEnabled)autoGen();renderAll();persist();
 }
 ["#mode","#tsel"].forEach(id=>$(id).addEventListener("change",refreshAuto));
-["#tt","#fp"].forEach(id=>$(id).addEventListener("change",refreshAuto));
+["#th","#tm","#ts","#pm","#ps"].forEach(id=>{const el=$(id);el.addEventListener("focus",()=>el.select());el.addEventListener("input",()=>{el.value=el.value.replace(/\D/g,"")});el.addEventListener("change",()=>{refreshAuto();setTT(S.T);setFP(S.fp)})});
 $("#off").addEventListener("input",()=>{readInputs();persist()});
 $("#aid").addEventListener("change",refreshAuto);$("#gel").addEventListener("change",refreshAuto);$("#salt").addEventListener("change",refreshAuto);
 $("#rangeTol").addEventListener("input",e=>{if(!S.course)return;S.rangeTol=+e.target.value;renderAll();persist()});

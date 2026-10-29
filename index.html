@@ -90,7 +90,7 @@ footer{border-top:1px solid var(--line);padding-top:16px;color:var(--mute);font-
 <body>
 <div class="wrap">
   <header class="hd">
-    <a class="brand" href="/"><span class="logo" data-ic="mount"></span><span>RunSart <small>ศาตร์แห่งการวิ่ง</small></span></a>
+    <a class="brand" href="/"><span class="logo" data-ic="mount"></span><span>RunSart <small>ศาสตร์แห่งการวิ่ง</small></span></a>
     <div class="acct" id="acct"></div>
   </header>
   <nav class="toolnav" role="toolbar" aria-label="เครื่องมือ">
@@ -102,18 +102,18 @@ footer{border-top:1px solid var(--line);padding-top:16px;color:var(--mute);font-
 
   <section class="hero">
     <h1>วิเคราะห์การวิ่งของคุณ<br>ครบในที่เดียว</h1>
-    <p>โยนไฟล์กิจกรรมเข้ามา หรือเลือกเครื่องมือด้านล่างเพื่อเริ่มได้เลย</p>
+    <p>ใส่ไฟล์วิ่งจากนาฬิกา แล้วดูเส้นทาง วิเคราะห์การซ้อม หรือวางแผนแข่ง</p>
     <input type="search" id="tq" placeholder="ค้นหาเครื่องมือ เช่น ความชัน" aria-label="ค้นหาเครื่องมือ">
   </section>
 
   <section class="box" aria-labelledby="hConn">
     <h2 id="hConn">เริ่มจากกิจกรรมของคุณ</h2>
-    <p class="note" style="margin:-6px 0 12px">ใส่ไฟล์ก่อน แล้วเลือกดูแผนที่/แบ่งช่วง วิเคราะห์การซ้อม หรือวางแผนแข่ง</p>
+    <p class="note" style="margin:-6px 0 12px">ขั้นที่ 1 ใส่ไฟล์วิ่ง · ขั้นที่ 2 เลือกสิ่งที่อยากดู</p>
     <div class="cgrid">
       <label class="drop" id="drop" tabindex="0">
         <span data-ic="upload"></span>
         <strong>ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์</strong>
-        <span class="note">รองรับ .gpx และ .tcx; วิเคราะห์หลายกิจกรรมได้ในเครื่องมือวิเคราะห์การซ้อม</span>
+        <span class="note">รองรับไฟล์ .gpx และ .tcx (ส่งออกได้จากนาฬิกา หรือกด Export GPX ใน Strava)</span>
         <input type="file" id="file" accept=".gpx,.tcx" multiple hidden>
       </label>
       <div class="cloud">
@@ -128,26 +128,26 @@ footer{border-top:1px solid var(--line);padding-top:16px;color:var(--mute);font-
 
   <section class="sec" aria-labelledby="hTools">
     <h2 id="hTools">เครื่องมือ</h2>
-    <div class="cat">วิเคราะห์เส้นทาง</div>
+    <div class="cat">เครื่องมือสำหรับนักวิ่ง</div>
     <div class="cards" id="cards">
       <a class="card" href="/tools/slope/" data-kw="ความชัน ความยาก เส้นทาง gpx tcx เวลา utmb strava เทรล slope">
         <span class="cic" data-ic="mount"></span>
-        <h3>ความชันและความยากเส้นทาง</h3>
-        <p>ดูความชันทีละช่วง คะแนนความยาก ลักษณะทาง และเวลาโดยประมาณ จากไฟล์หรือกิจกรรม Strava</p>
+        <h3>แผนที่และแบ่งช่วง</h3>
+        <p>ดูว่าเส้นทางชันตรงไหน ยากแค่ไหน และใช้เวลาประมาณเท่าไร จากไฟล์หรือกิจกรรม Strava</p>
         <div class="chips"><span class="chip">GPX / TCX</span><span class="chip">Strava</span><span class="chip">เปรียบเทียบเส้นทาง</span></div>
         <span class="go">เปิดเครื่องมือ →</span>
       </a>
       <a class="card" href="/tools/race%20planner/" data-kw="วางแผนแข่ง race planner เพซ เทรล จุดเตือน เจล UTMB gpx tcx">
         <span class="cic" data-ic="mount"></span>
         <h3>วางแผนแข่ง</h3>
-        <p>วางแผนเพซตามความชัน รวมช่วงเตือนเนิน และกำหนดจุดกินเจลตามเวลา</p>
+        <p>ตั้งเป้าเวลาแข่ง แล้วรู้เพซที่ควรวิ่งในแต่ละช่วง พร้อมจุดเตือนเนิน น้ำ และเจล</p>
         <div class="chips"><span class="chip">GPX / TCX</span><span class="chip">เพซตามเส้นทาง</span><span class="chip">จุดเตือน</span></div>
         <span class="go">เปิดเครื่องมือ →</span>
       </a>
       <a class="card" href="/tools/training%20analysis/" data-kw="วิเคราะห์การซ้อม pace เพซ หัวใจ heart rate training intervals โซนหัวใจ โหลดซ้อม gpx tcx strava">
         <span class="cic" data-ic="upload"></span>
         <h3>วิเคราะห์การซ้อม</h3>
-        <p>ดูเพซและอัตราการเต้นหัวใจ วิเคราะห์เที่ยววิ่ง โซนหัวใจ โหลดซ้อม และพัฒนาการ</p>
+        <p>ดูว่าซ้อมแต่ละครั้งหนักแค่ไหน เพซ หัวใจ โซนหัวใจ และพัฒนาการ พร้อมคำแนะนำ</p>
         <div class="chips"><span class="chip">GPX / TCX</span><span class="chip">Strava</span><span class="chip">วิเคราะห์เพซและหัวใจ</span></div>
         <span class="go">เปิดเครื่องมือ →</span>
       </a>
@@ -164,7 +164,7 @@ footer{border-top:1px solid var(--line);padding-top:16px;color:var(--mute);font-
     <div id="recentBody"></div>
   </section>
 
-  <footer>ไฟล์ที่นำเข้าประมวลผลในเบราว์เซอร์ ผลวิเคราะห์การซ้อมบันทึกอัตโนมัติในเบราว์เซอร์ และเมื่อเข้าสู่ระบบจะเก็บประวัติในบัญชีของคุณบน Supabase; เส้นทางและข้อมูล Strava จัดเก็บตามบัญชีของผู้ใช้</footer>
+  <footer>ไฟล์ของคุณถูกประมวลผลในเบราว์เซอร์ ไม่ถูกส่งไปที่อื่น ถ้าเข้าสู่ระบบ ประวัติการซ้อมและเส้นทางจะถูกเก็บไว้ในบัญชีของคุณ (Supabase) เพื่อเปิดดูได้จากทุกเครื่อง</footer>
 </div>
 
 <div id="login" class="modal" hidden><div class="mbox" role="dialog" aria-modal="true" aria-labelledby="lgT">
@@ -182,7 +182,7 @@ footer{border-top:1px solid var(--line);padding-top:16px;color:var(--mute);font-
 <div id="chooseTool" class="modal" hidden><div class="mbox wide" role="dialog" aria-modal="true" aria-labelledby="chooseToolTitle">
   <div class="shd"><strong id="chooseToolTitle">เลือกเครื่องมือสำหรับไฟล์นี้</strong><button class="ib" id="chooseToolClose" aria-label="ปิด">×</button></div>
   <p class="note" id="chooseToolHint"></p>
-  <p class="note">ตรงนี้เลือกเฉพาะเครื่องมือ ไม่ใช่ชนิดการวิ่ง; ในหน้าวิเคราะห์การซ้อมค่อยเลือกชนิดหลังใส่ไฟล์ได้</p>
+  <p class="note">เลือกว่าจะใช้ไฟล์นี้ทำอะไร (ชนิดการวิ่ง เช่น Tempo หรือ Long Run เลือกได้ในหน้าวิเคราะห์การซ้อม)</p>
   <div class="choose-tools">
     <button id="chooseSlope"><b>แผนที่และแบ่งช่วง</b><br><span class="note">ดูเส้นทาง กราฟความสูง และตัดช่วงเอง</span></button>
     <button id="chooseTraining"><b>วิเคราะห์การซ้อม</b><br><span class="note">ดูเพซ หัวใจ และอินเทอร์วัล</span></button>

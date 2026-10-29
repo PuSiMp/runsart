@@ -40,11 +40,10 @@ async function getUser(req) {
 }
 
 // state ของ OAuth: ผูกกับผู้ใช้ มีอายุ 10 นาที และเซ็นด้วย STATE_SECRET
-const mac = (p) =>
-  crypto
-    .createHmac("sha256", process.env.STATE_SECRET || "default_secret_key")
-    .update(p)
-    .digest("hex");
+const mac = (p) => {
+  if (!process.env.STATE_SECRET) throw new Error("Missing STATE_SECRET");
+  return crypto.createHmac("sha256", process.env.STATE_SECRET).update(p).digest("hex");
+};
 
 function sign(uid) {
   const p = uid + "." + (Date.now() + 10 * 60 * 1000);
@@ -52,11 +51,16 @@ function sign(uid) {
 }
 
 function verify(state) {
-  const a = String(state || "").split(".");
-  if (a.length !== 3 || Date.now() > +a[1]) return null;
-  const want = Buffer.from(mac(a[0] + "." + a[1])),
-    got = Buffer.from(a[2]);
-  return want.length === got.length && crypto.timingSafeEqual(want, got) ? a[0] : null;
+  try {
+    const a = String(state || "").split(".");
+    if (a.length !== 3 || Date.now() > +a[1]) return null;
+    const want = Buffer.from(mac(a[0] + "." + a[1])),
+      got = Buffer.from(a[2]);
+    return want.length === got.length && crypto.timingSafeEqual(want, got) ? a[0] : null;
+  } catch (err) {
+    console.error("verify state failed:", err.message);
+    return null;
+  }
 }
 
 async function saveTokens(uid, t) {
@@ -85,7 +89,7 @@ async function saveTokens(uid, t) {
 // คืน access token ที่ยังใช้ได้ (ต่ออายุให้ถ้าหมดแล้ว)
 async function accessToken(uid) {
   requireSupabaseAdmin();
-  const r = await fetch(SB + "/rest/v1/strava_tokens?user_id=eq." + uid + "&select=*", {
+  const r = await fetch(SB + "/rest/v1/strava_tokens?user_id=eq." + encodeURIComponent(uid) + "&select=*", {
     headers: sbHeaders(),
   });
   if (!r.ok) {

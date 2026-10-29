@@ -2,6 +2,7 @@ const { getUser, sign } = require("./_lib");
 
 // หน้าเว็บเรียกอันนี้ (พร้อมล็อกอินแล้ว) เพื่อขอลิงก์ไปหน้าอนุญาตของ Strava
 module.exports = async (req, res) => {
+  try {
   const u = await getUser(req);
   if (!u) return res.status(401).json({ error: "login" });
   const proto = req.headers["x-forwarded-proto"] || "https";
@@ -15,4 +16,8 @@ module.exports = async (req, res) => {
     state: sign(u.id),
   });
   res.json({ url });
+  } catch (err) {
+    console.error("strava-connect failed:", err);
+    res.status(500).json({ error: "server_config", message: "ตั้งค่าเซิร์ฟเวอร์ไม่ครบ ตรวจ STATE_SECRET, STRAVA_CLIENT_ID และ SUPABASE_* ใน Vercel" });
+  }
 };

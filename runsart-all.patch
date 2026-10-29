@@ -1,0 +1,681 @@
+diff --git a/_lib.js b/_lib.js
+deleted file mode 100644
+index 6e4721e..0000000
+--- a/_lib.js
++++ /dev/null
+@@ -1,54 +0,0 @@
+-// ตัวช่วยร่วมของ API (ขึ้นต้นด้วย _ เพื่อไม่ให้ Vercel เปิดเป็น endpoint)
+-const crypto = require("crypto");
+-const SB = process.env.SUPABASE_URL;
+-const SK = process.env.SUPABASE_SERVICE_ROLE_KEY;
+-const sbHeaders = (extra) => ({ apikey: SK, Authorization: "Bearer " + SK, "Content-Type": "application/json", ...extra });
+-
+-// ตรวจว่าใครล็อกอินอยู่ จาก JWT ของ Supabase ที่หน้าเว็บส่งมา
+-async function getUser(req) {
+-  const jwt = (req.headers.authorization || "").replace(/^Bearer /, "");
+-  if (!jwt) return null;
+-  const r = await fetch(SB + "/auth/v1/user", { headers: { apikey: SK, Authorization: "Bearer " + jwt } });
+-  return r.ok ? r.json() : null;
+-}
+-
+-// state ของ OAuth: ผูกกับผู้ใช้ มีอายุ 10 นาที และเซ็นด้วย STATE_SECRET
+-const mac = (p) => crypto.createHmac("sha256", process.env.STATE_SECRET).update(p).digest("hex");
+-function sign(uid) {
+-  const p = uid + "." + (Date.now() + 10 * 60 * 1000);
+-  return p + "." + mac(p);
+-}
+-function verify(state) {
+-  const a = String(state || "").split(".");
+-  if (a.length !== 3 || Date.now() > +a[1]) return null;
+-  const want = Buffer.from(mac(a[0] + "." + a[1])), got = Buffer.from(a[2]);
+-  return want.length === got.length && crypto.timingSafeEqual(want, got) ? a[0] : null;
+-}
+-
+-async function saveTokens(uid, t) {
+-  await fetch(SB + "/rest/v1/strava_tokens", {
+-    method: "POST",
+-    headers: sbHeaders({ Prefer: "resolution=merge-duplicates" }),
+-    body: JSON.stringify({ user_id: uid, access_token: t.access_token, refresh_token: t.refresh_token, expires_at: t.expires_at, athlete_id: t.athlete ? t.athlete.id : null }),
+-  });
+-}
+-
+-// คืน access token ที่ยังใช้ได้ (ต่ออายุให้ถ้าหมดแล้ว)
+-async function accessToken(uid) {
+-  const r = await fetch(SB + "/rest/v1/strava_tokens?user_id=eq." + uid + "&select=*", { headers: sbHeaders() });
+-  const rows = await r.json();
+-  const t = rows && rows[0];
+-  if (!t) return null;
+-  if (t.expires_at > Math.floor(Date.now() / 1000) + 60) return t.access_token;
+-  const f = await fetch("https://www.strava.com/oauth/token", {
+-    method: "POST",
+-    headers: { "Content-Type": "application/json" },
+-    body: JSON.stringify({ client_id: process.env.STRAVA_CLIENT_ID, client_secret: process.env.STRAVA_CLIENT_SECRET, grant_type: "refresh_token", refresh_token: t.refresh_token }),
+-  });
+-  if (!f.ok) return null;
+-  const n = await f.json();
+-  await saveTokens(uid, { ...n, athlete: { id: t.athlete_id } });
+-  return n.access_token;
+-}
+-
+-module.exports = { getUser, sign, verify, saveTokens, accessToken };
+diff --git a/api/_lib.js b/api/_lib.js
+index 69b6617..6766db3 100644
+--- a/api/_lib.js
++++ b/api/_lib.js
+@@ -40,11 +40,10 @@ async function getUser(req) {
+ }
+ 
+ // state ของ OAuth: ผูกกับผู้ใช้ มีอายุ 10 นาที และเซ็นด้วย STATE_SECRET
+-const mac = (p) =>
+-  crypto
+-    .createHmac("sha256", process.env.STATE_SECRET || "default_secret_key")
+-    .update(p)
+-    .digest("hex");
++const mac = (p) => {
++  if (!process.env.STATE_SECRET) throw new Error("Missing STATE_SECRET");
++  return crypto.createHmac("sha256", process.env.STATE_SECRET).update(p).digest("hex");
++};
+ 
+ function sign(uid) {
+   const p = uid + "." + (Date.now() + 10 * 60 * 1000);
+@@ -52,11 +51,16 @@ function sign(uid) {
+ }
+ 
+ function verify(state) {
+-  const a = String(state || "").split(".");
+-  if (a.length !== 3 || Date.now() > +a[1]) return null;
+-  const want = Buffer.from(mac(a[0] + "." + a[1])),
+-    got = Buffer.from(a[2]);
+-  return want.length === got.length && crypto.timingSafeEqual(want, got) ? a[0] : null;
++  try {
++    const a = String(state || "").split(".");
++    if (a.length !== 3 || Date.now() > +a[1]) return null;
++    const want = Buffer.from(mac(a[0] + "." + a[1])),
++      got = Buffer.from(a[2]);
++    return want.length === got.length && crypto.timingSafeEqual(want, got) ? a[0] : null;
++  } catch (err) {
++    console.error("verify state failed:", err.message);
++    return null;
++  }
+ }
+ 
+ async function saveTokens(uid, t) {
+@@ -85,7 +89,7 @@ async function saveTokens(uid, t) {
+ // คืน access token ที่ยังใช้ได้ (ต่ออายุให้ถ้าหมดแล้ว)
+ async function accessToken(uid) {
+   requireSupabaseAdmin();
+-  const r = await fetch(SB + "/rest/v1/strava_tokens?user_id=eq." + uid + "&select=*", {
++  const r = await fetch(SB + "/rest/v1/strava_tokens?user_id=eq." + encodeURIComponent(uid) + "&select=*", {
+     headers: sbHeaders(),
+   });
+   if (!r.ok) {
+diff --git a/api/strava-activities.js b/api/strava-activities.js
+index d56bd13..2842c25 100644
+--- a/api/strava-activities.js
++++ b/api/strava-activities.js
+@@ -9,8 +9,9 @@ module.exports = async (req, res) => {
+     if (!tk) return res.status(409).json({ error: "not_connected" });
+     const q = req.query || {};
+     const p = new URLSearchParams({ per_page: "100", page: String(parseInt(q.page) || 1) });
+-    if (q.after) p.set("after", String(parseInt(q.after)));
+-    if (q.before) p.set("before", String(parseInt(q.before)));
++    const int = (v) => (Number.isFinite(parseInt(v, 10)) ? String(parseInt(v, 10)) : null);
++    if (int(q.after)) p.set("after", int(q.after));
++    if (int(q.before)) p.set("before", int(q.before));
+     const r = await fetch("https://www.strava.com/api/v3/athlete/activities?" + p, { headers: { Authorization: "Bearer " + tk } });
+     if (!r.ok) {
+       const detail = await r.text();
+diff --git a/api/strava-connect.js b/api/strava-connect.js
+index 91514d8..129c581 100644
+--- a/api/strava-connect.js
++++ b/api/strava-connect.js
+@@ -2,6 +2,7 @@ const { getUser, sign } = require("./_lib");
+ 
+ // หน้าเว็บเรียกอันนี้ (พร้อมล็อกอินแล้ว) เพื่อขอลิงก์ไปหน้าอนุญาตของ Strava
+ module.exports = async (req, res) => {
++  try {
+   const u = await getUser(req);
+   if (!u) return res.status(401).json({ error: "login" });
+   const proto = req.headers["x-forwarded-proto"] || "https";
+@@ -15,4 +16,8 @@ module.exports = async (req, res) => {
+     state: sign(u.id),
+   });
+   res.json({ url });
++  } catch (err) {
++    console.error("strava-connect failed:", err);
++    res.status(500).json({ error: "server_config", message: "ตั้งค่าเซิร์ฟเวอร์ไม่ครบ ตรวจ STATE_SECRET, STRAVA_CLIENT_ID และ SUPABASE_* ใน Vercel" });
++  }
+ };
+diff --git a/index.html b/index.html
+index 1acc569..d6ed00e 100644
+--- a/index.html
++++ b/index.html
+@@ -90,7 +90,7 @@ footer{border-top:1px solid var(--line);padding-top:16px;color:var(--mute);font-
+ <body>
+ <div class="wrap">
+   <header class="hd">
+-    <a class="brand" href="/"><span class="logo" data-ic="mount"></span><span>RunSart <small>ศาตร์แห่งการวิ่ง</small></span></a>
++    <a class="brand" href="/"><span class="logo" data-ic="mount"></span><span>RunSart <small>ศาสตร์แห่งการวิ่ง</small></span></a>
+     <div class="acct" id="acct"></div>
+   </header>
+   <nav class="toolnav" role="toolbar" aria-label="เครื่องมือ">
+@@ -102,18 +102,18 @@ footer{border-top:1px solid var(--line);padding-top:16px;color:var(--mute);font-
+ 
+   <section class="hero">
+     <h1>วิเคราะห์การวิ่งของคุณ<br>ครบในที่เดียว</h1>
+-    <p>โยนไฟล์กิจกรรมเข้ามา หรือเลือกเครื่องมือด้านล่างเพื่อเริ่มได้เลย</p>
++    <p>ใส่ไฟล์วิ่งจากนาฬิกา แล้วดูเส้นทาง วิเคราะห์การซ้อม หรือวางแผนแข่ง</p>
+     <input type="search" id="tq" placeholder="ค้นหาเครื่องมือ เช่น ความชัน" aria-label="ค้นหาเครื่องมือ">
+   </section>
+ 
+   <section class="box" aria-labelledby="hConn">
+     <h2 id="hConn">เริ่มจากกิจกรรมของคุณ</h2>
+-    <p class="note" style="margin:-6px 0 12px">ใส่ไฟล์ก่อน แล้วเลือกดูแผนที่/แบ่งช่วง วิเคราะห์การซ้อม หรือวางแผนแข่ง</p>
++    <p class="note" style="margin:-6px 0 12px">ขั้นที่ 1 ใส่ไฟล์วิ่ง · ขั้นที่ 2 เลือกสิ่งที่อยากดู</p>
+     <div class="cgrid">
+       <label class="drop" id="drop" tabindex="0">
+         <span data-ic="upload"></span>
+         <strong>ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์</strong>
+-        <span class="note">รองรับ .gpx และ .tcx; วิเคราะห์หลายกิจกรรมได้ในเครื่องมือวิเคราะห์การซ้อม</span>
++        <span class="note">รองรับไฟล์ .gpx และ .tcx (ส่งออกได้จากนาฬิกา หรือกด Export GPX ใน Strava)</span>
+         <input type="file" id="file" accept=".gpx,.tcx" multiple hidden>
+       </label>
+       <div class="cloud">
+@@ -128,26 +128,26 @@ footer{border-top:1px solid var(--line);padding-top:16px;color:var(--mute);font-
+ 
+   <section class="sec" aria-labelledby="hTools">
+     <h2 id="hTools">เครื่องมือ</h2>
+-    <div class="cat">วิเคราะห์เส้นทาง</div>
++    <div class="cat">เครื่องมือสำหรับนักวิ่ง</div>
+     <div class="cards" id="cards">
+       <a class="card" href="/tools/slope/" data-kw="ความชัน ความยาก เส้นทาง gpx tcx เวลา utmb strava เทรล slope">
+         <span class="cic" data-ic="mount"></span>
+-        <h3>ความชันและความยากเส้นทาง</h3>
+-        <p>ดูความชันทีละช่วง คะแนนความยาก ลักษณะทาง และเวลาโดยประมาณ จากไฟล์หรือกิจกรรม Strava</p>
++        <h3>แผนที่และแบ่งช่วง</h3>
++        <p>ดูว่าเส้นทางชันตรงไหน ยากแค่ไหน และใช้เวลาประมาณเท่าไร จากไฟล์หรือกิจกรรม Strava</p>
+         <div class="chips"><span class="chip">GPX / TCX</span><span class="chip">Strava</span><span class="chip">เปรียบเทียบเส้นทาง</span></div>
+         <span class="go">เปิดเครื่องมือ →</span>
+       </a>
+       <a class="card" href="/tools/race%20planner/" data-kw="วางแผนแข่ง race planner เพซ เทรล จุดเตือน เจล UTMB gpx tcx">
+         <span class="cic" data-ic="mount"></span>
+         <h3>วางแผนแข่ง</h3>
+-        <p>วางแผนเพซตามความชัน รวมช่วงเตือนเนิน และกำหนดจุดกินเจลตามเวลา</p>
++        <p>ตั้งเป้าเวลาแข่ง แล้วรู้เพซที่ควรวิ่งในแต่ละช่วง พร้อมจุดเตือนเนิน น้ำ และเจล</p>
+         <div class="chips"><span class="chip">GPX / TCX</span><span class="chip">เพซตามเส้นทาง</span><span class="chip">จุดเตือน</span></div>
+         <span class="go">เปิดเครื่องมือ →</span>
+       </a>
+       <a class="card" href="/tools/training%20analysis/" data-kw="วิเคราะห์การซ้อม pace เพซ หัวใจ heart rate training intervals โซนหัวใจ โหลดซ้อม gpx tcx strava">
+         <span class="cic" data-ic="upload"></span>
+         <h3>วิเคราะห์การซ้อม</h3>
+-        <p>ดูเพซและอัตราการเต้นหัวใจ วิเคราะห์เที่ยววิ่ง โซนหัวใจ โหลดซ้อม และพัฒนาการ</p>
++        <p>ดูว่าซ้อมแต่ละครั้งหนักแค่ไหน เพซ หัวใจ โซนหัวใจ และพัฒนาการ พร้อมคำแนะนำ</p>
+         <div class="chips"><span class="chip">GPX / TCX</span><span class="chip">Strava</span><span class="chip">วิเคราะห์เพซและหัวใจ</span></div>
+         <span class="go">เปิดเครื่องมือ →</span>
+       </a>
+@@ -164,7 +164,7 @@ footer{border-top:1px solid var(--line);padding-top:16px;color:var(--mute);font-
+     <div id="recentBody"></div>
+   </section>
+ 
+-  <footer>ไฟล์ที่นำเข้าประมวลผลในเบราว์เซอร์ ผลวิเคราะห์การซ้อมบันทึกอัตโนมัติในเบราว์เซอร์ และเมื่อเข้าสู่ระบบจะเก็บประวัติในบัญชีของคุณบน Supabase; เส้นทางและข้อมูล Strava จัดเก็บตามบัญชีของผู้ใช้</footer>
++  <footer>ไฟล์ของคุณถูกประมวลผลในเบราว์เซอร์ ไม่ถูกส่งไปที่อื่น ถ้าเข้าสู่ระบบ ประวัติการซ้อมและเส้นทางจะถูกเก็บไว้ในบัญชีของคุณ (Supabase) เพื่อเปิดดูได้จากทุกเครื่อง</footer>
+ </div>
+ 
+ <div id="login" class="modal" hidden><div class="mbox" role="dialog" aria-modal="true" aria-labelledby="lgT">
+@@ -182,7 +182,7 @@ footer{border-top:1px solid var(--line);padding-top:16px;color:var(--mute);font-
+ <div id="chooseTool" class="modal" hidden><div class="mbox wide" role="dialog" aria-modal="true" aria-labelledby="chooseToolTitle">
+   <div class="shd"><strong id="chooseToolTitle">เลือกเครื่องมือสำหรับไฟล์นี้</strong><button class="ib" id="chooseToolClose" aria-label="ปิด">×</button></div>
+   <p class="note" id="chooseToolHint"></p>
+-  <p class="note">ตรงนี้เลือกเฉพาะเครื่องมือ ไม่ใช่ชนิดการวิ่ง; ในหน้าวิเคราะห์การซ้อมค่อยเลือกชนิดหลังใส่ไฟล์ได้</p>
++  <p class="note">เลือกว่าจะใช้ไฟล์นี้ทำอะไร (ชนิดการวิ่ง เช่น Tempo หรือ Long Run เลือกได้ในหน้าวิเคราะห์การซ้อม)</p>
+   <div class="choose-tools">
+     <button id="chooseSlope"><b>แผนที่และแบ่งช่วง</b><br><span class="note">ดูเส้นทาง กราฟความสูง และตัดช่วงเอง</span></button>
+     <button id="chooseTraining"><b>วิเคราะห์การซ้อม</b><br><span class="note">ดูเพซ หัวใจ และอินเทอร์วัล</span></button>
+diff --git a/supabase.sql b/supabase.sql
+index f6d7955..0b8c39d 100644
+--- a/supabase.sql
++++ b/supabase.sql
+@@ -8,6 +8,10 @@ create table if not exists public.routes (
+   created_at timestamptz not null default now()
+ );
+ alter table public.routes enable row level security;
++drop policy if exists "routes_select_own" on public.routes;
++drop policy if exists "routes_insert_own" on public.routes;
++drop policy if exists "routes_update_own" on public.routes;
++drop policy if exists "routes_delete_own" on public.routes;
+ create policy "routes_select_own" on public.routes for select using (auth.uid() = user_id);
+ create policy "routes_insert_own" on public.routes for insert with check (auth.uid() = user_id);
+ create policy "routes_update_own" on public.routes for update using (auth.uid() = user_id);
+diff --git a/tools/race planner/index.html b/tools/race planner/index.html
+index 8244afa..31c1f1c 100644
+--- a/tools/race planner/index.html	
++++ b/tools/race planner/index.html	
+@@ -85,6 +85,10 @@ tr.sel td{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+ .two>.box{min-width:0}
+ .band table{font-size:.8rem}
+ .gt{position:fixed;z-index:80;background:var(--ink);color:var(--bg);font-size:.78rem;padding:4px 9px;border-radius:6px;pointer-events:none;max-width:260px}
++.tbox{display:flex;align-items:center;gap:6px}
++.tbox input{width:3.4em;flex:none;text-align:center;padding:8px 4px}
++.tbox .u{font-size:.8rem;color:var(--mute);font-weight:400}
++.row>label#lT,.row>label#lF{width:auto}
+ @media print{
+   body{background:#fff;color:#000}
+   .noprint{display:none!important}
+@@ -109,8 +113,8 @@ tr.sel td{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+     <label class="drop" id="drop" tabindex="0"><span data-ic="upload"></span><span><strong>ลากไฟล์เส้นทางแข่ง (.gpx / .tcx) มาวาง หรือคลิกเลือกไฟล์</strong><br><span class="note">ไฟล์จากผู้จัดงาน ต้องมีความสูง</span></span><input type="file" id="file" accept=".gpx,.tcx" hidden></label>
+     <label>โหมดสนาม <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="อัตโนมัติเลือกเทรลเมื่อไต่ขึ้นตั้งแต่ 35 ม./กม. หรือมีช่วงชันตั้งแต่ 12% อย่างน้อย 8% ของระยะ; ไม่สามารถรู้พื้นผิวทางจริงจากไฟล์ความสูงได้ หากไม่ตรงให้เลือกถนนหรือเทรลเอง">ⓘ</span><select id="mode"><option value="auto">อัตโนมัติจากความสูง</option><option value="road">ถนน</option><option value="trail">เทรล</option></select></label>
+     <label>กำหนดแผนจาก <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="เลือกเวลาจบเป้าหมายเพื่อคำนวณเพซทางราบที่ต้องทำ หรือเลือกเพซทางราบเพื่อให้ระบบประมาณเวลาเข้าเส้นชัย">ⓘ</span><select id="tsel"><option value="time">เวลาเข้าเส้นชัย</option><option value="pace">เพซทางราบ</option></select></label>
+-    <label id="lT">เวลาเป้าหมาย (ชม:นาที:วินาที) <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="เวลาที่ต้องการเข้าเส้นชัย ใช้ปรับเพซในแต่ละความชันให้เวลารวมตรงกับเป้าหมาย">ⓘ</span><input type="text" id="tt" value="4:00:00" inputmode="numeric"></label>
+-    <label id="lF" hidden>เพซทางราบ (นาที:วินาที /กม.) <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="เพซสมมติบนทางราบ ก่อนระบบปรับเร็วหรือช้าตามความชันของเส้นทาง">ⓘ</span><input type="text" id="fp" value="5:30" inputmode="numeric"></label>
++    <label id="lT">เวลาเป้าหมาย <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="เวลาที่ต้องการเข้าเส้นชัย ใช้ปรับเพซในแต่ละความชันให้เวลารวมตรงกับเป้าหมาย">ⓘ</span><span class="tbox"><input id="th" type="text" inputmode="numeric" maxlength="3" value="4" aria-label="ชั่วโมง" autocomplete="off"><span class="u">ชม.</span><input id="tm" type="text" inputmode="numeric" maxlength="2" value="00" aria-label="นาที" autocomplete="off"><span class="u">นาที</span><input id="ts" type="text" inputmode="numeric" maxlength="2" value="00" aria-label="วินาที" autocomplete="off"><span class="u">วิ</span></span></label>
++    <label id="lF" hidden>เพซทางราบ (ต่อ กม.) <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="เพซสมมติบนทางราบ ก่อนระบบปรับเร็วหรือช้าตามความชันของเส้นทาง">ⓘ</span><span class="tbox"><input id="pm" type="text" inputmode="numeric" maxlength="2" value="5" aria-label="นาที" autocomplete="off"><span class="u">นาที</span><input id="ps" type="text" inputmode="numeric" maxlength="2" value="30" aria-label="วินาที" autocomplete="off"><span class="u">วิ</span></span></label>
+   </div>
+   <div class="row" style="margin-top:10px">
+     <label>เตือนล่วงหน้า <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="จุดเตือนในไฟล์ส่งออกจะอยู่ก่อนจุดจริงตามระยะที่ตั้งไว้ เพื่อให้นาฬิกาเตือนก่อนถึงเนินหรือจุดให้น้ำ">ⓘ</span> <span><span id="offV">80</span> ม.</span><input type="range" id="off" min="50" max="100" step="5" value="80"></label>
+@@ -126,7 +130,7 @@ tr.sel td{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+   <p class="err" id="err" role="alert"></p>
+ </section>
+ 
+-<div id="empty" class="box noprint"><p class="note">นำเข้าไฟล์เส้นทางแข่ง แล้วใส่เวลาเป้าหมาย ระบบจะแบ่งเพซตามความชันของแต่ละช่วง สร้างจุดเตือนบนเนินและจุดให้น้ำ ให้คุณลากแก้ตำแหน่งบนกราฟและแผนที่ได้ แล้วส่งออกไปใช้บนนาฬิกาหรือพิมพ์แถบเพซ</p></div>
++<div id="empty" class="box noprint"><p class="note">เริ่มยังไง: ① ใส่ไฟล์เส้นทางแข่ง (.gpx / .tcx ที่มีความสูง) ② ใส่เวลาเป้าหมาย ③ กด “สร้างจุดเตือนอัตโนมัติ” (ลากแก้ตำแหน่งบนกราฟหรือแผนที่ได้) ④ ส่งออกไปนาฬิกา หรือพิมพ์แถบเพซพกไปวันแข่ง ระบบจะบอกเพซของแต่ละช่วงตามความชัน เนินวิ่งช้าลง ทางลงเร็วขึ้น</p></div>
+ 
+ <div id="res" hidden>
+   <section class="box noprint"><div class="hgrid" id="hero"></div></section>
+@@ -146,8 +150,8 @@ tr.sel td{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+     <div class="leg" id="leg"></div>
+     <div class="cw" style="margin-top:12px"><svg class="viz" id="mv" viewBox="0 0 700 300" role="img" aria-label="แผนที่เส้นทาง"></svg></div>
+     <h2 style="margin-top:14px">ช่วงความชัน <span class="note" id="slopeRangeCount"></span> <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="ใช้ RDP แบบเดียวกับหน้าแผนที่/แบ่งช่วง โดยเก็บจุดที่ระดับความสูงเบี่ยงจากเส้นเชื่อมมากกว่าค่าคลาดเคลื่อน ค่าเริ่มต้นอิง 3% ของช่วงระดับสูงต่ำสุด และเพิ่มค่าอัตโนมัติเมื่อมีเกิน 30 ช่วง">ⓘ</span></h2>
+-    <label style="margin-top:8px">ความไวจุดเปลี่ยนความชัน: <span id="rangeTolValue">-</span><input type="range" id="rangeTol" min="1" max="150" step="1" value="10" aria-label="ความไวจุดเปลี่ยนความชัน"></label>
+-    <p class="note" style="margin:4px 0 8px">ปรับค่าคลาดเคลื่อนระดับความสูง (เมตร): เลื่อนไปทางซ้ายเพื่อแบ่งละเอียดขึ้น เลื่อนไปทางขวาเพื่อรวมช่วง</p>
++    <label style="margin-top:8px">ความละเอียดการแบ่งช่วง: <span id="rangeTolValue">-</span><input type="range" id="rangeTol" min="1" max="150" step="1" value="10" aria-label="ความไวจุดเปลี่ยนความชัน"></label>
++    <p class="note" style="margin:4px 0 8px">เลื่อนซ้าย = แบ่งช่วงละเอียดขึ้น · เลื่อนขวา = รวมช่วงที่ความชันใกล้กัน</p>
+     <div class="slopebar" id="slopeBar" role="img" aria-label="แถบแบ่งช่วงความชัน"></div>
+     <div class="rangelegend" id="slopeLegend"></div>
+     <div class="tw" style="max-height:280px;margin-top:8px" id="slopeRangeTable"></div>
+@@ -167,7 +171,7 @@ tr.sel td{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+       <button class="sbtn" id="bPrint"><span data-ic="print"></span>พิมพ์แถบเพซ</button>
+       <label style="width:150px">แถบเพซทุก<select id="bandStep"><option value="1">1 กม.</option><option value="2">2 กม.</option><option value="5" selected>5 กม.</option></select></label>
+     </div>
+-    <p class="note" style="margin-top:8px">GPX ฝังจุดเตือนเป็น Waypoint ส่วน TCX เป็น Course ที่มี Course Point (น้ำ อาหาร อันตราย) และเวลาตามแผนสำหรับ Virtual Partner ชื่อจุดเป็นตัวอักษรอังกฤษสั้นๆ เพราะหน้าจอนาฬิกาแสดงภาษาไทยไม่ได้ทุกรุ่น รายละเอียดภาษาไทยอยู่ในช่องบันทึกย่อ ผมยังไม่ได้ทดสอบกับนาฬิกาจริง ลองนำเข้าแล้วตรวจที่ Garmin Connect ก่อนแข่ง</p>
++    <p class="note" style="margin-top:8px">GPX ฝังจุดเตือนเป็น Waypoint ส่วน TCX เป็น Course ที่มี Course Point (น้ำ อาหาร อันตราย) และเวลาตามแผนสำหรับ Virtual Partner ชื่อจุดเป็นตัวอักษรอังกฤษสั้นๆ เพราะหน้าจอนาฬิกาแสดงภาษาไทยไม่ได้ทุกรุ่น รายละเอียดภาษาไทยอยู่ในช่องบันทึกย่อ ยังไม่ได้ทดสอบกับนาฬิกาทุกรุ่น ลองนำเข้าและตรวจใน Garmin Connect ก่อนวันแข่ง</p>
+   </section>
+ 
+   <section class="box band" id="bandBox"><h2 id="bandT">แถบเพซ</h2><div class="tw" style="max-height:none" id="bandTable"></div></section>
+@@ -191,8 +195,13 @@ const err=m=>{$("#err").textContent=m||""};
+ const fin=isFinite,clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+ const fmtDur=s=>{if(!fin(s))return"-";s=Math.round(s);const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return h+":"+String(m).padStart(2,"0")+":"+String(x).padStart(2,"0")};
+ const fmtPace=s=>{if(!fin(s)||s<=0)return"-";let m=Math.floor(s/60),x=Math.round(s%60);if(x===60){m++;x=0}return m+":"+String(x).padStart(2,"0")};
+-const parseHMS=t=>{const a=String(t).trim().split(":").map(Number);if(!a.length||a.some(x=>!fin(x)||x<0))return NaN;return a.length===3?a[0]*3600+a[1]*60+a[2]:a.length===2?a[0]*3600+a[1]*60:a[0]*60};
+-const parseMS=t=>{const a=String(t).trim().split(":").map(Number);if(!a.length||a.some(x=>!fin(x)||x<0))return NaN;return a.length===2?a[0]*60+a[1]:a[0]};
++const parseHMS=t=>{const a=String(t).trim().split(":").map(Number);if(!a.length||a.length>3||a.some(x=>!fin(x)||x<0)||a.slice(1).some(x=>x>=60))return NaN;return a.length===3?a[0]*3600+a[1]*60+a[2]:a.length===2?a[0]*3600+a[1]*60:a[0]*60};
++const boxNum=el=>{const v=String(el.value).replace(/\D/g,"");return v===""?0:parseInt(v,10)};
++const getTT=()=>boxNum($("#th"))+":"+boxNum($("#tm"))+":"+boxNum($("#ts"));
++const getFP=()=>boxNum($("#pm"))+":"+boxNum($("#ps"));
++const setTT=sec=>{sec=Math.round(sec);$("#th").value=Math.floor(sec/3600);$("#tm").value=String(Math.floor(sec%3600/60)).padStart(2,"0");$("#ts").value=String(sec%60).padStart(2,"0")};
++const setFP=sec=>{sec=Math.round(sec);$("#pm").value=Math.floor(sec/60);$("#ps").value=String(sec%60).padStart(2,"0")};
++const parseMS=t=>{const a=String(t).trim().split(":").map(Number);if(!a.length||a.length>2||a.some(x=>!fin(x)||x<0)||a.slice(1).some(x=>x>=60))return NaN;return a.length===2?a[0]*60+a[1]:a[0]};
+ function hav(la1,lo1,la2,lo2){const k=Math.PI/180,dl=(la2-la1)*k,dn=(lo2-lo1)*k,h=Math.sin(dl/2)**2+Math.cos(la1*k)*Math.cos(la2*k)*Math.sin(dn/2)**2;return 12742000*Math.asin(Math.sqrt(h))}
+ function cost(g){g=clamp(g/100,-.3,.3);return 155.4*g**5-30.4*g**4-43.3*g**3+46.3*g**2+19.5*g+3.6}
+ const TYPES={
+@@ -407,8 +416,11 @@ const S={course:null,plan:null,mode:"auto",tsel:"time",T:14400,fp:330,off:80,aid
+ function cfgNow(){return{mode:S.mode==="auto"&&S.course?courseMode(S.course).mode:S.mode,tsel:S.tsel,T:S.T,fp:S.fp}}
+ function readInputs(){
+   S.mode=$("#mode").value;S.tsel=$("#tsel").value;
+-  const T=parseHMS($("#tt").value),fp=parseMS($("#fp").value);
+-  if(fin(T)&&T>0)S.T=T;if(fin(fp)&&fp>0)S.fp=fp;
++  const T=parseHMS(getTT()),fp=parseMS(getFP());
++  let bad="";
++  if(fin(T)&&T>0&&T<=172800)S.T=T;else if($("#tsel").value==="time"){bad="เวลาเป้าหมายไม่ถูกต้อง นาทีและวินาทีต้องไม่เกิน 59 และเวลาต้องมากกว่า 0 (คงค่าเดิมไว้)";setTT(S.T)}
++  if(fin(fp)&&fp>0&&fp<=1800)S.fp=fp;else if($("#tsel").value==="pace"){bad="เพซไม่ถูกต้อง วินาทีต้องไม่เกิน 59 และเพซต้องมากกว่า 0 (คงค่าเดิมไว้)";setFP(S.fp)}
++  if(bad)err(bad);else if(/^(เวลาเป้าหมาย|เพซไม่ถูกต้อง)/.test($("#err").textContent))err("");
+   S.off=+$("#off").value;$("#offV").textContent=S.off;
+   S.aid=$("#aid").value.split(/[,\s]+/).map(Number).filter(x=>fin(x)&&x>0);
+   S.gel=Math.max(0,parseInt($("#gel").value)||0);
+@@ -450,7 +462,7 @@ function setZoom(zoom,anchor=S.viewCenter){
+ function renderAll(){
+   const C=S.course,PL=S.plan;if(!C||!PL)return;
+   $("#empty").hidden=true;$("#res").hidden=false;
+-  const cell=(l,v,d)=>'<div>'+l+(d?' '+infoTip(d):'')+'<strong>'+v+'</strong></div>',sp=splitsOf(C,PL),paces=sp.map(s=>s.pace);
++  const OBV=["ระยะ","เวลาเข้าเส้นชัย","เพซเฉลี่ย","ขึ้นชัน 12%+","ขึ้น 3 ถึง 12%","ราบ","ลง","ทั้งหมด","น้ำ/เจล/เกลือแร่","เนิน/โพล","อันตราย"],cell=(l,v,d)=>'<div>'+l+(d&&!OBV.includes(l)?' '+infoTip(d):'')+'<strong>'+v+'</strong></div>',sp=splitsOf(C,PL),paces=sp.map(s=>s.pace);
+   const segmentation=slopeRanges(C,S.rangeTol);S.ranges=segmentation.ranges;S.rangeTol=segmentation.tolerance;
+   $("#rangeTol").value=S.rangeTol;$("#rangeTolValue").textContent=S.rangeTol+" ม.";
+   const share=[0,0,0,0,0];for(const r of S.ranges)share[r.type]+=r.len;const sh=share.map(x=>x/C.L*100);
+@@ -505,12 +517,14 @@ function drawChartBase(){
+ function drawMapBase(){
+   const C=S.course,{i0,i1}=viewIndices(C);let x0=1e18,x1=-1e18,y0=1e18,y1=-1e18;
+   for(let i=i0;i<=i1;i++){x0=Math.min(x0,C.px[i]);x1=Math.max(x1,C.px[i]);y0=Math.min(y0,C.py[i]);y1=Math.max(y1,C.py[i])}
+-  const sc=Math.min(660/((x1-x0)||1),260/((y1-y0)||1)),ox=350-(x0+x1)/2*sc,oy=150+(y0+y1)/2*sc;
++  const W=700,pad=28,bw=(x1-x0)||1,bh=(y1-y0)||1,H=Math.round(clamp(bh*(W-2*pad)/bw+2*pad,240,480));
++  const sc=Math.min((W-2*pad)/bw,(H-2*pad)/bh),ox=W/2-(x0+x1)/2*sc,oy=H/2+(y0+y1)/2*sc;
++  S.mapH=H;$("#mv").setAttribute("viewBox","0 0 "+W+" "+H);
+   const MX=i=>ox+C.px[i]*sc,MY=i=>oy-C.py[i]*sc;
+   let h="";
+   for(const r of S.ranges){
+     const from=Math.max(i0,r.a),to=Math.min(i1,r.b);if(to<=from)continue;
+-    const pts=[],stride=Math.max(1,Math.ceil((to-from)/180));
++    const pts=[],stride=Math.max(1,Math.ceil((to-from)/1500));
+     for(let k=from;k<to;k+=stride)pts.push(MX(k).toFixed(1)+","+MY(k).toFixed(1));
+     pts.push(MX(to).toFixed(1)+","+MY(to).toFixed(1));
+     h+='<polyline fill="none" stroke="'+CLS[r.type].c+'" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" points="'+pts.join(" ")+'"/>';
+@@ -575,7 +589,7 @@ function addWp(m){
+ }
+ function chartM(e){const r=$("#cv").getBoundingClientRect(),fx=((e.clientX-r.left)/r.width*CW-CL)/(CW-CL-CR),{m0,m1}=S.cx;return clamp(fx,0,1)*(m1-m0)+m0}
+ function mapIdx(e){
+-  const C=S.course,mx=S.mx,r=$("#mv").getBoundingClientRect(),x=(e.clientX-r.left)/r.width*700,y=(e.clientY-r.top)/r.height*300;
++  const C=S.course,mx=S.mx,r=$("#mv").getBoundingClientRect(),x=(e.clientX-r.left)/r.width*700,y=(e.clientY-r.top)/r.height*(S.mapH||300);
+   let bi=mx.i0,bd=1e18;for(let i=mx.i0;i<=mx.i1;i+=2){const dx=mx.MX(i)-x,dy=mx.MY(i)-y,d=dx*dx+dy*dy;if(d<bd){bd=d;bi=i}}
+   for(const i of[mx.i0,mx.i1]){const dx=mx.MX(i)-x,dy=mx.MY(i)-y,d=dx*dx+dy*dy;if(d<bd){bd=d;bi=i}}
+   return{i:bi,d:Math.sqrt(bd)};
+@@ -631,7 +645,7 @@ function exportGPX(){
+   x+='</trkseg></trk>\n</gpx>\n';download(safe+"_plan.gpx",x,"application/gpx+xml");
+ }
+ function exportTCX(){
+-  const C=S.course,PL=S.plan,safe=C.name.replace(/[^\w\u0E00-\u0E7F-]+/g,"_"),base=Date.UTC(2000,0,1,6,0,0),iso=t=>new Date(base+t*1000).toISOString().replace(".000Z","Z"),stp=Math.max(1,Math.round(25/C.step));
++  const C=S.course,PL=S.plan,safe=C.name.replace(/[^\w\u0E00-\u0E7F-]+/g,"_"),base=Date.UTC(2000,0,1,6,0,0),iso=t=>new Date(base+Math.round(t)*1000).toISOString().replace(".000Z","Z"),stp=Math.max(1,Math.round(25/C.step));
+   const pos=i=>'<Position><LatitudeDegrees>'+C.lat[i].toFixed(6)+'</LatitudeDegrees><LongitudeDegrees>'+C.lon[i].toFixed(6)+'</LongitudeDegrees></Position>';
+   let x='<?xml version="1.0" encoding="UTF-8"?>\n<TrainingCenterDatabase xmlns="http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2">\n<Folders><Courses><CourseFolder Name="RunsArt"><CourseNameRef><Id>'+xesc(C.name.slice(0,15))+'</Id></CourseNameRef></CourseFolder></Courses></Folders>\n<Courses><Course><Name>'+xesc(C.name.slice(0,15))+'</Name>\n';
+   x+='<Lap><TotalTimeSeconds>'+Math.round(PL.T)+'</TotalTimeSeconds><DistanceMeters>'+C.L.toFixed(1)+'</DistanceMeters><BeginPosition><LatitudeDegrees>'+C.lat[0].toFixed(6)+'</LatitudeDegrees><LongitudeDegrees>'+C.lon[0].toFixed(6)+'</LongitudeDegrees></BeginPosition><EndPosition><LatitudeDegrees>'+C.lat[C.n-1].toFixed(6)+'</LatitudeDegrees><LongitudeDegrees>'+C.lon[C.n-1].toFixed(6)+'</LongitudeDegrees></EndPosition><Intensity>Active</Intensity></Lap>\n<Track>\n';
+@@ -646,9 +660,9 @@ function renderBand(sp){
+   const C=S.course,PL=S.plan,step=+$("#bandStep").value;
+   $("#bandT").innerHTML="แถบเพซ "+infoTip("แถบแสดงเวลาและเพซสะสมตามจุดระยะที่เลือก ค่าทั้งหมดอิงจากแผนเพซที่ปรับตามความชัน")+ " · "+esc(C.name)+" · เป้า "+fmtDur(PL.T);
+   const rows=[];
+-  for(let km=step;km<C.L/1000;km+=step){const m=km*1000,w=S.wps.filter(x=>x.m>m-step*1000&&x.m<=m).map(x=>TYPES[x.type].n);rows.push('<tr><td>'+km+'</td><td>'+fmtDur(interp(C,PL.time,m))+'</td><td>'+fmtPace(sp[Math.min(sp.length-1,Math.floor(km)-1)].pace)+'</td><td>'+esc(w.join(" "))+'</td></tr>')}
++  for(let km=step;km<C.L/1000;km+=step){const m=km*1000,w=S.wps.filter(x=>x.m>m-step*1000&&x.m<=m).map(x=>TYPES[x.type].n);rows.push('<tr><td>'+km+'</td><td>'+fmtDur(interp(C,PL.time,m))+'</td><td>'+fmtPace((interp(C,PL.time,m)-interp(C,PL.time,Math.max(0,m-step*1000)))/step)+'</td><td>'+esc(w.join(" "))+'</td></tr>')}
+   rows.push('<tr><td><b>'+(C.L/1000).toFixed(1)+'</b></td><td><b>'+fmtDur(PL.T)+'</b></td><td></td><td>เส้นชัย</td></tr>');
+-  $("#bandTable").innerHTML='<table><tr><th>กม. '+infoTip("ตำแหน่งระยะตามช่วงที่เลือก")+'</th><th>เวลาสะสม '+infoTip("เวลาตามแผนสะสมจากจุดเริ่มถึงระยะนี้")+'</th><th>เพซ '+infoTip("เพซที่คำนวณจากเวลาเดินทางจริงของช่วงซึ่งปรับตามความชัน")+'</th><th>จุดเตือนในช่วง '+infoTip("คำเตือนที่อยู่ระหว่างจุดระยะนี้กับจุดก่อนหน้า")+'</th></tr>'+rows.join("")+'</table>';
++  $("#bandTable").innerHTML='<table><tr><th>กม. '+infoTip("ตำแหน่งระยะตามช่วงที่เลือก")+'</th><th>เวลาสะสม '+infoTip("เวลาตามแผนสะสมจากจุดเริ่มถึงระยะนี้")+'</th><th>เพซ '+infoTip("เพซเฉลี่ยของช่วงตั้งแต่จุดก่อนหน้าถึงจุดนี้ (ปรับตามความชันแล้ว)")+'</th><th>จุดเตือนในช่วง '+infoTip("คำเตือนที่อยู่ระหว่างจุดระยะนี้กับจุดก่อนหน้า")+'</th></tr>'+rows.join("")+'</table>';
+ }
+ $("#bandStep").onchange=()=>S.course&&renderBand(splitsOf(S.course,S.plan));
+ $("#bPrint").onclick=()=>window.print();
+@@ -705,7 +719,7 @@ function restore(o){
+     S.ranges=[];S.viewZoom=1;S.viewCenter=.5;
+     S.rangeTol=Number.isFinite(+o.slopeTolerance)&&+o.slopeTolerance>=1&&+o.slopeTolerance<=150?+o.slopeTolerance:null;
+     S.mode=o.mode==="trail"||o.mode==="road"?o.mode:"auto";S.tsel=o.tsel==="pace"?"pace":"time";S.T=o.T||14400;S.fp=o.fp||330;S.off=o.off||80;S.aid=o.aid||[];S.gel=o.v>=2?o.gelMinutes||0:0;S.salt=o.v>=3?o.saltMinutes||0:0;
+-    $("#mode").value=S.mode;$("#tsel").value=S.tsel;$("#tt").value=fmtDur(S.T);$("#fp").value=fmtPace(S.fp);$("#off").value=S.off;$("#aid").value=S.aid.join(", ");$("#gel").value=S.gel;$("#salt").value=S.salt;
++    $("#mode").value=S.mode;$("#tsel").value=S.tsel;setTT(S.T);setFP(S.fp);$("#off").value=S.off;$("#aid").value=S.aid.join(", ");$("#gel").value=S.gel;$("#salt").value=S.salt;
+     S.wps=(o.wps||[]).filter(w=>TYPES[w.type]).map(w=>({id:++uid,m:w.m,type:w.type,text:w.text||"",auto:!!w.auto}));S.autoAlertsEnabled=!!o.autoAlertsEnabled||S.wps.some(w=>w.auto);S.sel=-1;S.actual=null;
+     readInputs();S.plan=makePlan(S.course,cfgNow());
+     if(o.v<2){
+@@ -728,7 +742,7 @@ function refreshAuto(){
+   readInputs();S.plan=makePlan(S.course,cfgNow());if(S.autoAlertsEnabled)autoGen();renderAll();persist();
+ }
+ ["#mode","#tsel"].forEach(id=>$(id).addEventListener("change",refreshAuto));
+-["#tt","#fp"].forEach(id=>$(id).addEventListener("change",refreshAuto));
++["#th","#tm","#ts","#pm","#ps"].forEach(id=>{const el=$(id);el.addEventListener("focus",()=>el.select());el.addEventListener("input",()=>{el.value=el.value.replace(/\D/g,"")});el.addEventListener("change",()=>{refreshAuto();setTT(S.T);setFP(S.fp)})});
+ $("#off").addEventListener("input",()=>{readInputs();persist()});
+ $("#aid").addEventListener("change",refreshAuto);$("#gel").addEventListener("change",refreshAuto);$("#salt").addEventListener("change",refreshAuto);
+ $("#rangeTol").addEventListener("input",e=>{if(!S.course)return;S.rangeTol=+e.target.value;renderAll();persist()});
+diff --git a/tools/slope/index.html b/tools/slope/index.html
+index 2a57f32..35d9c22 100644
+--- a/tools/slope/index.html
++++ b/tools/slope/index.html
+@@ -123,7 +123,7 @@ th{color:var(--mute);font-weight:500;font-size:.78rem}
+ </head>
+ <body>
+ <main>
+-<div class="top"><div class="crumbs"><a class="back" href="/">← หน้าแรก</a><a class="back" href="/tools/training%20analysis/">ใช้ไฟล์เดิมวิเคราะห์การซ้อม →</a><h1>คำนวณความชันและความยากเส้นทาง</h1></div><div class="acct" id="acct"></div></div>
++<div class="top"><div class="crumbs"><a class="back" href="/">← หน้าแรก</a><a class="back" href="/tools/training%20analysis/">ใช้ไฟล์เดิมวิเคราะห์การซ้อม →</a><h1>แผนที่และแบ่งช่วง</h1></div><div class="acct" id="acct"></div></div>
+ <nav class="toolnav" role="toolbar" aria-label="เครื่องมือ">
+   <a href="/">หน้าแรก</a>
+   <a href="/tools/slope/" aria-current="page">แผนที่และแบ่งช่วง</a>
+@@ -179,7 +179,7 @@ th{color:var(--mute);font-weight:500;font-size:.78rem}
+     <p class="note" id="hint"></p>
+     <div style="position:relative"><svg id="cv" viewBox="0 0 700 270" role="img" aria-label="กราฟโปรไฟล์ความสูง"></svg><div id="tip" class="tip" hidden></div><div class="zc"><button id="zi" data-tip="ซูมเข้า" aria-label="ซูมเข้า"><span data-ic="plus"></span></button><button id="zo" data-tip="ซูมออก" aria-label="ซูมออก"><span data-ic="minus"></span></button><button id="zr" data-tip="รีเซ็ตซูม" aria-label="รีเซ็ตซูม"><span data-ic="fit"></span></button></div></div>
+     <input type="range" id="pan" min="0" max="1000" value="0" hidden aria-label="เลื่อนช่วงที่ซูม">
+-    <div class="slbox" id="sl" hidden><label>ความไวจุดเปลี่ยนความชัน: <span id="tolV"></span><input type="range" id="tol" min="1" max="150" step="1" value="10" aria-label="ความไวจุดเปลี่ยนความชัน"></label><p class="note">เลื่อนซ้ายแบ่งละเอียดขึ้น เลื่อนขวารวมช่วงที่ความชันใกล้กัน</p></div>
++    <div class="slbox" id="sl" hidden><label>ความละเอียดการแบ่งช่วง: <span id="tolV"></span><input type="range" id="tol" min="1" max="150" step="1" value="10" aria-label="ความไวจุดเปลี่ยนความชัน"></label><p class="note">เลื่อนซ้ายแบ่งละเอียดขึ้น เลื่อนขวารวมช่วงที่ความชันใกล้กัน</p></div>
+     <p class="err" id="err" role="alert"></p>
+     <div class="info" id="info"></div>
+   </section>
+diff --git a/tools/training analysis/index.html b/tools/training analysis/index.html
+index a620c83..bec22ab 100644
+--- a/tools/training analysis/index.html	
++++ b/tools/training analysis/index.html	
+@@ -122,6 +122,14 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
+ .distance-scroll input{padding:0;accent-color:var(--accent)}
+ .distance-scroll output{min-width:105px;text-align:right;font-size:.82rem;color:var(--mute);font-variant-numeric:tabular-nums}
+ .no-map{fill:var(--mute);font-size:15px}
++
++/* แผนที่และกราฟ: ให้สองกล่องสูงเท่ากัน และไม่บิดตัวอักษร */
++.route-panel{align-items:stretch;gap:12px 14px}
++.route-content{aspect-ratio:auto;height:100%;min-height:280px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:color-mix(in srgb,var(--bg) 78%,var(--panel))}
++#routeMap{aspect-ratio:auto;height:100%;min-height:280px}
++.route-chart{align-content:start}
++#cv{height:auto}
++@media(max-width:760px){.route-content{aspect-ratio:1/1;height:auto;min-height:0;max-height:360px}#routeMap{min-height:0}}
+ </style>
+ </head>
+ <body>
+@@ -143,16 +151,16 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
+   <div id="analysisOptions" hidden>
+     <h2 style="margin:14px 0 8px">2. เลือกชนิดการวิ่ง <span class="note">(ไม่บังคับ — เปลี่ยนภายหลังได้)</span></h2>
+     <div class="srow">
+-    <label><span class="field-title">ชนิดคอร์สตามแผน <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบายชนิดคอร์ส" data-tip="เลือกชนิดคอร์สเองได้ หากการตรวจจับอัตโนมัติไม่ตรงกับการซ้อม">?</span></span><select id="plan"><option value="auto">ตรวจจับให้อัตโนมัติ</option><option value="trail">วิ่งเทรล / เพซเปลี่ยนตามทาง</option><option value="interval">Interval</option><option value="tempo">Tempo</option><option value="long">Long Run</option><option value="easy">Easy Run</option><option value="recovery">Recovery</option></select></label>
+-    <label><span class="field-title">HR threshold (bpm) <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบาย HR threshold" data-tip="ชีพจรใกล้ระดับหนักที่ยังรักษาได้ช่วงหนึ่ง ใช้แบ่งโซนหัวใจโดยประมาณ ไม่ใช่ผลตรวจทางการแพทย์">?</span></span><input type="number" id="hrthreshold" min="100" max="220" step="1" placeholder="ไม่ทราบ เว้นว่างได้"></label>
+-    <label><span class="field-title">Max HR (bpm) <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบาย Max HR" data-tip="อัตราการเต้นหัวใจสูงสุด หากไม่ทราบไม่ต้องเดาและเว้นว่างได้ ระบบยังแสดง HR ที่วัดได้ แต่ไม่แบ่งโซน">?</span></span><input type="number" id="maxhr" min="120" max="230" step="1" placeholder="ไม่ทราบ เว้นว่างได้"></label>
++    <label><span class="field-title">ชนิดการซ้อมตามแผน <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบายชนิดคอร์ส" data-tip="เลือกชนิดคอร์สเองได้ หากการตรวจจับอัตโนมัติไม่ตรงกับการซ้อม">?</span></span><select id="plan"><option value="auto">ตรวจจับให้อัตโนมัติ</option><option value="trail">วิ่งเทรล / เพซเปลี่ยนตามทาง</option><option value="interval">Interval</option><option value="tempo">Tempo</option><option value="long">Long Run</option><option value="easy">Easy Run</option><option value="recovery">Recovery</option></select></label>
++    <label><span class="field-title">หัวใจช่วงหนักที่สุดที่ยังคุมได้ (HR threshold, bpm) <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบาย HR threshold" data-tip="ชีพจรใกล้ระดับหนักที่ยังรักษาได้ช่วงหนึ่ง ใช้แบ่งโซนหัวใจโดยประมาณ ไม่ใช่ผลตรวจทางการแพทย์">?</span></span><input type="number" id="hrthreshold" min="100" max="220" step="1" placeholder="ไม่ทราบ เว้นว่างได้"></label>
++    <label><span class="field-title">หัวใจสูงสุดของคุณ (Max HR, bpm) <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบาย Max HR" data-tip="อัตราการเต้นหัวใจสูงสุด หากไม่ทราบไม่ต้องเดาและเว้นว่างได้ ระบบยังแสดง HR ที่วัดได้ แต่ไม่แบ่งโซน">?</span></span><input type="number" id="maxhr" min="120" max="230" step="1" placeholder="ไม่ทราบ เว้นว่างได้"></label>
+     </div>
+   </div>
+   <p class="note" id="batchStatus" role="status"></p>
+   <p class="err" id="err" role="alert"></p>
+ </section>
+ 
+-<div id="empty" class="box"><p class="note">นำเข้าไฟล์หรือเลือกกิจกรรมจาก Strava เพื่อเริ่มวิเคราะห์ ระบบจะตรวจจับชนิดคอร์ส แยกเที่ยววิ่งและช่วงพัก ให้คะแนนการคุมแผน ดูโหลดและพัฒนาการ พร้อมสรุปแบบโค้ช</p></div>
++<div id="empty" class="box"><p class="note">ใส่ไฟล์วิ่ง (.gpx / .tcx) หรือเลือกจาก Strava แล้วระบบจะบอกว่าวันนี้ซ้อมแบบไหน หนักแค่ไหน แบ่งรอบวิ่งและช่วงพัก ดูโซนหัวใจ เทียบกับการซ้อมครั้งก่อน และสรุปคำแนะนำให้ ไม่รู้ค่าหัวใจก็เว้นว่างได้</p></div>
+ 
+ <div id="res" hidden>
+   <section class="box coach" id="coach"></section>
+@@ -164,7 +172,7 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
+     </div>
+     <div class="route-chart">
+     <div class="chart-main">
+-      <div class="cw"><svg id="cv" viewBox="0 0 700 190" preserveAspectRatio="none" role="img" aria-label="กราฟเพซและอัตราการเต้นหัวใจตามระยะทาง"></svg><div class="tip" id="tip" hidden></div></div>
++      <div class="cw"><svg id="cv" viewBox="0 0 700 260" role="img" aria-label="กราฟเพซและอัตราการเต้นหัวใจตามระยะทาง"></svg><div class="tip" id="tip" hidden></div></div>
+       <p class="note" id="cvN"></p>
+     </div>
+     <div class="visual-tools" role="toolbar" aria-label="เครื่องมือแก้ไขรอบวิ่ง">
+@@ -187,7 +195,7 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
+     <section class="box"><h2>พัฒนาการ <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบายพัฒนาการ" data-tip="แนวโน้มจากประวัติที่นำเข้าหรือบันทึกไว้ เปรียบเทียบได้เมื่อมีข้อมูลต่อเนื่องพอ">?</span></h2><div id="prog"></div></section>
+     <section class="box"><h2>คาดการณ์เวลาแข่ง <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบายคาดการณ์เวลาแข่ง" data-tip="คำนวณจากผลงานวิ่งต่อเนื่องที่ผ่านมา เป็นช่วงประมาณ ไม่รับประกันผลจริง">?</span></h2><div id="pred"></div></section>
+   </div>
+-  <section class="box"><div class="shd"><h2 style="margin:0">เซสชันที่บันทึกไว้ <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบายเซสชันที่บันทึกไว้" data-tip="เปิดไฟล์ต้นฉบับเพื่อวิเคราะห์หรือแก้ชนิดการวิ่ง/รอบ แล้วอัปเดตผลเดิมได้">?</span></h2><button class="sbtn pri" id="bSave"><span data-ic="save"></span><span id="saveLabel">บันทึกเซสชันนี้</span></button></div><p class="note" id="saveN" style="margin:6px 0"></p><p class="note">รายการที่บันทึกก่อนหน้านี้มีเฉพาะผลสรุป หากต้องการเปิดแก้ไข ให้นำเข้าไฟล์ GPX/TCX ต้นฉบับอีกครั้ง</p><div id="hist"></div></section>
++  <section class="box"><div class="shd"><h2 style="margin:0">การซ้อมที่บันทึกไว้ <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบายการซ้อมที่บันทึกไว้" data-tip="เปิดไฟล์ต้นฉบับเพื่อวิเคราะห์หรือแก้ชนิดการวิ่ง/รอบ แล้วอัปเดตผลเดิมได้">?</span></h2><button class="sbtn pri" id="bSave"><span data-ic="save"></span><span id="saveLabel">บันทึกการซ้อมนี้</span></button></div><p class="note" id="saveN" style="margin:6px 0"></p><p class="note">รายการที่บันทึกก่อนหน้านี้มีเฉพาะผลสรุป หากต้องการเปิดแก้ไข ให้นำเข้าไฟล์ GPX/TCX ต้นฉบับอีกครั้ง</p><div id="hist"></div></section>
+ </div>
+ </main>
+ 
+@@ -397,7 +405,7 @@ function analyze(S,cfg){
+     const g=splits.filter(s=>s.moving>=.8).map(s=>s.gap);
+     if(g.length>=3){const cv=sd(g)/mean(g);R.cv=cv;R.pci=clamp(Math.round(100-cv*800),0,100);
+       const k=Math.floor(g.length/2);R.posSplit=(mean(g.slice(g.length-k))-mean(g.slice(0,k)))/mean(g.slice(0,k))}
+-    /* หัวใจลอย (Pw:Hr) ปรับตามความชัน */
++    /* หัวใจลอย ปรับตามความชัน */
+     let sa,sb;
+     if(isTempo&&runs.length){sa=runs[0].a;sb=runs[runs.length-1].b}else{sa=Math.min(600,Math.floor(N*.15));sb=N}
+     if(hasHR&&sb-sa>=1200){
+@@ -433,7 +441,7 @@ function analyze(S,cfg){
+   if(R.posSplit!=null&&!isInt&&R.posSplit>.05)add("warn","ครึ่งหลังช้ากว่าครึ่งแรก "+(R.posSplit*100).toFixed(0)+"% (ปรับตามความชันแล้ว) ออกตัวแรงไปหรือเริ่มล้า");
+   return R;
+ }
+-/* โหลดสะสมและพัฒนาการจากเซสชันที่บันทึกไว้ */
++/* โหลดสะสมและพัฒนาการจากการซ้อมที่บันทึกไว้ */
+ function progressOf(R,sess,hist){
+   const ref=new Date(sess.date).getTime(),day=864e5,others=hist.filter(h=>h.key!==sess.key),loadOthers=others.filter(h=>h.loadMethod===sess.loadMethod);
+   const all=loadOthers.map(h=>({t:new Date(h.date).getTime(),load:h.load})).concat([{t:ref,load:R.load}]).filter(x=>fin(x.t)&&ref-x.t>=0&&ref-x.t<28*day);
+@@ -521,16 +529,16 @@ const HELP={
+   "หัวใจเฉลี่ย":"อัตราการเต้นหัวใจเฉลี่ย หน่วย bpm; ใช้ประกอบกับความรู้สึกและสภาพเส้นทาง",
+   "ความนิ่งของเพซ":"คะแนน A–D จากความแปรปรวนของเพซ ไม่ใช่คะแนนความฟิต",
+   "รูปแบบเพซ":"เปรียบเทียบเพซช่วงต้นกับช่วงท้ายของกิจกรรม",
+-  "หัวใจลอย (Pw:Hr)":"การเปลี่ยนของความสัมพันธ์ระหว่างเพซ/ความชันกับ HR ในการวิ่งต่อเนื่อง",
++  "หัวใจลอย":"การเปลี่ยนของความสัมพันธ์ระหว่างเพซ/ความชันกับ HR ในการวิ่งต่อเนื่อง",
+   "หัวใจลดใน 60 วิ":"HR ที่ลดลงหลังจบช่วงเร็ว 60 วินาที ไม่ใช่เป้าหมายการพัก",
+-  "โหลดเซสชัน":"คะแนนโหลดโดยประมาณ ใช้เทียบแนวโน้มของตัวเอง ไม่ใช่หน่วยสากล",
++  "โหลดการซ้อม":"คะแนนโหลดโดยประมาณ ใช้เทียบแนวโน้มของตัวเอง ไม่ใช่หน่วยสากล",
+   "เวลาโซน 3 ขึ้นไป":"สัดส่วนเวลาที่หัวใจอยู่ในโซน 3–5 ตาม HR threshold หรือ Max HR ที่ตั้งไว้",
+   "ACWR (7/28 วัน)":"โหลด 7 วันเทียบค่าเฉลี่ยรายสัปดาห์จาก 28 วัน; ใช้ดูแนวโน้มเมื่อมีข้อมูลเพียงพอ",
+   "หัวใจสูงสุด":"ค่า HR สูงสุดที่พบในข้อมูลกิจกรรมนี้",
+   "EF (แอโรบิก)":"ความเร็วเทียบกับ HR; ค่าสูงขึ้นอาจบอกประสิทธิภาพแอโรบิกดีขึ้น แต่สภาพแวดล้อมมีผล",
+-  "EF เทียบก่อนหน้า":"เปอร์เซ็นต์การเปลี่ยน EF เมื่อเทียบกับเซสชันก่อนหน้า",
++  "EF เทียบก่อนหน้า":"เปอร์เซ็นต์การเปลี่ยน EF เมื่อเทียบกับการซ้อมก่อนหน้า",
+   "คาดการณ์ 10 กม.":"เวลาประมาณจากช่วงวิ่งต่อเนื่องที่ดีที่สุดในประวัติ 90 วัน ไม่ใช่การรับประกัน",
+-  "เทียบคอร์สเดิม":"เทียบกับเซสชันก่อนหน้าที่ชนิดและระยะใกล้เคียงกัน",
++  "เทียบคอร์สเดิม":"เทียบกับการซ้อมก่อนหน้าที่ชนิดและระยะใกล้เคียงกัน",
+   "เที่ยววิ่งและช่วงพัก":"แสดงช่วงวิ่งเร็วและ HR ที่วัดหลังเริ่มพัก",
+   "เที่ยว":"ลำดับของช่วงวิ่งเร็ว",
+   "ระยะ":"ระยะทางของช่วงนี้",
+@@ -561,7 +569,7 @@ const HELP={
+   "โซน 4":"ความหนักสูงตามค่า HR อ้างอิงที่ตั้งไว้",
+   "โซน 5":"ความหนักสูงสุดตามค่า HR อ้างอิงที่ตั้งไว้",
+   "เวลาประมาณ (ช่วง)":"เวลาแข่งที่คำนวณและช่วงความไวจากสูตร ไม่ใช่การรับประกัน",
+-  "อ้างอิง":"ระยะและเซสชันที่ใช้เป็นข้อมูลคำนวณเวลาแข่ง"
++  "อ้างอิง":"ระยะและการซ้อมที่ใช้เป็นข้อมูลคำนวณเวลาแข่ง"
+ };
+ const PLAIN=new Set(["ระยะ","เวลา","เวลาเคลื่อนที่","เพซเฉลี่ย","หัวใจเฉลี่ย","เพซ /กม.","HR เฉลี่ย","พัก","กม.","เพซ","เพซปรับชัน","HR","สรุปวันนี้","ข้อสังเกต","คำแนะนำ","โซน 1","โซน 2","โซน 3","โซน 4","โซน 5"]);
+ const helpIcon=text=>PLAIN.has(text)?"":'<span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบาย '+esc(text)+'" data-tip="'+esc(HELP[text]||"ค่าที่คำนวณจากข้อมูลกิจกรรม ใช้ประกอบการดูแนวโน้ม")+'">?</span>';
+@@ -631,8 +639,8 @@ function render(){
+   const fd=R.flyDie?(R.flyDie.level===2?"หน้าตึงหลังหลุด":R.flyDie.level===1?"เริ่มตกช่วงหลัง":"ไม่พบ ("+sg(R.flyDie.drop*100,0)+"%)"):(R.posSplit!=null?(R.posSplit>.05?"ครึ่งหลังช้า "+(R.posSplit*100).toFixed(0)+"%":"สปลิตดี ("+sg(R.posSplit*100,0)+"%)"):"-");
+   const acwr=fin(P.ratio)?P.ratio.toFixed(2)+(P.enough?(P.ratio>1.5?" · พุ่งสูง":P.ratio>1.3?" · เริ่มเสี่ยง":P.ratio<.8?" · ต่ำกว่าปกติ":" · กำลังดี"):" · ข้อมูลยังไม่พอ"):"-";
+   $("#hero").innerHTML=
+-   '<div class="hg"><div class="hl2">สรุปเซสชัน</div><div class="stats">'+cell("ชนิดคอร์ส",TYPE_TH[R.eff]+(R.eff!==R.type?" (ตรวจพบ "+TYPE_TH[R.type]+")":""))+cell("ระยะ",(R.dist/1000).toFixed(2)+" กม.")+cell("เวลาเคลื่อนที่",fmtDur(R.movSec))+cell("เพซเฉลี่ย",fmtPace(R.avgPace)+" /กม.")+cell("หัวใจเฉลี่ย",fin(R.avgHR)?R.avgHR.toFixed(0)+" bpm":"-")+'</div></div>'+
+-   '<div class="hg"><div class="hl2">ความหนักและการคุมแผน</div><div class="stats">'+cell("ความนิ่งของเพซ",grade)+cell("หัวใจลอย (Pw:Hr)",R.decouple!=null?R.decouple.toFixed(1)+"%":"-")+cell("โหลดเซสชัน",Math.round(R.load)+" แต้ม")+cell("เวลาโซน 3 ขึ้นไป",R.hasZones?R.z3p.toFixed(0)+"%":"-")+'</div></div>';
++   '<div class="hg"><div class="hl2">สรุปการซ้อม</div><div class="stats">'+cell("ชนิดคอร์ส",TYPE_TH[R.eff]+(R.eff!==R.type?" (ตรวจพบ "+TYPE_TH[R.type]+")":""))+cell("ระยะ",(R.dist/1000).toFixed(2)+" กม.")+cell("เวลาเคลื่อนที่",fmtDur(R.movSec))+cell("เพซเฉลี่ย",fmtPace(R.avgPace)+" /กม.")+cell("หัวใจเฉลี่ย",fin(R.avgHR)?R.avgHR.toFixed(0)+" bpm":"-")+'</div></div>'+
++   '<div class="hg"><div class="hl2">ความหนักและการคุมแผน</div><div class="stats">'+cell("ความนิ่งของเพซ",grade)+cell("หัวใจลอย",R.decouple!=null?R.decouple.toFixed(1)+"%":"-")+cell("โหลดการซ้อม",Math.round(R.load)+" แต้ม")+cell("เวลาโซน 3 ขึ้นไป",R.hasZones?R.z3p.toFixed(0)+"%":"-")+'</div></div>';
+   drawChart();drawRouteMap();syncRepTools();syncRepHistory();
+   /* ตารางเที่ยววิ่ง / สปลิต */
+   if(R.reps.length){
+@@ -653,15 +661,15 @@ function render(){
+   $("#flags").innerHTML=R.flags.map(f=>'<div class="flag '+f.level+'"></div>').join("")||'<p class="note">ไม่มีข้อสังเกตพิเศษ</p>';
+   $("#flags").querySelectorAll(".flag").forEach((el,i)=>{el.textContent=R.flags[i].text});
+   /* พัฒนาการ */
+-  let ph='<div class="flag '+(!P.enough?"":(P.ratio>1.5?"bad":P.ratio>1.3?"warn":P.ratio<.8?"warn":"ok"))+'">โหลด 7 วัน '+Math.round(P.acute)+' แต้ม เทียบค่าเฉลี่ยรายสัปดาห์ของ 28 วัน '+Math.round(P.chronic)+' แต้ม (ACWR '+(fin(P.ratio)?P.ratio.toFixed(2):"-")+')'+(P.enough?"":" · ข้อมูลยังไม่พอ ต้องมีอย่างน้อย 4 เซสชันในช่วง 14 วันขึ้นไปที่ใช้วิธีคำนวณโหลดเดียวกัน; การนำเข้าจะบันทึกให้อัตโนมัติ")+'</div>';
+-  if(P.efs.length>=2){const xs=P.efs,mn=Math.min(...xs.map(x=>x.ef)),mx=Math.max(...xs.map(x=>x.ef)),w=300,h=60;ph+='<div class="note" style="margin:8px 0 2px">แนวโน้ม EF (เร็ว ÷ หัวใจ ยิ่งสูงยิ่งฟิต) '+xs.length+' เซสชันล่าสุด</div><svg viewBox="0 0 '+w+' '+h+'" style="width:100%;max-width:320px" role="img" aria-label="แนวโน้ม EF"><polyline fill="none" stroke="var(--accent)" stroke-width="2.5" points="'+xs.map((x,i)=>(8+i/(xs.length-1)*(w-16))+","+(h-8-(mx>mn?(x.ef-mn)/(mx-mn):.5)*(h-16))).join(" ")+'"/></svg>'}
+-  else ph+='<p class="note" style="margin-top:8px">แนวโน้ม EF ต้องมีเซสชันแอโรบิกที่บันทึกไว้อย่างน้อย 2 ครั้ง</p>';
++  let ph='<div class="flag '+(!P.enough?"":(P.ratio>1.5?"bad":P.ratio>1.3?"warn":P.ratio<.8?"warn":"ok"))+'">โหลด 7 วัน '+Math.round(P.acute)+' แต้ม เทียบค่าเฉลี่ยรายสัปดาห์ของ 28 วัน '+Math.round(P.chronic)+' แต้ม (ACWR '+(fin(P.ratio)?P.ratio.toFixed(2):"-")+')'+(P.enough?"":" · ข้อมูลยังไม่พอ ต้องมีอย่างน้อย 4 การซ้อมในช่วง 14 วันขึ้นไปที่ใช้วิธีคำนวณโหลดเดียวกัน; การนำเข้าจะบันทึกให้อัตโนมัติ")+'</div>';
++  if(P.efs.length>=2){const xs=P.efs,mn=Math.min(...xs.map(x=>x.ef)),mx=Math.max(...xs.map(x=>x.ef)),w=300,h=60;ph+='<div class="note" style="margin:8px 0 2px">แนวโน้ม EF (เร็ว ÷ หัวใจ ยิ่งสูงยิ่งฟิต) '+xs.length+' การซ้อมล่าสุด</div><svg viewBox="0 0 '+w+' '+h+'" style="width:100%;max-width:320px" role="img" aria-label="แนวโน้ม EF"><polyline fill="none" stroke="var(--accent)" stroke-width="2.5" points="'+xs.map((x,i)=>(8+i/(xs.length-1)*(w-16))+","+(h-8-(mx>mn?(x.ef-mn)/(mx-mn):.5)*(h-16))).join(" ")+'"/></svg>'}
++  else ph+='<p class="note" style="margin-top:8px">แนวโน้ม EF ต้องมีการซ้อมแอโรบิกที่บันทึกไว้อย่างน้อย 2 ครั้ง</p>';
+   if(P.cmp){const c=P.cmp;ph+='<div class="note" style="margin:10px 0 4px">เทียบกับครั้งก่อนที่คล้ายกัน ('+esc(new Date(c.date).toLocaleDateString("th-TH"))+')</div><table><tr><th></th><th>ครั้งนี้</th><th>ครั้งก่อน</th><th>ต่าง</th></tr>';
+     const row=(n,a,b,f,unit,better)=>fin(a)&&fin(b)?'<tr><td>'+n+'</td><td>'+f(a)+'</td><td>'+f(b)+'</td><td>'+sg(a-b,unit)+(better!=null?(better?" ดีขึ้น":" แย่ลง"):"")+'</td></tr>':'';
+     if(R.type==="interval"){ph+=row("เพซช่วงเร็ว (วิ/กม.)",R.workPace,c.repPace,x=>fmtPace(x),0,R.workPace<=c.repPace)+row("HR เฉลี่ยช่วงเร็ว",R.workHR,c.repHR,x=>x.toFixed(0),0,null)+row("HR ลดใน 60 วิ",R.hrDrop&&R.hrDrop[60],c.hrDrop60,x=>x.toFixed(0),0,R.hrDrop&&R.hrDrop[60]>=c.hrDrop60)+row("รอบขา",R.workCad,c.cad,x=>x.toFixed(0),0,null)}
+     else ph+=row("เพซเฉลี่ย (วิ/กม.)",R.avgPace,c.pace,x=>fmtPace(x),0,R.avgPace<=c.pace)+row("HR เฉลี่ย",R.avgHR,c.hr,x=>x.toFixed(0),0,null)+row("EF",R.ef,c.ef,x=>x.toFixed(2),2,R.ef>=c.ef);
+     ph+='</table>'}
+-  else ph+='<p class="note" style="margin-top:8px">ยังไม่มีเซสชันเก่าที่คล้ายกันให้จับคู่เปรียบเทียบ</p>';
++  else ph+='<p class="note" style="margin-top:8px">ยังไม่มีการซ้อมเก่าที่คล้ายกันให้จับคู่เปรียบเทียบ</p>';
+   const stravaRows=HIST.filter(h=>h.source==="strava-summary");
+   if(stravaRows.length){
+     const distance=stravaRows.reduce((s,h)=>s+(+h.dist||0),0),seconds=stravaRows.reduce((s,h)=>s+(+h.dur||0)*60,0),gain=stravaRows.reduce((s,h)=>s+(+h.elevation||0),0);
+@@ -670,11 +678,11 @@ function render(){
+   }
+   $("#prog").innerHTML=ph;
+   const ok=pred.some(p=>fin(p.time));
+-  $("#pred").innerHTML=ok?'<table><tr><th>ระยะ '+helpIcon("ระยะ")+'</th><th>เวลาประมาณ (ช่วง) '+helpIcon("เวลาประมาณ (ช่วง)")+'</th><th>เพซ /กม. '+helpIcon("เพซ /กม.")+'</th><th>อ้างอิง '+helpIcon("อ้างอิง")+'</th></tr>'+pred.map(p=>'<tr><td>'+p.name+'</td><td>'+(fin(p.time)?fmtDur(p.time)+' ('+fmtDur(p.low)+'–'+fmtDur(p.high)+')':"-")+'</td><td>'+(fin(p.time)?fmtPace(p.time/(p.D/1000)):"-")+'</td><td>'+(p.base?("ช่วงต่อเนื่อง "+p.base/1000+" กม. · "+(p.recentEfforts||1)+" เซสชัน"+(fin(p.hr)&&R.hrRef?" · HR "+(p.hr/R.hrRef*100).toFixed(0)+"% ของค่าอ้างอิง":"")):"ยังไม่มีข้อมูลพอ")+'</td></tr>').join("")+'</table><p class="note" style="margin-top:8px">ใช้ช่วงต่อเนื่องที่เร็วที่สุดจากประวัติ 90 วันด้วยสูตร Riegel; ช่วงเวลาแสดงความไวต่อเลขชี้กำลัง 1.04–1.08 (ระยะที่ไกลเกิน 2.5 เท่าของช่วงอ้างอิงใช้ 1.07–1.12 เพราะสูตรมักให้เวลาเร็วเกินจริง) ไม่ใช่ช่วงรับประกันผล HR ใช้ประกอบการประเมิน effort/โซน ไม่ได้แปลงเป็นเวลาแข่งโดยตรง'+(pred.some(p=>p.recentEfforts===1)?" ข้อมูลบางระยะมีเพียง 1 เซสชัน จึงควรใช้เป็นกรอบคร่าวๆ":"")+'</p>':'<p class="note">ยังคาดการณ์ไม่ได้ ต้องมีการวิ่งต่อเนื่องอย่างน้อย 3 กม. ที่บันทึกไว้ในประวัติ 90 วัน และไม่ใช่คอร์สที่ตรวจพบเป็น Interval/เทรล</p>';
++  $("#pred").innerHTML=ok?'<table><tr><th>ระยะ '+helpIcon("ระยะ")+'</th><th>เวลาประมาณ (ช่วง) '+helpIcon("เวลาประมาณ (ช่วง)")+'</th><th>เพซ /กม. '+helpIcon("เพซ /กม.")+'</th><th>อ้างอิง '+helpIcon("อ้างอิง")+'</th></tr>'+pred.map(p=>'<tr><td>'+p.name+'</td><td>'+(fin(p.time)?fmtDur(p.time)+' ('+fmtDur(p.low)+'–'+fmtDur(p.high)+')':"-")+'</td><td>'+(fin(p.time)?fmtPace(p.time/(p.D/1000)):"-")+'</td><td>'+(p.base?("ช่วงต่อเนื่อง "+p.base/1000+" กม. · "+(p.recentEfforts||1)+" การซ้อม"+(fin(p.hr)&&R.hrRef?" · HR "+(p.hr/R.hrRef*100).toFixed(0)+"% ของค่าอ้างอิง":"")):"ยังไม่มีข้อมูลพอ")+'</td></tr>').join("")+'</table><p class="note" style="margin-top:8px">ใช้ช่วงต่อเนื่องที่เร็วที่สุดจากประวัติ 90 วันด้วยสูตร Riegel; ช่วงเวลาแสดงความไวต่อเลขชี้กำลัง 1.04–1.08 (ระยะที่ไกลเกิน 2.5 เท่าของช่วงอ้างอิงใช้ 1.07–1.12 เพราะสูตรมักให้เวลาเร็วเกินจริง) ไม่ใช่ช่วงรับประกันผล HR ใช้ประกอบการประเมิน effort/โซน ไม่ได้แปลงเป็นเวลาแข่งโดยตรง'+(pred.some(p=>p.recentEfforts===1)?" ข้อมูลบางระยะมีเพียง 1 การซ้อม จึงควรใช้เป็นกรอบคร่าวๆ":"")+'</p>':'<p class="note">ยังคาดการณ์ไม่ได้ ต้องมีการวิ่งต่อเนื่องอย่างน้อย 3 กม. ที่บันทึกไว้ในประวัติ 90 วัน และไม่ใช่คอร์สที่ตรวจพบเป็น Interval/เทรล</p>';
+   renderHist();
+ }
+ /* กราฟเพซ + หัวใจ */
+-const CW=700,CH=190,CL=44,CR=44,CT=14,CB=22;
++const CW=700,CH=260,CL=44,CR=44,CT=14,CB=22;
+ function drawChart(){
+   const R=lastR,S=CUR.S,N=S.N,totalDist=Math.max(S.d[N-1]-S.d[0],1),X=i=>CL+(S.d[clamp(Math.round(i),0,N-1)]-S.d[0])/totalDist*(CW-CL-CR);
+   const pace=new Float64Array(N);let pmin=1e9,pmax=0;
+@@ -730,22 +738,22 @@ function updateActivePosition(index){
+ function drawRouteMap(){
+   const svg=$("#routeMap"),S=CUR&&CUR.S;
+   if(!S){svg.innerHTML='<text class="no-map" x="175" y="175" text-anchor="middle">นำเข้ากิจกรรมที่มีพิกัด GPS เพื่อแสดงแผนที่</text>';return}
+-  const valid=[];for(let i=0;i<S.N;i++)if(fin(S.lat[i])&&fin(S.lon[i]))valid.push(i);
++  const LA=smooth(S.lat,9),LO=smooth(S.lon,9),valid=[];for(let i=0;i<S.N;i++)if(fin(LA[i])&&fin(LO[i]))valid.push(i);
+   if(valid.length<2){CUR.routePoints=null;svg.innerHTML='<text class="no-map" x="175" y="163" text-anchor="middle">กิจกรรมนี้ไม่มีพิกัด GPS จึงแสดงแผนที่เส้นทางไม่ได้</text><text class="no-map" x="175" y="187" text-anchor="middle" font-size="12">ไฟล์สรุป Strava ไม่มีพิกัดรายจุด; ใช้ GPX/TCX หรือสตรีมกิจกรรมที่มี GPS</text>';return}
+-  const midLat=mean(valid.map(i=>S.lat[i]))*Math.PI/180,cosLat=Math.cos(midLat);
++  const midLat=mean(valid.map(i=>LA[i]))*Math.PI/180,cosLat=Math.cos(midLat);
+   let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+-  for(const i of valid){const x=S.lon[i]*cosLat,y=S.lat[i];minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y)}
++  for(const i of valid){const x=LO[i]*cosLat,y=LA[i];minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y)}
+   const scale=Math.min(310/Math.max(maxX-minX,1e-8),310/Math.max(maxY-minY,1e-8)),padX=(350-(maxX-minX)*scale)/2,padY=(350-(maxY-minY)*scale)/2;
+-  const point=i=>({x:padX+(S.lon[i]*Math.cos(midLat)-minX)*scale,y:350-padY-(S.lat[i]-minY)*scale});
++  const point=i=>({x:padX+(LO[i]*Math.cos(midLat)-minX)*scale,y:350-padY-(LA[i]-minY)*scale});
+   CUR.routePoints=Array(S.N).fill(null);for(const i of valid)CUR.routePoints[i]=point(i);
+   const ranges=[];let cursor=0;
+   for(const r of lastR.reps){if(r.a>cursor)ranges.push({a:cursor,b:r.a,fast:false});ranges.push({a:r.a,b:r.b,fast:true});cursor=r.b}
+   if(cursor<S.N-1)ranges.push({a:cursor,b:S.N-1,fast:false});
+   if(!ranges.length)ranges.push({a:0,b:S.N-1,fast:false});
+   const paths=ranges.map((r,i)=>{
+-    const step=Math.max(1,Math.floor((r.b-r.a)/500)),points=[];
+-    for(let k=r.a;k<=r.b;k+=step)if(fin(S.lat[k])&&fin(S.lon[k])){const p=point(k);points.push(p.x.toFixed(1)+","+p.y.toFixed(1))}
+-    if(fin(S.lat[r.b])&&fin(S.lon[r.b])){const p=point(r.b);points.push(p.x.toFixed(1)+","+p.y.toFixed(1))}
++    const step=Math.max(1,Math.floor((r.b-r.a)/1500)),points=[];
++    for(let k=r.a;k<=r.b;k+=step)if(fin(LA[k])&&fin(LO[k])){const p=point(k);points.push(p.x.toFixed(1)+","+p.y.toFixed(1))}
++    if(fin(LA[r.b])&&fin(LO[r.b])){const p=point(r.b);points.push(p.x.toFixed(1)+","+p.y.toFixed(1))}
+     const color=r.fast?"var(--accent)":"var(--mute)";
+     return points.length>1?'<polyline points="'+points.join(" ")+'" fill="none" stroke="'+color+'" stroke-opacity="'+(r.fast?1:.68)+'" stroke-width="'+(r.fast?5:3)+'" stroke-linecap="round" stroke-linejoin="round"/>':"";
+   }).join("");
+@@ -861,14 +869,14 @@ $("#routeMap").addEventListener("click",e=>{
+ });
+ $("#cv").addEventListener("pointerleave",()=>{$("#tip").hidden=true;for(const id of["#hl","#hd","#hd2"]){const el=$(id);if(el)el.setAttribute("visibility","hidden")}});
+ 
+-/* ประวัติเซสชัน */
++/* ประวัติการซ้อม */
+ const LSK="trail-workouts",SK2="trail-wk-settings";
+ const lsGet=()=>{try{return JSON.parse(localStorage.getItem(LSK)||"[]")}catch(_){return[]}};
+ const lsSet=a=>{try{localStorage.setItem(LSK,JSON.stringify(a));return true}catch(_){err("บันทึกในเบราว์เซอร์นี้ไม่ได้");return false}};
+ async function loadHist(){
+   if(cloud()){
+     const{data,error}=await sb.from("workouts").select("id,data,created_at").order("created_at",{ascending:false});
+-    if(error){err("โหลดเซสชันที่บันทึกไว้ไม่สำเร็จ: "+error.message+" (ลองรัน supabase.sql ส่วน workouts)");HIST=lsGet()}
++    if(error){err("โหลดการซ้อมที่บันทึกไว้ไม่สำเร็จ: "+error.message+" (ลองรัน supabase.sql ส่วน workouts)");HIST=lsGet()}
+     else{
+       const cloudHistory=data.map(r=>({...r.data,id:r.id}));
+       if(cloudHistory.length){
+@@ -884,10 +892,10 @@ async function loadHist(){
+ }
+ function renderHist(){
+   const all=HIST.slice().sort((x,y)=>new Date(y.date)-new Date(x.date)),a=all.slice(0,50);
+-  $("#hist").innerHTML=a.length?a.map(h=>'<div class="sv"><span><b></b> · '+esc(new Date(h.date).toLocaleDateString("th-TH"))+' · '+esc(TYPE_TH[h.type]||"")+' · '+(+h.dist||0).toFixed(1)+' กม. · โหลด '+Math.round(h.load||0)+(h.type==="summary"?" (ค่าสรุปจาก Strava)":"")+'</span><div class="sv-actions">'+(h.sourceText||h.sourceAvailable?'<button type="button" data-open="'+esc(h.id||h.key)+'">เปิด / แก้ไข</button>':'')+'<button class="ib" data-x="'+esc(h.id||h.key)+'" data-tip="ลบ" aria-label="ลบ">'+ic("trash")+'</button></div></div>').join("")+(all.length>50?'<p class="note">แสดง 50 เซสชันล่าสุดจากทั้งหมด '+all.length+' รายการ; ประวัติทั้งหมดใช้คำนวณแนวโน้ม</p>':''):'<p class="note">ยังไม่มีประวัติที่บันทึกไว้ นำเข้าไฟล์เพื่อบันทึกผลและไฟล์ต้นฉบับไว้เปิดแก้ไขภายหลัง</p>';
++  $("#hist").innerHTML=a.length?a.map(h=>'<div class="sv"><span><b></b> · '+esc(new Date(h.date).toLocaleDateString("th-TH"))+' · '+esc(TYPE_TH[h.type]||"")+' · '+(+h.dist||0).toFixed(1)+' กม. · โหลด '+Math.round(h.load||0)+(h.type==="summary"?" (ค่าสรุปจาก Strava)":"")+'</span><div class="sv-actions">'+(h.sourceText||h.sourceAvailable?'<button type="button" data-open="'+esc(h.id||h.key)+'">เปิด / แก้ไข</button>':'')+'<button class="ib" data-x="'+esc(h.id||h.key)+'" data-tip="ลบ" aria-label="ลบ">'+ic("trash")+'</button></div></div>').join("")+(all.length>50?'<p class="note">แสดง 50 การซ้อมล่าสุดจากทั้งหมด '+all.length+' รายการ; ประวัติทั้งหมดใช้คำนวณแนวโน้ม</p>':''):'<p class="note">ยังไม่มีประวัติที่บันทึกไว้ นำเข้าไฟล์เพื่อบันทึกผลและไฟล์ต้นฉบับไว้เปิดแก้ไขภายหลัง</p>';
+   $("#hist").querySelectorAll(".sv b").forEach((el,i)=>{el.textContent=a[i].name||"การซ้อม"});
+   const saved=lastSess&&HIST.some(h=>h.key===lastSess.key);
+-  $("#bSave").disabled=!lastSess;$("#saveLabel").textContent=saved?"อัปเดตเซสชันนี้":"บันทึกเซสชันนี้";
++  $("#bSave").disabled=!lastSess;$("#saveLabel").textContent=saved?"อัปเดตการซ้อมนี้":"บันทึกการซ้อมนี้";
+   $("#saveN").textContent=saved?"แก้ไขชนิดการวิ่งหรือรอบ แล้วกดอัปเดตเพื่อแทนที่รายการเดิม":(sb&&!USER?"ต้องเข้าสู่ระบบก่อนจึงจะบันทึกได้":"");
+ }
+ function workoutData(record){const{sourceText,fileName,...data}=record;return data}
+@@ -908,7 +916,7 @@ function replaceSavedRecord(record,keepSource=true){
+ }
+ $("#bSave").onclick=async()=>{
+   if(!lastSess)return;
+-  if(sb&&!USER){openLogin("ต้องเข้าสู่ระบบก่อนจึงจะบันทึกเซสชันได้");return}
++  if(sb&&!USER){openLogin("ต้องเข้าสู่ระบบก่อนจึงจะบันทึกการซ้อมได้");return}
+   const existing=HIST.find(h=>h.key===lastSess.key),rec={...lastSess};
+   if(cloud()){
+     let result;
+@@ -933,11 +941,11 @@ $("#hist").addEventListener("click",async e=>{
+       if(error){err("เปิดไฟล์ต้นฉบับไม่ได้: "+error.message);return}
+       h.sourceText=data.source_text;
+     }
+-    if(!h||!h.sourceText){err("ไม่พบไฟล์ต้นฉบับของเซสชันนี้");return}
++    if(!h||!h.sourceText){err("ไม่พบไฟล์ต้นฉบับของการซ้อมนี้");return}
+     $("#plan").value=["auto","trail","interval","tempo","long","easy","recovery"].includes(h.plan)?h.plan:"auto";
+     if(!loadFileText(h.sourceText,h.fileName||h.name+".gpx"))return;
+     if(Array.isArray(h.repRanges)){REP_RANGES=h.repRanges.map(r=>({a:r.a,b:r.b}));recompute()}
+-    $("#batchStatus").textContent="เปิดไฟล์ที่บันทึกไว้แล้ว แก้ชนิดการวิ่งหรือรอบได้ จากนั้นกด “อัปเดตเซสชันนี้”";
++    $("#batchStatus").textContent="เปิดไฟล์ที่บันทึกไว้แล้ว แก้ชนิดการวิ่งหรือรอบได้ จากนั้นกด “อัปเดตการซ้อมนี้”";
+     $("#res").scrollIntoView({behavior:"smooth",block:"start"});
+     return;
+   }
+@@ -999,7 +1007,7 @@ async function autoSaveSessions(records){
+       const{data,error}=await sb.from("workouts").insert(batch.map(record=>({data:workoutData(record)}))).select("id");
+       if(error){
+         const localOk=lsSet(mergeHistory(lsGet(),fresh));HIST=mergeHistory(HIST,saved.concat(fresh));
+-        err("บันทึกขึ้นบัญชีไม่สำเร็จหลังบันทึกแล้ว "+saved.length+" เซสชัน: "+error.message+(localOk?"; เก็บผลไว้ในเบราว์เซอร์นี้แทน":"; บันทึกสำรองในเบราว์เซอร์ก็ไม่สำเร็จ")+" กรุณาตรวจตาราง workouts");
++        err("บันทึกขึ้นบัญชีไม่สำเร็จหลังบันทึกแล้ว "+saved.length+" การซ้อม: "+error.message+(localOk?"; เก็บผลไว้ในเบราว์เซอร์นี้แทน":"; บันทึกสำรองในเบราว์เซอร์ก็ไม่สำเร็จ")+" กรุณาตรวจตาราง workouts");
+         return localOk?fresh.length:saved.length;
+       }
+       const inserted=batch.map((record,index)=>({...record,id:data[index].id}));
+@@ -1031,7 +1039,7 @@ async function takeFiles(fileList){
+   }
+   const saved=await autoSaveSessions(records);
+   if(records.length)render();
+-  $("#batchStatus").textContent="วิเคราะห์ "+records.length+" จาก "+files.length+" ไฟล์; บันทึกอัตโนมัติ "+saved+" เซสชัน"+(failures.length?" · ไฟล์ที่ไม่สำเร็จ: "+failures.join(" | "):"");
++  $("#batchStatus").textContent="วิเคราะห์ "+records.length+" จาก "+files.length+" ไฟล์; บันทึกอัตโนมัติ "+saved+" การซ้อม"+(failures.length?" · ไฟล์ที่ไม่สำเร็จ: "+failures.join(" | "):"");
+   if(failures.length)err(failures.join(" | "));
+ }
+ const drop=$("#drop");

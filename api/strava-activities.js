@@ -9,8 +9,9 @@ module.exports = async (req, res) => {
     if (!tk) return res.status(409).json({ error: "not_connected" });
     const q = req.query || {};
     const p = new URLSearchParams({ per_page: "100", page: String(parseInt(q.page) || 1) });
-    if (q.after) p.set("after", String(parseInt(q.after)));
-    if (q.before) p.set("before", String(parseInt(q.before)));
+    const int = (v) => (Number.isFinite(parseInt(v, 10)) ? String(parseInt(v, 10)) : null);
+    if (int(q.after)) p.set("after", int(q.after));
+    if (int(q.before)) p.set("before", int(q.before));
     const r = await fetch("https://www.strava.com/api/v3/athlete/activities?" + p, { headers: { Authorization: "Bearer " + tk } });
     if (!r.ok) {
       const detail = await r.text();
