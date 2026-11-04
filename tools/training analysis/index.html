@@ -179,8 +179,8 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
   .training-heading{align-items:flex-start;flex-direction:column;gap:6px}
   .activity-toolbar .sbtn{min-height:36px}
   .activity-picker-filters{grid-template-columns:1fr}
-  .activity-picker-list{max-height:30vh}
-  .upload-box #stv{max-height:35vh;overflow-y:auto;overscroll-behavior:contain}
+  .activity-picker-list{max-height:none;overflow:visible}
+  .upload-box #stv{max-height:none;overflow:visible}
   .srow{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;align-items:stretch}
   .srow label{width:100%;min-width:0}
   button,.srow input,.srow select{min-height:44px}
@@ -213,9 +213,8 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
   #res[data-mobile-view="map"] .route-chart{display:none}
   #res[data-mobile-view="chart"] .route-content{display:none}
   #res[data-mobile-view="map"] .route-content{height:100%;min-height:0;aspect-ratio:auto}
-  #res[data-mobile-view="splits"] .mobile-panel[data-mobile-panel="splits"]{height:100%;min-height:0;grid-template-rows:auto auto minmax(0,1fr)}
-  #res[data-mobile-view="splits"] #reps{max-height:none;min-width:0;min-height:0;height:auto;overflow:auto;overscroll-behavior:contain}
-  #res[data-mobile-view="more"] .mobile-panel[data-mobile-panel="more"]{height:100%;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+  #res[data-mobile-view="splits"] .mobile-panel[data-mobile-panel="splits"]{height:auto;min-height:0;grid-template-rows:auto}
+  #res[data-mobile-view="splits"] #reps{max-height:none;min-height:0;height:auto;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain}
   .mobile-tabs{display:flex;flex:none;gap:4px;padding:4px;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow-x:auto;overscroll-behavior-x:contain}
   #res[hidden]+.mobile-tabs{display:none}
   .mobile-tabs button{flex:0 0 24%;min-width:58px;min-height:44px;padding:4px 6px;font-size:.75rem;line-height:1.2;touch-action:manipulation}
@@ -1255,8 +1254,8 @@ $("#gBtn").onclick=()=>sb.auth.signInWithOAuth({provider:"google",options:{redir
 let ACT=[],actPage=1,actRequest=0,actLoading=false,actHasMore=false;
 const api=p=>fetch(p,{headers:{Authorization:"Bearer "+SESS.access_token}});
 function updateActivityMoreButton(){
-  const list=$("#stvList"),button=$("#stvMore");
-  button.hidden=!actHasMore||list.scrollHeight>list.clientHeight+1;
+  const button=$("#stvMore");
+  button.hidden=!actHasMore;
   button.disabled=actLoading;
   button.textContent=actLoading?"กำลังโหลด…":"โหลดเพิ่ม";
 }
@@ -1319,7 +1318,11 @@ function renderActs(){
   $("#stvList").innerHTML=L.length?L.map(a=>'<button class="act" data-id="'+a.id+'"><span>'+esc(a.name)+'<br><small>'+esc(new Date(a.date).toLocaleDateString("th-TH"))+' · '+esc(a.type)+'</small></span><span style="text-align:right">'+(a.dist/1000).toFixed(1)+' กม.<br><small>ขึ้น '+Math.round(a.gain||0)+' ม.</small></span></button>').join(""):'<p class="note">ไม่พบกิจกรรม</p>';
   updateActivityMoreButton();
 }
-$("#stvList").addEventListener("scroll",()=>{const list=$("#stvList");if(list.scrollHeight>list.clientHeight&&list.scrollTop+list.clientHeight>=list.scrollHeight-8)loadActs(false)});
+$(".upload-box").addEventListener("scroll",()=>{
+  if(!actHasMore||actLoading)return;
+  const list=$("#stvList").getBoundingClientRect(),scroller=$(".upload-box").getBoundingClientRect();
+  if(list.bottom<=scroller.bottom+48&&list.bottom>=scroller.top)loadActs(false);
+},{passive:true});
 $("#stvList").onclick=async e=>{
   if(e.target.closest("#stvLogin")){openLogin("เข้าสู่ระบบก่อนจึงจะดึงกิจกรรมจาก Strava ได้");return}
   if(e.target.closest("#stvConn")){try{const r=await api("/api/strava-connect?back="+encodeURIComponent("/tools/training%20analysis/")),j=await r.json();if(j.url)location.href=j.url;else $("#stvMsg").textContent="เชื่อมต่อไม่ได้ ตรวจค่า Environment Variables บน Vercel"}catch(_){$("#stvMsg").textContent="เรียก API ไม่ได้"}return}
