@@ -230,8 +230,8 @@
     window.setTimeout(() => item.remove(), 220);
   }
   function renderFile() {
-    if (!context) return;
     const fileName = contextValue();
+    if (!context) return;
     context.name.textContent = fileName || "ยังไม่ได้เลือกไฟล์";
     context.clear.disabled = !fileName;
   }

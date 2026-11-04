@@ -22,6 +22,10 @@ h3{font-size:.9rem;margin:0 0 8px}
 p{margin:0}
 a{color:inherit}
 .top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.training-heading{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.active-activity{display:inline-flex;align-items:center;gap:7px;max-width:min(420px,100%);padding:5px 10px;border:1px solid color-mix(in srgb,var(--accent) 35%,var(--line));border-radius:999px;background:color-mix(in srgb,var(--accent) 8%,var(--panel));color:var(--accent);font-size:.78rem}
+.active-activity[hidden]{display:none}
+.active-activity strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);font-weight:500}
 .crumbs{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
 .back{color:var(--accent);text-decoration:none;font-size:.9rem;white-space:nowrap}
 .back:hover{text-decoration:underline}
@@ -110,6 +114,14 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
 .tabs2 button{flex:1;border:0;background:none}
 .tabs2 button.on{background:var(--accent);color:var(--onaccent)}
 .act{display:flex;justify-content:space-between;gap:10px;width:100%;text-align:left;margin-bottom:4px;font-size:.85rem}
+.activity-picker{margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:10px;background:color-mix(in srgb,var(--bg) 55%,var(--panel))}
+.activity-picker[hidden]{display:none}
+.activity-picker-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.activity-picker-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:8px 0}
+.activity-picker-filters label{min-width:0}
+.activity-picker-filters input,.activity-picker-filters select{min-height:40px}
+.activity-picker-list{max-height:260px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.activity-picker .act{min-height:54px;padding:8px 10px;border-radius:8px}
 .act small{color:var(--mute)}
 .act.is-loading{color:transparent!important;background:linear-gradient(100deg,var(--line) 25%,color-mix(in srgb,var(--line) 48%,var(--panel)) 38%,var(--line) 62%);background-size:300% 100%;animation:skeleton-shimmer 1.4s ease-in-out infinite}
 .gt{position:fixed;z-index:80;background:var(--ink);color:var(--bg);font-size:.78rem;padding:4px 9px;border-radius:6px;pointer-events:none;max-width:260px}
@@ -161,6 +173,10 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
 .mobile-panel{display:contents}
 .mobile-panel[data-mobile-panel="splits"]{display:block}
 @media(max-width:560px){
+  .training-heading{align-items:flex-start;flex-direction:column;gap:6px}
+  .activity-picker-filters{grid-template-columns:1fr}
+  .activity-picker-list{max-height:30vh}
+  .upload-box #stv{max-height:35vh;overflow-y:auto;overscroll-behavior:contain}
   .srow{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;align-items:stretch}
   .srow label{width:100%;min-width:0}
   button,.srow input,.srow select{min-height:44px}
@@ -206,7 +222,7 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
 </head>
 <body>
 <main>
-<div class="top"><div class="crumbs"><h1>วิเคราะห์การซ้อม</h1></div><div class="acct" id="acct"></div></div>
+<div class="top"><div class="training-heading"><div class="crumbs"><h1>วิเคราะห์การซ้อม</h1></div><div class="active-activity" id="activeActivity" role="status" aria-live="polite" hidden><span>กำลังวิเคราะห์:</span><strong id="activeActivityName"></strong></div></div><div class="acct" id="acct"></div></div>
 <nav class="toolnav" role="toolbar" aria-label="เครื่องมือ">
   <a href="/">หน้าแรก</a>
   <a href="/tools/slope/">แผนที่และแบ่งช่วง</a>
@@ -218,7 +234,21 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
   <h2>1. ใส่กิจกรรม</h2>
   <div class="srow">
     <label class="drop" id="drop" tabindex="0" style="flex-direction:row;color:var(--mute);font-size:.9rem"><span data-ic="upload"></span><span><strong>ลากไฟล์ .gpx / .tcx มาวาง หรือเลือกหลายไฟล์พร้อมกัน</strong><br><span class="note">ต้องมีเวลา; ระบบเริ่มวิเคราะห์อัตโนมัติและบันทึกผลไว้ให้</span></span><input type="file" id="file" accept=".gpx,.tcx" multiple hidden></label>
-    <button class="sbtn" id="bStv"><span data-ic="act"></span>เลือกจาก Strava</button>
+    <button class="sbtn" id="bStv" aria-expanded="false" aria-controls="stv"><span data-ic="act"></span>เลือกกิจกรรม</button>
+  </div>
+  <div id="stv" class="activity-picker" hidden>
+    <div class="activity-picker-head"><strong>เลือกแอคทิวิตี้จาก Strava</strong><button class="ib" id="stvX" aria-label="ปิดรายการกิจกรรม">×</button></div>
+    <input type="text" id="q" placeholder="ค้นหาชื่อกิจกรรม" aria-label="ค้นหาชื่อกิจกรรม">
+    <div class="activity-picker-filters">
+      <label>ประเภท<select id="stvType"><option value="run">วิ่ง / วิ่งเทรล</option><option value="">ทั้งหมด</option><option value="walk">เดิน / เดินป่า</option><option value="ride">ปั่นจักรยาน</option></select></label>
+      <label>ตั้งแต่วันที่<input type="date" id="dFrom"></label>
+      <label>ถึงวันที่<input type="date" id="dTo"></label>
+    </div>
+    <p class="note" id="stvMsg" role="status"></p>
+    <div id="stvList" class="activity-picker-list"></div>
+    <button id="stvAll" class="pri" style="margin-top:8px">นำเข้าประวัติการวิ่งทั้งหมดในช่วงวันที่</button>
+    <p class="note">นำเข้าประวัติสรุปจาก Strava ตามช่วงวันที่ ส่วนการเลือกกิจกรรมจะโหลดข้อมูลละเอียดเพื่อวิเคราะห์กราฟ</p>
+    <button id="stvMore" hidden style="margin-top:8px">โหลดเพิ่ม</button>
   </div>
   <div id="analysisOptions" hidden>
     <h2 style="margin:14px 0 8px">2. เลือกชนิดการวิ่ง <span class="note">(ไม่บังคับ — เปลี่ยนภายหลังได้)</span></h2>
@@ -302,20 +332,15 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
   <p class="note" id="loginMsg"></p>
 </div></div>
 
-<div id="stv" class="modal" hidden><div class="mbox wide" role="dialog" aria-modal="true" aria-label="เลือกกิจกรรมจาก Strava">
-  <div class="shd"><strong>เลือกกิจกรรมจาก Strava</strong><button class="ib" id="stvX" aria-label="ปิด">×</button></div>
-  <input type="text" id="q" placeholder="ค้นหาชื่อกิจกรรม">
-  <div class="srow"><label style="flex:1">ประเภท<select id="stvType"><option value="run">วิ่ง / วิ่งเทรล</option><option value="">ทั้งหมด</option><option value="walk">เดิน / เดินป่า</option><option value="ride">ปั่นจักรยาน</option></select></label><label style="flex:1">ตั้งแต่วันที่<input type="date" id="dFrom"></label><label style="flex:1">ถึงวันที่<input type="date" id="dTo"></label></div>
-  <p class="note" id="stvMsg"></p>
-  <div id="stvList" style="max-height:320px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch"></div>
-  <button id="stvAll" class="pri" style="margin-top:8px">นำเข้าประวัติการวิ่งทั้งหมดในช่วงวันที่</button>
-  <p class="note">ดึงข้อมูลสรุปทุกหน้า เช่น ระยะ เวลา เพซ และ HR ที่ Strava มีให้ โดยไม่โหลดสตรีมทีละกิจกรรม; ต้องเชื่อมบัญชี Strava ก่อน</p>
-  <button id="stvMore" hidden>โหลดเพิ่ม</button>
-</div></div>
-
 <script src="../../shared-ui.js"></script>
 <script>
 const $=s=>document.querySelector(s);
+function renderActiveActivity(name){
+  const badge=$("#activeActivity"),label=$("#activeActivityName");
+  if(!badge||!label)return;
+  label.textContent=name||"";
+  badge.hidden=!name;
+}
 function setMobileView(view,focus=false){
   const tabs=[...document.querySelectorAll(".mobile-tabs [data-mobile-view]")];
   if(!tabs.some(tab=>tab.dataset.mobileView===view))return;
@@ -696,7 +721,7 @@ function ingest(raw,meta){
   try{
     const S=buildSeries(raw);
     if(S.d[S.N-1]<500)throw new Error("short");
-    CUR={S,meta};$("#analysisOptions").hidden=false;REP_RANGES=null;REP_UNDO=[];REP_REDO=[];REP_DRAG=null;repEditMode=false;repAddMode=false;ACTIVE_INDEX=0;recompute();window.RunsArtUI.setFile(meta.fileName||meta.name||"กิจกรรม");return true;
+    CUR={S,meta};$("#analysisOptions").hidden=false;REP_RANGES=null;REP_UNDO=[];REP_REDO=[];REP_DRAG=null;repEditMode=false;repAddMode=false;ACTIVE_INDEX=0;recompute();renderActiveActivity(meta.fileName||meta.name||"กิจกรรม");window.RunsArtUI.setFile(meta.fileName||meta.name||"กิจกรรม");return true;
   }catch(e){err(e.message==="few"||e.message==="short"?"ข้อมูลในไฟล์น้อยเกินไปหรือสั้นเกินไปสำหรับวิเคราะห์ (ต้องมีเวลาและระยะอย่างน้อย 500 ม.)":"อ่านข้อมูลไม่สำเร็จ ไฟล์ต้องมีเวลาของแต่ละจุด");return false}
 }
 function rebuildEditedReps(R,S,ranges){
@@ -1187,8 +1212,8 @@ function setMode(m){
 }
 function openLogin(msg){setMode("in");$("#login").hidden=false;if(msg)$("#loginMsg").textContent=msg;setTimeout(()=>$("#email").focus(),0)}
 $("#lgX").onclick=()=>{$("#login").hidden=true};
-["#login","#stv"].forEach(id=>$(id).addEventListener("click",e=>{if(e.target.id===id.slice(1))$(id).hidden=true}));
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){$("#login").hidden=true;$("#stv").hidden=true}});
+$("#login").addEventListener("click",e=>{if(e.target.id==="login")$("#login").hidden=true});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){$("#login").hidden=true;$("#stv").hidden=true;$("#bStv").setAttribute("aria-expanded","false")}});
 $("#pwShow").onclick=()=>{const p=$("#pw"),on=p.type==="password";p.type=on?"text":"password";$("#pwShow").textContent=on?"ซ่อนรหัสผ่าน":"แสดงรหัสผ่าน"};
 $("#tIn").onclick=()=>setMode("in");$("#tUp").onclick=()=>setMode("up");$("#lgForgot").onclick=()=>setMode("reset");
 $("#email").onkeydown=$("#pw").onkeydown=e=>{if(e.key==="Enter")$("#loginGo").click()};
@@ -1209,12 +1234,16 @@ $("#gBtn").onclick=()=>sb.auth.signInWithOAuth({provider:"google",options:{redir
 let ACT=[],actPage=1;
 const api=p=>fetch(p,{headers:{Authorization:"Bearer "+SESS.access_token}});
 $("#bStv").onclick=()=>{
-  if(!sb){err("ต้องตั้งค่า Supabase ใน config.js ก่อน จึงจะดึงกิจกรรมจาก Strava ได้ ส่วนการนำเข้าไฟล์ใช้ได้ตามปกติ");return}
-  if(!USER){openLogin("เข้าสู่ระบบก่อนจึงจะดึงกิจกรรมจาก Strava ได้");return}
-  $("#stv").hidden=false;loadActs(true);
+  if($("#stv").hidden){$("#stv").hidden=false;$("#bStv").setAttribute("aria-expanded","true")}
+  else{$("#stv").hidden=true;$("#bStv").setAttribute("aria-expanded","false");return}
+  if(!sb){$("#stvMsg").textContent="ต้องตั้งค่า Supabase ใน config.js ก่อน จึงจะดึงกิจกรรมจาก Strava ได้ ส่วนนำเข้าไฟล์ GPX/TCX ใช้ได้ตามปกติ";$("#stvList").innerHTML="";$("#stvMore").hidden=true;return}
+  if(!USER){$("#stvMsg").textContent="เข้าสู่ระบบและเชื่อมต่อ Strava ก่อน เพื่อเลือกรายการกิจกรรม";$("#stvList").innerHTML='<button class="pri" id="stvLogin">เข้าสู่ระบบ</button>';$("#stvMore").hidden=true;return}
+  loadActs(true);
 };
-$("#stvX").onclick=()=>{$("#stv").hidden=true};
+$("#stvX").onclick=()=>{$("#stv").hidden=true;$("#bStv").setAttribute("aria-expanded","false")};
 async function loadActs(reset){
+  if(!sb){$("#stvMsg").textContent="ต้องตั้งค่า Supabase ก่อนจึงจะดึงกิจกรรมจาก Strava ได้";$("#stvList").innerHTML="";$("#stvMore").hidden=true;$("#stvList").setAttribute("aria-busy","false");return}
+  if(!USER){$("#stvMsg").textContent="เข้าสู่ระบบและเชื่อมต่อ Strava ก่อน เพื่อเลือกรายการกิจกรรม";$("#stvList").innerHTML='<button class="pri" id="stvLogin">เข้าสู่ระบบ</button>';$("#stvMore").hidden=true;$("#stvList").setAttribute("aria-busy","false");return}
   if(reset){ACT=[];actPage=1;$("#stvList").innerHTML=Array.from({length:3},()=>'<div class="act skeleton-row" aria-hidden="true"><span class="skeleton-line"></span><span class="skeleton-line"></span></div>').join("");$("#stvList").setAttribute("aria-busy","true")}
   $("#stvMsg").textContent="กำลังโหลด…";
   const p=new URLSearchParams({page:actPage}),f=$("#dFrom").value,t=$("#dTo").value;
@@ -1261,7 +1290,8 @@ function renderActs(){
   $("#stvList").innerHTML=L.length?L.map(a=>'<button class="act" data-id="'+a.id+'"><span>'+esc(a.name)+'<br><small>'+esc(new Date(a.date).toLocaleDateString("th-TH"))+' · '+esc(a.type)+'</small></span><span style="text-align:right">'+(a.dist/1000).toFixed(1)+' กม.<br><small>ขึ้น '+Math.round(a.gain||0)+' ม.</small></span></button>').join(""):'<p class="note">ไม่พบกิจกรรม</p>';
 }
 $("#stvList").onclick=async e=>{
-  if(e.target.closest("#stvConn")){try{const r=await api("/api/strava-connect?back="+encodeURIComponent("/tools/workout/")),j=await r.json();if(j.url)location.href=j.url;else $("#stvMsg").textContent="เชื่อมต่อไม่ได้ ตรวจค่า Environment Variables บน Vercel"}catch(_){$("#stvMsg").textContent="เรียก API ไม่ได้"}return}
+  if(e.target.closest("#stvLogin")){openLogin("เข้าสู่ระบบก่อนจึงจะดึงกิจกรรมจาก Strava ได้");return}
+  if(e.target.closest("#stvConn")){try{const r=await api("/api/strava-connect?back="+encodeURIComponent("/tools/training%20analysis/")),j=await r.json();if(j.url)location.href=j.url;else $("#stvMsg").textContent="เชื่อมต่อไม่ได้ ตรวจค่า Environment Variables บน Vercel"}catch(_){$("#stvMsg").textContent="เรียก API ไม่ได้"}return}
   const b=e.target.closest("[data-id]");if(!b)return;const a=ACT.find(x=>String(x.id)===b.dataset.id);
   $("#stvMsg").textContent="กำลังดึงข้อมูลกิจกรรม…";
   b.classList.add("is-loading");b.disabled=true;$("#stvList").setAttribute("aria-busy","true");
@@ -1270,9 +1300,9 @@ $("#stvList").onclick=async e=>{
     const r=await api("/api/strava-stream?full=1&id="+encodeURIComponent(a.id));if(!r.ok)throw 0;const j=await r.json();
     if(!j.time||!j.distance)throw 1;
     const ll=j.latlng||[];
-    const ok=ingest(j.time.map((t,i)=>({t,d:j.distance[i],hr:j.heartrate?j.heartrate[i]:NaN,cad:j.cadence?j.cadence[i]:NaN,ele:j.altitude?j.altitude[i]:NaN,lat:ll[i]?ll[i][0]:NaN,lon:ll[i]?ll[i][1]:NaN})),{name:a.name,activityType:a.type,date:new Date(a.date).toISOString()});
+    const ok=ingest(j.time.map((t,i)=>({t,d:j.distance[i],hr:j.heartrate?j.heartrate[i]:NaN,cad:j.cadence?j.cadence[i]:NaN,ele:j.altitude?j.altitude[i]:NaN,lat:ll[i]?ll[i][0]:NaN,lon:ll[i]?ll[i][1]:NaN})),{name:a.name,fileName:"Strava: "+a.name,activityType:a.type,date:new Date(a.date).toISOString()});
     if(!ok){$("#stvMsg").textContent="ข้อมูลกิจกรรมไม่เพียงพอสำหรับวิเคราะห์ ดูข้อความแจ้งข้อผิดพลาดในหน้า";return}
-    await autoSaveSessions([lastSess]);$("#stvMsg").textContent="วิเคราะห์และบันทึกกิจกรรมแล้ว";$("#streamSkeleton").hidden=true;$("#cv").setAttribute("aria-busy","false");$("#stv").hidden=true;render();
+    await autoSaveSessions([lastSess]);$("#stvMsg").textContent="วิเคราะห์และบันทึกกิจกรรมแล้ว";$("#streamSkeleton").hidden=true;$("#cv").setAttribute("aria-busy","false");$("#stv").hidden=true;$("#bStv").setAttribute("aria-expanded","false");render();
   }catch(x){b.classList.remove("is-loading");b.disabled=false;$("#stvList").setAttribute("aria-busy","false");$("#streamSkeleton").hidden=true;$("#cv").setAttribute("aria-busy","false");$("#stvMsg").textContent=x===1?"กิจกรรมนี้ไม่มีข้อมูลเวลาและระยะ":"ดึงข้อมูลไม่สำเร็จ"}
 };
 $("#q").oninput=renderActs;$("#stvType").onchange=renderActs;$("#dFrom").onchange=$("#dTo").onchange=()=>loadActs(true);$("#stvMore").onclick=()=>{actPage++;loadActs(false)};
@@ -1288,8 +1318,8 @@ async function init(){
   renderAcct();HIST=lsGet();renderHist();
   if(!sb)return;
   const{data}=await sb.auth.getSession();SESS=data.session;USER=SESS?SESS.user:null;renderAcct();await loadHist();
-  sb.auth.onAuthStateChange((ev,s)=>{const was=USER&&USER.id;SESS=s;USER=s?s.user:null;renderAcct();if((USER&&USER.id)!==was){$("#login").hidden=true;loadHist()}});
-  if(new URLSearchParams(location.search).get("strava")==="connected"){history.replaceState(null,"",location.pathname);$("#stv").hidden=false;loadActs(true)}
+  sb.auth.onAuthStateChange((ev,s)=>{const was=USER&&USER.id;SESS=s;USER=s?s.user:null;renderAcct();if((USER&&USER.id)!==was){$("#login").hidden=true;loadHist();if(USER&&!$("#stv").hidden)loadActs(true)}});
+  if(new URLSearchParams(location.search).get("strava")==="connected"){history.replaceState(null,"",location.pathname);$("#stv").hidden=false;$("#bStv").setAttribute("aria-expanded","true");loadActs(true)}
 }
 async function loadSharedFiles(){
   try{
