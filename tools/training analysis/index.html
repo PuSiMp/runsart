@@ -131,6 +131,7 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
 #cv{height:auto}
 .route-chart .distance-scroll{margin-top:10px}
 @media(max-width:760px){.route-content{aspect-ratio:1/1;min-height:0;max-height:360px}}
+.cnote{display:block;font-size:11.5px;color:var(--mute,#667);font-weight:400;margin-top:2px;line-height:1.35}
 </style>
 </head>
 <body>
@@ -153,8 +154,8 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
     <h2 style="margin:14px 0 8px">2. เลือกชนิดการวิ่ง <span class="note">(ไม่บังคับ — เปลี่ยนภายหลังได้)</span></h2>
     <div class="srow">
     <label><span class="field-title">ชนิดการซ้อมตามแผน <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบายชนิดคอร์ส" data-tip="เลือกชนิดคอร์สเองได้ หากการตรวจจับอัตโนมัติไม่ตรงกับการซ้อม">?</span></span><select id="plan"><option value="auto">ตรวจจับให้อัตโนมัติ</option><option value="trail">วิ่งเทรล / เพซเปลี่ยนตามทาง</option><option value="interval">Interval</option><option value="tempo">Tempo</option><option value="long">Long Run</option><option value="easy">Easy Run</option><option value="recovery">Recovery</option></select></label>
-    <label><span class="field-title">หัวใจช่วงหนักที่สุดที่ยังคุมได้ (HR threshold, bpm) <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบาย HR threshold" data-tip="ชีพจรใกล้ระดับหนักที่ยังรักษาได้ช่วงหนึ่ง ใช้แบ่งโซนหัวใจโดยประมาณ ไม่ใช่ผลตรวจทางการแพทย์">?</span></span><input type="number" id="hrthreshold" min="100" max="220" step="1" placeholder="ไม่ทราบ เว้นว่างได้"></label>
-    <label><span class="field-title">หัวใจสูงสุดของคุณ (Max HR, bpm) <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบาย Max HR" data-tip="อัตราการเต้นหัวใจสูงสุด หากไม่ทราบไม่ต้องเดาและเว้นว่างได้ ระบบยังแสดง HR ที่วัดได้ แต่ไม่แบ่งโซน">?</span></span><input type="number" id="maxhr" min="120" max="230" step="1" placeholder="ไม่ทราบ เว้นว่างได้"></label>
+    <label><span class="field-title">หัวใจที่เริ่มหนักมาก (bpm) <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบาย HR threshold" data-tip="ชีพจรใกล้ระดับหนักที่ยังรักษาได้ช่วงหนึ่ง ใช้แบ่งโซนหัวใจโดยประมาณ ไม่ใช่ผลตรวจทางการแพทย์">?</span></span><input type="number" id="hrthreshold" min="100" max="220" step="1" placeholder="ไม่ทราบ เว้นว่างได้"></label>
+    <label><span class="field-title">หัวใจสูงสุด (bpm) <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบาย Max HR" data-tip="อัตราการเต้นหัวใจสูงสุด หากไม่ทราบไม่ต้องเดาและเว้นว่างได้ ระบบยังแสดง HR ที่วัดได้ แต่ไม่แบ่งโซน">?</span></span><input type="number" id="maxhr" min="120" max="230" step="1" placeholder="ไม่ทราบ เว้นว่างได้"></label>
     </div>
   </div>
   <p class="note" id="batchStatus" role="status"></p>
@@ -175,6 +176,7 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
     <div class="chart-main">
       <div class="cw"><svg id="cv" viewBox="0 0 700 260" role="img" aria-label="กราฟเพซและอัตราการเต้นหัวใจตามระยะทาง"></svg><div class="tip" id="tip" hidden></div></div>
       <p class="note" id="cvN"></p>
+      <p class="note">ปุ่มข้างกราฟ: ✂ ปรับรอบ · ＋ เพิ่มรอบโดยลากบนกราฟ · ↶ ↷ เลิกทำ/ทำซ้ำ</p>
       <label class="distance-scroll">เลื่อนตามระยะทาง <input id="distanceScroll" type="range" min="0" max="1" step="1" value="0" disabled><output id="distanceValue">- กม.</output></label>
     </div>
     <div class="visual-tools" role="toolbar" aria-label="เครื่องมือแก้ไขรอบวิ่ง">
@@ -190,7 +192,7 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
   <section class="box"><h2 id="repT">เที่ยววิ่งและช่วงพัก <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบายรายละเอียดเที่ยววิ่ง" data-tip="แต่ละเที่ยวเร็วที่ระบบตรวจพบ แก้เวลาเริ่ม/จบด้วยการลากขอบบนกราฟหรือปรับตัวเลขในตาราง; เพิ่มรอบที่ตกหล่นได้ด้วยการลากเลือกช่วง">?</span></h2><p class="note" id="repEditHelp">ลากขอบซ้าย/ขวาของแถบสีบนกราฟเพื่อแก้รอบ หรือปรับเวลาเริ่ม/จบในตาราง</p><div class="tw" id="reps"></div></section>
   <div class="two">
     <section class="box"><h2>สัดส่วนโซนหัวใจ <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบายสัดส่วนโซนหัวใจ" data-tip="เวลาที่ใช้ในแต่ละช่วงความหนักซึ่งคำนวณจาก HR threshold หรือ Max HR ที่ตั้งไว้">?</span></h2><div id="zones"></div></section>
-    <section class="box"><h2>การคุมแผนและโหลด <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบายการคุมแผนและโหลด" data-tip="ข้อสังเกตและโหลดเป็นค่าประมาณจากข้อมูลกิจกรรม ไม่ใช่คำวินิจฉัยการบาดเจ็บ">?</span></h2><div id="flags"></div></section>
+    <section class="box"><h2>ข้อสังเกตจากการซ้อมนี้ <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบายข้อสังเกตจากการซ้อมนี้" data-tip="ข้อสังเกตและโหลดเป็นค่าประมาณจากข้อมูลกิจกรรม ไม่ใช่คำวินิจฉัยการบาดเจ็บ">?</span></h2><div id="flags"></div></section>
   </div>
   <div class="two">
     <section class="box"><h2>พัฒนาการ <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบายพัฒนาการ" data-tip="แนวโน้มจากประวัติที่นำเข้าหรือบันทึกไว้ เปรียบเทียบได้เมื่อมีข้อมูลต่อเนื่องพอ">?</span></h2><div id="prog"></div></section>
@@ -425,7 +427,7 @@ function analyze(S,cfg){
   /* คุมแผนตามชนิดคอร์ส */
   const F=R.flags,add=(l,t)=>F.push({level:l,text:t});
   if(hasHR){
-    if(!hasZones)add("warn","มีข้อมูล HR แต่ยังไม่ได้กำหนด HR threshold หรือ Max HR จึงยังแบ่งโซนและประเมินความหนักเทียบโซนไม่ได้");
+    if(!hasZones){/* แจ้งไว้ในกล่องโซนหัวใจแล้ว ไม่ซ้ำที่นี่ */}
     else{
       const refName=hrMode==="threshold"?"HR threshold":"Max HR",pct=x=>x/hrRef*100;
       if(eff==="easy"){if(z3p>25)add("warn","หนักเกินเป้าหมาย Easy Run: "+z3p.toFixed(0)+"% อยู่โซน 3 ขึ้นไป ลองลดเพซโดยยึด HR โซน 1–2");else add("ok","Easy Run คุม HR ได้ มี "+z3p.toFixed(0)+"% ของเวลาอยู่โซน 3 ขึ้นไป")}
@@ -483,8 +485,8 @@ function predictionsOf(R,sess,hist){
 function coachOf(R,sess,P){
   const t=TYPE_TH[R.eff],g=fin(R.pci)?gradeOf(R.pci):null;
   let hl;
-  if(R.type==="interval"&&R.sig)hl="วันนี้ "+R.sig+": "+(g==="A"||g==="B"?"คุมเพซ"+(g==="A"?"นิ่งมาก":"ได้ดี"):"เพซแกว่ง")+" เกรด "+g;
-  else if(g)hl=t+" "+(R.dist/1000).toFixed(1)+" กม. "+(g==="A"||g==="B"?"คุมเพซได้ดี":"เพซค่อนข้างแกว่ง")+" เกรด "+g;
+  if(R.type==="interval"&&R.sig)hl="วันนี้ "+R.sig+": "+(g==="A"||g==="B"?"คุมเพซ"+(g==="A"?"นิ่งมาก":"ได้ดี"):"เพซแกว่ง")+" (ความสม่ำเสมอของเพซ เกรด "+g+")";
+  else if(g)hl=t+" "+(R.dist/1000).toFixed(1)+" กม. "+(g==="A"||g==="B"?"คุมเพซได้ดี":"เพซค่อนข้างแกว่ง")+" (ความสม่ำเสมอของเพซ เกรด "+g+")";
   else hl=t+" "+(R.dist/1000).toFixed(1)+" กม. เพซเฉลี่ย "+fmtPace(R.avgPace)+" ต่อ กม.";
   if(R.eff!==R.type)hl+=" (แผน "+TYPE_TH[R.eff]+" · ตรวจพบ "+TYPE_TH[R.type]+")";
   let ins=null;
@@ -497,8 +499,8 @@ function coachOf(R,sess,P){
   else ins="เพซเฉลี่ย "+fmtPace(R.avgPace)+" ต่อ กม."+(fin(R.avgHR)?" หัวใจเฉลี่ย "+R.avgHR.toFixed(0)+" bpm":"");
   const hard=R.type==="interval"||R.type==="tempo"||R.z3p>40;
   let rec;
-  if(P.enough&&fin(P.ratio)&&P.ratio>1.5)rec="โหลดสัปดาห์นี้พุ่งสูง (ACWR "+P.ratio.toFixed(2)+") สูงกว่าปกติมาก พรุ่งนี้ควรพักเต็มวัน";
-  else if(P.enough&&fin(P.ratio)&&P.ratio>1.3)rec="โหลดเริ่มสูง (ACWR "+P.ratio.toFixed(2)+") พรุ่งนี้แนะนำพักหรือวิ่งเบาๆ ไม่เกิน 30 นาที";
+  if(P.enough&&fin(P.ratio)&&P.ratio>1.5)rec="สัปดาห์นี้ซ้อมหนักเป็น "+P.ratio.toFixed(1)+" เท่าของปกติ (เกิน 1.5 เท่า) พรุ่งนี้ควรพักเต็มวัน";
+  else if(P.enough&&fin(P.ratio)&&P.ratio>1.3)rec="สัปดาห์นี้ซ้อมหนักเป็น "+P.ratio.toFixed(1)+" เท่าของปกติ พรุ่งนี้แนะนำพักหรือวิ่งเบาๆ ไม่เกิน 30 นาที";
   else if(hard)rec="โหลดวันนี้ค่อนข้างสูง พรุ่งนี้แนะนำพักหรือวิ่ง Recovery สั้นๆ ไม่เกิน 30 นาที";
   else if(R.flags.find(f=>f.level==="warn"&&/หนักเกินเป้าหมาย Easy|Recovery ยังหนักไป/.test(f.text)))rec="ครั้งหน้าชะลอเพซให้หัวใจอยู่โซน 2 เพื่อให้ร่างกายฟื้นและพร้อมซ้อมหนักวันถัดไป";
   else if(P.enough&&fin(P.ratio)&&P.ratio<.8)rec="โหลดช่วงนี้ต่ำกว่าปกติ เพิ่มระยะหรือจำนวนวันซ้อมได้อีกเล็กน้อย";
@@ -574,7 +576,7 @@ const HELP={
 };
 const PLAIN=new Set(["ระยะ","เวลา","เวลาเคลื่อนที่","เพซเฉลี่ย","หัวใจเฉลี่ย","เพซ /กม.","HR เฉลี่ย","พัก","กม.","เพซ","เพซปรับชัน","HR","สรุปวันนี้","ข้อสังเกต","คำแนะนำ","โซน 1","โซน 2","โซน 3","โซน 4","โซน 5"]);
 const helpIcon=text=>PLAIN.has(text)?"":'<span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบาย '+esc(text)+'" data-tip="'+esc(HELP[text]||"ค่าที่คำนวณจากข้อมูลกิจกรรม ใช้ประกอบการดูแนวโน้ม")+'">?</span>';
-const cell=(l,v)=>'<div><span>'+esc(l)+helpIcon(l)+'</span><strong>'+v+'</strong></div>';
+const cell=(l,v,note)=>'<div><span>'+esc(l)+helpIcon(l)+'</span><strong>'+v+'</strong>'+(note?'<small class="cnote">'+esc(note)+'</small>':'')+'</div>';
 
 function setCfg(){const meta=CUR&&CUR.meta||{},activityType=String(meta.activityType||meta.type||"");return{maxHR:parseFloat($("#maxhr").value)||null,hrThreshold:parseFloat($("#hrthreshold").value)||null,plan:$("#plan").value,trailHint:$("#plan").value==="auto"&&(/trail|เทรล/i.test(String(meta.name||""))||/trail/i.test(activityType))}}
 function ingest(raw,meta){
@@ -641,7 +643,7 @@ function render(){
   const acwr=fin(P.ratio)?P.ratio.toFixed(2)+(P.enough?(P.ratio>1.5?" · พุ่งสูง":P.ratio>1.3?" · เริ่มเสี่ยง":P.ratio<.8?" · ต่ำกว่าปกติ":" · กำลังดี"):" · ข้อมูลยังไม่พอ"):"-";
   $("#hero").innerHTML=
    '<div class="hg"><div class="hl2">สรุปการซ้อม</div><div class="stats">'+cell("ชนิดคอร์ส",TYPE_TH[R.eff]+(R.eff!==R.type?" (ตรวจพบ "+TYPE_TH[R.type]+")":""))+cell("ระยะ",(R.dist/1000).toFixed(2)+" กม.")+cell("เวลาเคลื่อนที่",fmtDur(R.movSec))+cell("เพซเฉลี่ย",fmtPace(R.avgPace)+" /กม.")+cell("หัวใจเฉลี่ย",fin(R.avgHR)?R.avgHR.toFixed(0)+" bpm":"-")+'</div></div>'+
-   '<div class="hg"><div class="hl2">ความหนักและการคุมแผน</div><div class="stats">'+cell("ความนิ่งของเพซ",grade)+cell("หัวใจลอย",R.decouple!=null?R.decouple.toFixed(1)+"%":"-")+cell("โหลดการซ้อม",Math.round(R.load)+" แต้ม")+cell("เวลาโซน 3 ขึ้นไป",R.hasZones?R.z3p.toFixed(0)+"%":"-")+'</div></div>';
+   '<div class="hg"><div class="hl2">ความหนักและการคุมแผน</div><div class="stats">'+cell("ความสม่ำเสมอของเพซ",grade,"A ดีที่สุด · D แกว่งมาก")+cell("หัวใจเต้นเร็วขึ้นช่วงท้าย",R.decouple!=null?R.decouple.toFixed(1)+"%":"-","ครึ่งหลังเทียบครึ่งแรก ต่ำกว่า 5% = ดี")+cell("ความหนักรวม",Math.round(R.load)+" แต้ม","ยิ่งสูงยิ่งเหนื่อยมาก")+cell("เวลาที่หัวใจเต้นแรง (โซน 3 ขึ้นไป)",R.hasZones?R.z3p.toFixed(0)+"%":"-",R.hasZones?"":"ใส่ค่าหัวใจด้านบนเพื่อดู")+'</div></div>';
   drawChart();drawRouteMap();syncRepTools();syncRepHistory();
   /* ตารางเที่ยววิ่ง / สปลิต */
   if(R.reps.length){
@@ -654,16 +656,16 @@ function render(){
       $("#reps").innerHTML='<p class="note">ยังไม่พบรอบที่ชัดเจน เลือก “เพิ่มรอบโดยลาก” แล้วลากครอบช่วงเร็วบนกราฟ หรือปรับชนิดคอร์สเป็น Interval/Tempo</p>';
     }else{
       $("#repT").innerHTML="สปลิตทุก 1 กม. "+helpIcon("สปลิต");
-      $("#reps").innerHTML=R.splits.length?'<table><tr><th>กม. '+helpIcon("กม.")+'</th><th>เพซ '+helpIcon("เพซ")+'</th><th>เพซปรับชัน '+helpIcon("เพซปรับชัน")+'</th><th>HR '+helpIcon("HR")+'</th><th>รอบขา '+helpIcon("รอบขา")+'</th></tr>'+R.splits.map(s=>'<tr><td>'+s.km+'</td><td>'+fmtPace(s.pace)+'</td><td>'+fmtPace(s.gap)+'</td><td>'+(fin(s.hr)?s.hr.toFixed(0):"-")+'</td><td>'+(fin(s.cad)?s.cad.toFixed(0):"-")+'</td></tr>').join("")+'</table>':'<p class="note">ระยะไม่ถึง 1 กม.</p>';
+      $("#reps").innerHTML=R.splits.length?'<table><tr><th>กม. '+helpIcon("กม.")+'</th><th>เพซ '+helpIcon("เพซ")+'</th><th>เพซเทียบทางราบ</th><th>HR '+helpIcon("HR")+'</th><th>ก้าว/นาที</th></tr>'+R.splits.map(s=>'<tr><td>'+s.km+'</td><td>'+fmtPace(s.pace)+'</td><td>'+fmtPace(s.gap)+'</td><td>'+(fin(s.hr)?s.hr.toFixed(0):"-")+'</td><td>'+(fin(s.cad)?s.cad.toFixed(0):"-")+'</td></tr>').join("")+'</table>':'<p class="note">ระยะไม่ถึง 1 กม.</p>';
     }
   }
   /* โซน */
-  $("#zones").innerHTML=!R.hasHR?'<p class="note">ไม่มีข้อมูลหัวใจ</p>':!R.hasZones?'<p class="note">มีข้อมูล HR แต่ยังไม่มี HR threshold หรือ Max HR ที่เชื่อถือได้ จึงไม่แบ่งโซน; ตั้งค่าได้ด้านบนโดยเว้นว่างไว้ได้</p>':'<p class="note">คำนวณจาก '+(R.hrMode==="threshold"?"HR threshold":"Max HR")+' ('+Math.round(R.hrRef)+' bpm)</p><div class="zbar">'+R.zPct.map((p,i)=>'<div style="width:'+p+'%;background:'+ZC[i]+'"></div>').join("")+'</div><div style="margin-top:8px">'+R.zPct.map((p,i)=>'<div class="zrow"><span><i class="dot" style="background:'+ZC[i]+'"></i>'+ZN[i]+' '+helpIcon(ZN[i])+' <span class="note">('+(R.hrMode==="threshold"?["<85","85–90","90–95","95–100","100+"][i]:["<60","60–70","70–80","80–90","90+"][i])+'% '+(R.hrMode==="threshold"?"threshold":"Max HR")+')</span></span><span>'+p.toFixed(0)+'% · '+fmtDur(R.zs[i])+'</span></div>').join("")+'</div>';
+  $("#zones").innerHTML=!R.hasHR?'<p class="note">ไม่มีข้อมูลหัวใจ</p>':!R.hasZones?'<p class="note">อยากเห็นโซนหัวใจ ให้ใส่ “หัวใจสูงสุด” หรือ “หัวใจที่เริ่มหนักมาก” ในช่องด้านบน (ไม่ทราบก็ข้ามได้)</p>':'<p class="note">คำนวณจาก '+(R.hrMode==="threshold"?"HR threshold":"Max HR")+' ('+Math.round(R.hrRef)+' bpm)</p><div class="zbar">'+R.zPct.map((p,i)=>'<div style="width:'+p+'%;background:'+ZC[i]+'"></div>').join("")+'</div><div style="margin-top:8px">'+R.zPct.map((p,i)=>'<div class="zrow"><span><i class="dot" style="background:'+ZC[i]+'"></i>'+ZN[i]+' '+helpIcon(ZN[i])+' <span class="note">('+(R.hrMode==="threshold"?["<85","85–90","90–95","95–100","100+"][i]:["<60","60–70","70–80","80–90","90+"][i])+'% '+(R.hrMode==="threshold"?"threshold":"Max HR")+')</span></span><span>'+p.toFixed(0)+'% · '+fmtDur(R.zs[i])+'</span></div>').join("")+'</div>';
   $("#flags").innerHTML=R.flags.map(f=>'<div class="flag '+f.level+'"></div>').join("")||'<p class="note">ไม่มีข้อสังเกตพิเศษ</p>';
   $("#flags").querySelectorAll(".flag").forEach((el,i)=>{el.textContent=R.flags[i].text});
   /* พัฒนาการ */
-  let ph='<div class="flag '+(!P.enough?"":(P.ratio>1.5?"bad":P.ratio>1.3?"warn":P.ratio<.8?"warn":"ok"))+'">โหลด 7 วัน '+Math.round(P.acute)+' แต้ม เทียบค่าเฉลี่ยรายสัปดาห์ของ 28 วัน '+Math.round(P.chronic)+' แต้ม (ACWR '+(fin(P.ratio)?P.ratio.toFixed(2):"-")+')'+(P.enough?"":" · ข้อมูลยังไม่พอ ต้องมีอย่างน้อย 4 การซ้อมในช่วง 14 วันขึ้นไปที่ใช้วิธีคำนวณโหลดเดียวกัน; การนำเข้าจะบันทึกให้อัตโนมัติ")+'</div>';
-  if(P.efs.length>=2){const xs=P.efs,mn=Math.min(...xs.map(x=>x.ef)),mx=Math.max(...xs.map(x=>x.ef)),w=300,h=60;ph+='<div class="note" style="margin:8px 0 2px">แนวโน้ม EF (เร็ว ÷ หัวใจ ยิ่งสูงยิ่งฟิต) '+xs.length+' การซ้อมล่าสุด</div><svg viewBox="0 0 '+w+' '+h+'" style="width:100%;max-width:320px" role="img" aria-label="แนวโน้ม EF"><polyline fill="none" stroke="var(--accent)" stroke-width="2.5" points="'+xs.map((x,i)=>(8+i/(xs.length-1)*(w-16))+","+(h-8-(mx>mn?(x.ef-mn)/(mx-mn):.5)*(h-16))).join(" ")+'"/></svg>'}
+  let ph='<div class="flag '+(!P.enough?"":(P.ratio>1.5?"bad":P.ratio>1.3?"warn":P.ratio<.8?"warn":"ok"))+'">โหลด 7 วัน '+Math.round(P.acute)+' แต้ม เทียบค่าเฉลี่ยรายสัปดาห์ของ 28 วัน '+Math.round(P.chronic)+' แต้ม ('+(fin(P.ratio)?"คิดเป็น "+P.ratio.toFixed(1)+" เท่าของปกติ ช่วงปกติไม่เกิน ~1.3 เท่า":"-")+')'+(P.enough?"":" · ข้อมูลยังไม่พอ ต้องมีอย่างน้อย 4 การซ้อมในช่วง 14 วันขึ้นไปที่ใช้วิธีคำนวณโหลดเดียวกัน; การนำเข้าจะบันทึกให้อัตโนมัติ")+'</div>';
+  if(P.efs.length>=2){const xs=P.efs,mn=Math.min(...xs.map(x=>x.ef)),mx=Math.max(...xs.map(x=>x.ef)),w=300,h=60;ph+='<div class="note" style="margin:8px 0 2px">แนวโน้มประสิทธิภาพแอโรบิก (EF: เร็ว ÷ หัวใจ ยิ่งสูงยิ่งฟิต) '+xs.length+' การซ้อมล่าสุด</div><svg viewBox="0 0 '+w+' '+h+'" style="width:100%;max-width:320px" role="img" aria-label="แนวโน้ม EF"><polyline fill="none" stroke="var(--accent)" stroke-width="2.5" points="'+xs.map((x,i)=>(8+i/(xs.length-1)*(w-16))+","+(h-8-(mx>mn?(x.ef-mn)/(mx-mn):.5)*(h-16))).join(" ")+'"/></svg>'}
   else ph+='<p class="note" style="margin-top:8px">แนวโน้ม EF ต้องมีการซ้อมแอโรบิกที่บันทึกไว้อย่างน้อย 2 ครั้ง</p>';
   if(P.cmp){const c=P.cmp;ph+='<div class="note" style="margin:10px 0 4px">เทียบกับครั้งก่อนที่คล้ายกัน ('+esc(new Date(c.date).toLocaleDateString("th-TH"))+')</div><table><tr><th></th><th>ครั้งนี้</th><th>ครั้งก่อน</th><th>ต่าง</th></tr>';
     const row=(n,a,b,f,unit,better)=>fin(a)&&fin(b)?'<tr><td>'+n+'</td><td>'+f(a)+'</td><td>'+f(b)+'</td><td>'+sg(a-b,unit)+(better!=null?(better?" ดีขึ้น":" แย่ลง"):"")+'</td></tr>':'';
@@ -679,7 +681,7 @@ function render(){
   }
   $("#prog").innerHTML=ph;
   const ok=pred.some(p=>fin(p.time));
-  $("#pred").innerHTML=ok?'<table><tr><th>ระยะ '+helpIcon("ระยะ")+'</th><th>เวลาประมาณ (ช่วง) '+helpIcon("เวลาประมาณ (ช่วง)")+'</th><th>เพซ /กม. '+helpIcon("เพซ /กม.")+'</th><th>อ้างอิง '+helpIcon("อ้างอิง")+'</th></tr>'+pred.map(p=>'<tr><td>'+p.name+'</td><td>'+(fin(p.time)?fmtDur(p.time)+' ('+fmtDur(p.low)+'–'+fmtDur(p.high)+')':"-")+'</td><td>'+(fin(p.time)?fmtPace(p.time/(p.D/1000)):"-")+'</td><td>'+(p.base?("ช่วงต่อเนื่อง "+p.base/1000+" กม. · "+(p.recentEfforts||1)+" การซ้อม"+(fin(p.hr)&&R.hrRef?" · HR "+(p.hr/R.hrRef*100).toFixed(0)+"% ของค่าอ้างอิง":"")):"ยังไม่มีข้อมูลพอ")+'</td></tr>').join("")+'</table><p class="note" style="margin-top:8px">ใช้ช่วงต่อเนื่องที่เร็วที่สุดจากประวัติ 90 วันด้วยสูตร Riegel; ช่วงเวลาแสดงความไวต่อเลขชี้กำลัง 1.04–1.08 (ระยะที่ไกลเกิน 2.5 เท่าของช่วงอ้างอิงใช้ 1.07–1.12 เพราะสูตรมักให้เวลาเร็วเกินจริง) ไม่ใช่ช่วงรับประกันผล HR ใช้ประกอบการประเมิน effort/โซน ไม่ได้แปลงเป็นเวลาแข่งโดยตรง'+(pred.some(p=>p.recentEfforts===1)?" ข้อมูลบางระยะมีเพียง 1 การซ้อม จึงควรใช้เป็นกรอบคร่าวๆ":"")+'</p>':'<p class="note">ยังคาดการณ์ไม่ได้ ต้องมีการวิ่งต่อเนื่องอย่างน้อย 3 กม. ที่บันทึกไว้ในประวัติ 90 วัน และไม่ใช่คอร์สที่ตรวจพบเป็น Interval/เทรล</p>';
+  $("#pred").innerHTML=ok?'<table><tr><th>ระยะ '+helpIcon("ระยะ")+'</th><th>เวลาประมาณ (ช่วง) '+helpIcon("เวลาประมาณ (ช่วง)")+'</th><th>เพซ /กม. '+helpIcon("เพซ /กม.")+'</th><th>อ้างอิง '+helpIcon("อ้างอิง")+'</th></tr>'+pred.map(p=>'<tr><td>'+p.name+'</td><td>'+(fin(p.time)?fmtDur(p.time)+' ('+fmtDur(p.low)+'–'+fmtDur(p.high)+')':"-")+'</td><td>'+(fin(p.time)?fmtPace(p.time/(p.D/1000)):"-")+'</td><td>'+(p.base?("ช่วงต่อเนื่อง "+p.base/1000+" กม. · "+(p.recentEfforts||1)+" การซ้อม"+(fin(p.hr)&&R.hrRef?" · HR "+(p.hr/R.hrRef*100).toFixed(0)+"% ของค่าอ้างอิง":"")):"ยังไม่มีข้อมูลพอ")+'</td></tr>').join("")+'</table><p class="note" style="margin-top:8px">ใช้ช่วงต่อเนื่องที่เร็วที่สุดจากประวัติ 90 วันด้วยสูตร Riegel; ช่วงเวลาแสดงความไวต่อเลขชี้กำลัง 1.04–1.08 (ระยะที่ไกลเกิน 2.5 เท่าของช่วงอ้างอิงใช้ 1.07–1.12 เพราะสูตรมักให้เวลาเร็วเกินจริง) ไม่ใช่ช่วงรับประกันผล HR ใช้ประกอบการประเมิน effort/โซน ไม่ได้แปลงเป็นเวลาแข่งโดยตรง'+(pred.some(p=>p.recentEfforts===1)?" ข้อมูลบางระยะมีเพียง 1 การซ้อม จึงควรใช้เป็นกรอบคร่าวๆ":"")+'</p>':'<p class="note">ยังคาดการณ์ไม่ได้ ต้องมีการวิ่งต่อเนื่องอย่างน้อย 3 กม. ในช่วง 90 วันที่ผ่านมา (ไม่นับการซ้อมแบบ Interval หรือเทรล)</p>';
   renderHist();
 }
 /* กราฟเพซ + หัวใจ */
@@ -1053,7 +1055,7 @@ $("#file").onchange=e=>{takeFiles(e.target.files);e.target.value=""};
 /* บัญชี */
 function renderAcct(){
   const a=$("#acct");
-  if(!sb){a.innerHTML='<span class="err">'+(CFGERR?'ตั้งค่า Supabase ไม่ถูกต้อง: '+esc(CFGERR):'ยังไม่ได้ตั้งค่า Supabase ใน config.js จึงยังไม่มีบัญชีและ Strava')+'</span>';return}
+  if(!sb){a.innerHTML='<span class="err">'+(CFGERR?'เชื่อมต่อบัญชีไม่ได้ในตอนนี้ แต่ยังนำเข้าไฟล์ GPX/TCX ได้ตามปกติ':'ยังไม่ได้ตั้งค่า Supabase ใน config.js จึงยังไม่มีบัญชีและ Strava')+'</span>';return}
   a.innerHTML=USER?'<span class="note">'+esc(USER.email||"")+'</span><button class="ib" id="bOut" data-tip="ออกจากระบบ" aria-label="ออกจากระบบ"><span data-ic="out"></span></button>':'<button class="sbtn pri" id="bIn"><span data-ic="user"></span>เข้าสู่ระบบ</button>';
   icons(a);
 }

@@ -123,7 +123,7 @@ th{color:var(--mute);font-weight:500;font-size:.78rem}
 </head>
 <body>
 <main>
-<div class="top"><div class="crumbs"><a class="back" href="/">← หน้าแรก</a><a class="back" href="/tools/training%20analysis/">ใช้ไฟล์เดิมวิเคราะห์การซ้อม →</a><h1>แผนที่และแบ่งช่วง</h1></div><div class="acct" id="acct"></div></div>
+<div class="top"><div class="crumbs"><h1>แผนที่และแบ่งช่วง</h1></div><div class="acct" id="acct"></div></div>
 <nav class="toolnav" role="toolbar" aria-label="เครื่องมือ">
   <a href="/">หน้าแรก</a>
   <a href="/tools/slope/" aria-current="page">แผนที่และแบ่งช่วง</a>
@@ -151,7 +151,7 @@ th{color:var(--mute);font-weight:500;font-size:.78rem}
 </section>
 
 <section class="box hero" aria-live="polite">
-  <div class="hgrid">
+  <p class="note" id="sumLine"></p><div class="hgrid">
     <div class="hbig"><div class="hl">ความชันเฉลี่ย</div><div class="big"><b id="avg">0.0</b><span>%</span></div></div>
     <div class="hg"><div class="hl">เส้นทาง</div><div class="stats" id="hsA"></div></div>
     <div class="hg"><div class="hl">ความยาก <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="คะแนนความยาก = ระยะเทียบเท่าทางราบ × 10 สะสมไม่มีเพดาน คิดจากระยะทาง ความชัน ลักษณะทาง และการขึ้นลงถี่ ส่วนความหนักต่อกม. ดูความโหดต่อหนึ่งกิโลเมตร (0 ถึง 100)">?</span></div><div class="stats" id="hsB"></div></div>
@@ -504,7 +504,8 @@ function refresh(){
   $("#avg").textContent=full?full.g.toFixed(1):"0.0";
   const cell=(l,v)=>'<div>'+l+'<strong>'+v+'</strong></div>';
   $("#hsA").innerHTML=full?cell("ระยะรวม",full.d.toFixed(2)+" กม.")+cell("ไต่ขึ้นรวม",Math.round(full.gain)+" ม.")+cell("ลงรวม",Math.round(full.loss)+" ม.")+cell("ช่วงชันที่สุด",si>=0?"ช่วง "+(si+1)+" ("+sg(rows[si].g,1)+"%)":"-"):"";
-  $("#hsB").innerHTML=full?cell("คะแนนความยาก",full.score.toLocaleString("th-TH")+" แต้ม")+cell("ความหนักต่อกม.",full.inten+"/100 · "+lab(full.inten))+cell("ระยะเทียบเท่าทางราบ",full.eq.toFixed(1)+" กม.")+cell("Effort แบบ UTMB",(full.d+full.gain/100).toFixed(1)+" กม."):"";
+  $("#hsB").innerHTML=full?cell("คะแนนความยากรวม",full.score.toLocaleString("th-TH")+" แต้ม")+cell("ความหนักเฉลี่ยต่อกม.",full.inten+"/100 · "+lab(full.inten))+cell("เทียบเท่าวิ่งทางราบ",full.eq.toFixed(1)+" กม.")+cell("ระยะแบบ UTMB (กม. + ไต่/100)",(full.d+full.gain/100).toFixed(1)+" กม."):"";
+  $("#sumLine").textContent=full?"สรุป: เส้นทางยาว "+full.d.toFixed(1)+" กม. ไต่ขึ้นรวม "+Math.round(full.gain)+" ม. ความยากระดับ “"+lab(full.inten)+"” ใช้เวลาประมาณ "+fmtT(full.eq*paceV())+" ตามเพซที่ตั้งไว้":"";
   $("#hsC").innerHTML=full?cell("เวลาตามเพซ",fmtT(full.eq*paceV()))+(uiV()!=null?cell("ตาม UTMB Index (ประมาณ)",fmtT(tIdx(full.d+full.gain/100))):""):"";
   document.querySelectorAll(".seg").forEach((el,i)=>{
     const r=rows[i];if(!r)return;const q=S.segs[i],t=tq(q),b=el.querySelector(".tag");
@@ -619,7 +620,7 @@ const cloud=()=>!!(sb&&USER);
 const err=m=>{$("#err").textContent=m||""};
 function renderAcct(){
   const a=$("#acct");
-  if(!sb){a.innerHTML='<span class="err" style="margin:0">'+(CFGERR?'ตั้งค่า Supabase ไม่ถูกต้อง: '+esc(CFGERR)+' (ตรวจไฟล์ config.js)':'ยังไม่ได้ตั้งค่า Supabase ใน config.js จึงยังไม่มีบัญชีและ Strava')+'</span>';return}
+  if(!sb){a.innerHTML='<span class="err" style="margin:0">'+(CFGERR?'เชื่อมต่อบัญชีไม่ได้ในตอนนี้ แต่ยังนำเข้าไฟล์ GPX/TCX ได้ตามปกติ':'ยังไม่ได้ตั้งค่า Supabase ใน config.js จึงยังไม่มีบัญชีและ Strava')+'</span>';return}
   a.innerHTML=USER?'<span class="note" style="margin:0">'+esc(USER.email||"")+'</span><button class="ib" id="bOut" data-tip="ออกจากระบบ" aria-label="ออกจากระบบ"><span data-ic="out"></span></button>':'<button class="sbtn pri" id="bIn"><span data-ic="user"></span>เข้าสู่ระบบ</button>';
   a.querySelectorAll("[data-ic]").forEach(b=>b.innerHTML=ic(b.dataset.ic));
 }
@@ -671,7 +672,7 @@ $("#bUpLocal").onclick=async()=>{
 /* Strava */
 const api=p=>fetch(p,{headers:{Authorization:"Bearer "+SESS.access_token}});
 function showStvLogin(){$("#stvMsg").textContent="";$("#stvMore").hidden=true;$("#stvList").innerHTML='<p class="note">เข้าสู่ระบบก่อน แล้วเลือกกิจกรรมจาก Strava มาคำนวณได้เลย</p><button class="pri" id="stvLogin">เข้าสู่ระบบ</button>'}
-function stvInit(){if(!sb){$("#stvMsg").textContent="";$("#stvMore").hidden=true;$("#stvList").innerHTML='<p class="note">ต้องตั้งค่า Supabase ใน config.js ก่อน จึงจะล็อกอินและดึงกิจกรรมจาก Strava ได้ ส่วนการนำเข้าไฟล์ GPX หรือ TCX ใช้ได้ตามปกติ</p>';return}if(USER)loadActs(true);else showStvLogin()}
+function stvInit(){if(!sb){$("#stvMsg").textContent="";$("#stvMore").hidden=true;$("#stvList").innerHTML='<p class="note">ตอนนี้ยังเชื่อมต่อ Strava ไม่ได้ แต่นำเข้าไฟล์ GPX หรือ TCX ได้ตามปกติ</p>';return}if(USER)loadActs(true);else showStvLogin()}
 async function loadActs(reset){
   if(reset){ACT=[];actPage=1}
   $("#stvMsg").textContent="กำลังโหลด…";

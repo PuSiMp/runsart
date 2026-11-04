@@ -207,7 +207,7 @@ let sb=null,CFGERR="",USER=null,SESS=null,STV="unknown";
 try{if(CFG.SUPABASE_URL&&CFG.SUPABASE_ANON_KEY){if(!window.supabase)CFGERR="โหลดไลบรารี Supabase ไม่ได้";else sb=window.supabase.createClient(String(CFG.SUPABASE_URL).trim(),String(CFG.SUPABASE_ANON_KEY).trim())}}catch(e){CFGERR=e.message||String(e)}
 function renderAcct(){
   const a=$("#acct");
-  if(!sb){a.innerHTML='<span class="err">'+(CFGERR?'ตั้งค่า Supabase ไม่ถูกต้อง: '+esc(CFGERR):'ยังไม่ได้ตั้งค่า Supabase ใน config.js')+'</span>';return}
+  if(!sb){a.innerHTML='<span class="err">'+(CFGERR?'เชื่อมต่อบัญชีไม่ได้ในตอนนี้ แต่ยังนำเข้าไฟล์ GPX/TCX ได้ตามปกติ':'ยังไม่ได้ตั้งค่า Supabase ใน config.js')+'</span>';return}
   a.innerHTML=USER?'<span class="note">'+esc(USER.email||"")+'</span><button class="ib" id="bOut" aria-label="ออกจากระบบ" title="ออกจากระบบ"><span data-ic="out"></span></button>':'<button class="sbtn pri" id="bIn"><span data-ic="user"></span>เข้าสู่ระบบ</button>';
   icons(a);
 }
