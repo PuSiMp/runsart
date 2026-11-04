@@ -15,6 +15,11 @@
     .tool-shell .logo .ic{width:20px;height:20px}
     .tool-shell .side-toggle{flex:0 0 34px}
     .tool-shell .sidenav{display:flex;flex-direction:column;gap:6px}
+    .toolnav,.sidenav,.mobile-tabs,.chart-scroll,.tw{scrollbar-width:none;-ms-overflow-style:none}
+    .toolnav::-webkit-scrollbar,.sidenav::-webkit-scrollbar,.mobile-tabs::-webkit-scrollbar,.chart-scroll::-webkit-scrollbar,.tw::-webkit-scrollbar{display:none}
+    .toolnav[data-scroll-cue="left"],.sidenav[data-scroll-cue="left"],.mobile-tabs[data-scroll-cue="left"],.chart-scroll[data-scroll-cue="left"],.tw[data-scroll-cue="left"]{-webkit-mask-image:linear-gradient(to right,transparent 0,#000 20px,#000 100%);mask-image:linear-gradient(to right,transparent 0,#000 20px,#000 100%)}
+    .toolnav[data-scroll-cue="right"],.sidenav[data-scroll-cue="right"],.mobile-tabs[data-scroll-cue="right"],.chart-scroll[data-scroll-cue="right"],.tw[data-scroll-cue="right"]{-webkit-mask-image:linear-gradient(to right,#000 0,#000 calc(100% - 20px),transparent 100%);mask-image:linear-gradient(to right,#000 0,#000 calc(100% - 20px),transparent 100%)}
+    .toolnav[data-scroll-cue="both"],.sidenav[data-scroll-cue="both"],.mobile-tabs[data-scroll-cue="both"],.chart-scroll[data-scroll-cue="both"],.tw[data-scroll-cue="both"]{-webkit-mask-image:linear-gradient(to right,transparent 0,#000 20px,#000 calc(100% - 20px),transparent 100%);mask-image:linear-gradient(to right,transparent 0,#000 20px,#000 calc(100% - 20px),transparent 100%)}
     .tool-shell .side-label{padding:0 10px 6px;color:var(--mute);font-size:.72rem;font-weight:700;letter-spacing:.04em}
     .tool-shell .sidenav a{display:flex;align-items:center;gap:11px;min-height:42px;padding:8px 10px;text-decoration:none;color:var(--mute);border-radius:9px;font-size:.9rem;white-space:nowrap}
     .tool-shell .sidenav a:hover,.tool-shell .sidenav a[aria-current="page"]{color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,transparent)}
@@ -132,6 +137,29 @@
     bar.append(label, name, clear);
     main.prepend(bar);
     context = { bar, name, clear };
+  }
+
+  const horizontalScrollers = [...document.querySelectorAll(".toolnav,.sidenav,.mobile-tabs,.chart-scroll,.tw")];
+  const updateScrollCue = element => {
+    const maxScroll = element.scrollWidth - element.clientWidth;
+    if (maxScroll <= 1) {
+      element.removeAttribute("data-scroll-cue");
+      return;
+    }
+    const atStart = element.scrollLeft <= 1;
+    const atEnd = element.scrollLeft >= maxScroll - 1;
+    element.dataset.scrollCue = atStart ? "right" : atEnd ? "left" : "both";
+  };
+  if (horizontalScrollers.length) {
+    horizontalScrollers.forEach(element => {
+      updateScrollCue(element);
+      element.addEventListener("scroll", () => updateScrollCue(element), { passive: true });
+    });
+    window.addEventListener("resize", () => horizontalScrollers.forEach(updateScrollCue), { passive: true });
+    if (window.ResizeObserver) {
+      const scrollObserver = new ResizeObserver(entries => entries.forEach(entry => updateScrollCue(entry.target)));
+      horizontalScrollers.forEach(element => scrollObserver.observe(element));
+    }
   }
 
   let toastRegion = null;

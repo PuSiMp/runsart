@@ -1,6 +1,6 @@
 const { getUser, accessToken } = require("./_lib");
 
-// รายการกิจกรรมล่าสุด 100 รายการต่อหน้า (กรองช่วงวันที่ด้วย after/before เป็นวินาที)
+// ค่าเริ่มต้น 100 รายการต่อหน้า; per_page ปรับได้สูงสุด 100 รายการ
 module.exports = async (req, res) => {
   try {
     const u = await getUser(req);
@@ -8,7 +8,9 @@ module.exports = async (req, res) => {
     const tk = await accessToken(u.id);
     if (!tk) return res.status(409).json({ error: "not_connected" });
     const q = req.query || {};
-    const p = new URLSearchParams({ per_page: "100", page: String(parseInt(q.page) || 1) });
+    const requestedPageSize = parseInt(q.per_page, 10);
+    const perPage = Number.isFinite(requestedPageSize) ? Math.min(100, Math.max(1, requestedPageSize)) : 100;
+    const p = new URLSearchParams({ per_page: String(perPage), page: String(parseInt(q.page) || 1) });
     const int = (v) => (Number.isFinite(parseInt(v, 10)) ? String(parseInt(v, 10)) : null);
     if (int(q.after)) p.set("after", int(q.after));
     if (int(q.before)) p.set("before", int(q.before));
