@@ -8,9 +8,9 @@
 <script src="/config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <style>
-:root{--bg:#eceee4;--panel:#fafaf4;--ink:#1b2a21;--mute:#667366;--line:#cdd3c3;--accent:#2c5a43;--onaccent:#f4f7ef;--field:#fff;--bad:#c4503f;--warn:#b7791f;--blue:#3b6fb5;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121a15;--panel:#1b2620;--ink:#e5ebdf;--mute:#93a095;--line:#33423a;--accent:#7fc29c;--onaccent:#102017;--field:#141d18;--bad:#e0705e;--warn:#e0b25a;--blue:#7fa8e0;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#121a15;--panel:#1b2620;--ink:#e5ebdf;--mute:#93a095;--line:#33423a;--accent:#7fc29c;--onaccent:#102017;--field:#141d18;--bad:#e0705e;--warn:#e0b25a;--blue:#7fa8e0;color-scheme:dark}
+:root{--bg:#eceee4;--panel:#fafaf4;--ink:#1b2a21;--mute:#667366;--line:#cdd3c3;--accent:#2c5a43;--onaccent:#f4f7ef;--field:#fff;--good:#087f5b;--warn:#8c6500;--bad:#c4503f;--blue:#3b6fb5;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121a15;--panel:#1b2620;--ink:#e5ebdf;--mute:#93a095;--line:#33423a;--accent:#7fc29c;--onaccent:#102017;--field:#141d18;--good:#7fc29c;--warn:#e0b25a;--bad:#e0705e;--blue:#7fa8e0;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#121a15;--panel:#1b2620;--ink:#e5ebdf;--mute:#93a095;--line:#33423a;--accent:#7fc29c;--onaccent:#102017;--field:#141d18;--good:#7fc29c;--warn:#e0b25a;--bad:#e0705e;--blue:#7fa8e0;color-scheme:dark}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -44,8 +44,15 @@ label{display:flex;flex-direction:column;font-size:.78rem;color:var(--mute);gap:
 [data-ic]{display:inline-flex;align-items:center;justify-content:center;line-height:0}
 .srow{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
 .srow label{width:170px}
-.drop{border:2px dashed var(--line);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:10px;cursor:pointer;color:var(--mute);flex:1;min-width:240px}
-.drop:hover,.drop.over{border-color:var(--accent)}
+.empty-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.empty-actions button,.empty-actions a{min-height:42px}
+.empty-actions a{display:inline-flex;align-items:center;padding:7px 12px;border:1px solid var(--line);border-radius:8px;text-decoration:none}
+.drop{border:2px dashed var(--line);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:10px;cursor:pointer;color:var(--mute);flex:1;min-width:240px;transition:background-color .18s ease,border-color .18s ease,border-style .18s ease,box-shadow .18s ease,transform .18s ease}
+.drop:hover{border-color:var(--accent)}
+.drop.over{border:3px solid var(--accent);background:color-mix(in srgb,var(--accent) 13%,var(--panel));box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 16%,transparent);transform:translateY(-2px)}
+.drop.over strong{color:var(--accent)}
+.drop>span:first-child{transition:transform .18s ease}
+.drop.over>span:first-child{transform:translateY(-3px) scale(1.12);color:var(--accent)}
 .drop strong{color:var(--ink);font-weight:500}
 .coach{display:grid;gap:8px}
 .cr{display:grid;grid-template-columns:110px 1fr;gap:10px;align-items:baseline}
@@ -60,12 +67,27 @@ label{display:flex;flex-direction:column;font-size:.78rem;color:var(--mute);gap:
 .stats strong{display:block;font-size:1rem;color:var(--ink);font-weight:500}
 @media(max-width:900px){.hgrid{grid-template-columns:1fr 1fr}.hg{border-left:0;padding-left:0;border-top:1px solid var(--line);padding-top:10px}.hg:nth-child(-n+2){border-top:0;padding-top:0}}
 @media(max-width:560px){.hgrid{grid-template-columns:1fr}.hg:nth-child(2){border-top:1px solid var(--line);padding-top:10px}.cr{grid-template-columns:1fr;gap:2px}}
-.badge{display:inline-block;border-radius:99px;padding:1px 10px;font-size:.78rem;font-weight:500;color:#fff}
-.g-A{background:#3a9a5b}.g-B{background:#7aa83a}.g-C{background:#c9964a}.g-D{background:var(--bad)}
-#cv{width:100%;height:clamp(180px,22vw,220px);display:block;cursor:crosshair}
+.badge{display:inline-block;border-radius:99px;padding:1px 10px;font-size:.78rem;font-weight:500;color:var(--onaccent)}
+.g-A,.g-B{background:var(--good)}.g-C{background:var(--warn)}.g-D{background:var(--bad)}
+#cv{width:100%;height:auto;min-height:0;display:block;cursor:crosshair;touch-action:pan-x pan-y}
+#trackLine,#hl{transition:transform .1s ease-out,opacity .15s ease-out}
+#trackPace,#trackHR,#hd,#hd2{transition:transform .1s ease-out,opacity .15s ease-out}
 .cw{position:relative}
+.chart-scroll{min-width:0;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-color:var(--line) transparent}
+.chart-loading{position:absolute;inset:0;z-index:4;display:flex;flex-direction:column;justify-content:center;gap:14px;padding:24px;background:color-mix(in srgb,var(--panel) 94%,transparent);pointer-events:none}
+.chart-loading[hidden]{display:none}
+.skeleton-line{display:block;width:60%;height:12px;border-radius:6px;background:linear-gradient(100deg,var(--line) 25%,color-mix(in srgb,var(--line) 48%,var(--panel)) 38%,var(--line) 62%);background-size:300% 100%;animation:skeleton-shimmer 1.4s ease-in-out infinite}
+.skeleton-profile{height:105px;display:flex;align-items:end;gap:6px;padding:10px 0}
+.skeleton-profile i{flex:1;border-radius:4px 4px 0 0;background:linear-gradient(100deg,var(--line) 25%,color-mix(in srgb,var(--line) 48%,var(--panel)) 38%,var(--line) 62%);background-size:300% 100%;animation:skeleton-shimmer 1.4s ease-in-out infinite}
+@keyframes skeleton-shimmer{to{background-position:-150% 0}}
 .tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-size:.78rem;line-height:1.4;padding:5px 9px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-125%);z-index:2}
 .tw{overflow-x:auto}
+#reps{max-height:min(60vh,520px);overflow:auto;overscroll-behavior:contain}
+#reps table{border-collapse:separate;border-spacing:0;background:transparent}
+#reps th,#reps td{border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent)}
+#reps th{position:sticky;top:0;z-index:2;background:var(--panel)}
+#reps tbody tr:nth-child(even){background:color-mix(in srgb,var(--panel) 65%,var(--bg))}
+#reps tbody tr:hover{background:color-mix(in srgb,var(--accent) 7%,var(--panel))}
 table{width:100%;border-collapse:collapse;font-size:.85rem}
 th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
 th{color:var(--mute);font-weight:500;font-size:.76rem}
@@ -75,12 +97,13 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
 .zrow{display:flex;justify-content:space-between;font-size:.84rem;padding:3px 0}
 .dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}
 .flag{border-left:4px solid var(--line);padding:6px 10px;margin-bottom:6px;font-size:.88rem;background:color-mix(in srgb,var(--line) 20%,transparent);border-radius:0 8px 8px 0}
-.flag.warn{border-color:var(--warn)}.flag.bad{border-color:var(--bad)}.flag.ok{border-color:#3a9a5b}
+.flag.warn{border-color:var(--warn);background:color-mix(in srgb,var(--warn) 12%,var(--panel))}.flag.bad{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,var(--panel))}.flag.ok{border-color:var(--good);background:color-mix(in srgb,var(--good) 10%,var(--panel))}
 .sv{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--line);font-size:.88rem}
 .sv span{flex:1}
 .sv-actions{display:flex;gap:5px;flex:none}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px}
-.mbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;width:min(380px,100%);display:flex;flex-direction:column;gap:10px;max-height:90vh;overflow:auto}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px;overscroll-behavior:contain}
+.modal-open{overflow:hidden;overscroll-behavior:none}
+.mbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;width:min(380px,100%);display:flex;flex-direction:column;gap:10px;max-height:90vh;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .mbox.wide{width:min(560px,100%)}
 .shd{display:flex;justify-content:space-between;align-items:center}
 .tabs2{display:flex;gap:4px;border:1px solid var(--line);border-radius:10px;padding:3px}
@@ -88,6 +111,7 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
 .tabs2 button.on{background:var(--accent);color:var(--onaccent)}
 .act{display:flex;justify-content:space-between;gap:10px;width:100%;text-align:left;margin-bottom:4px;font-size:.85rem}
 .act small{color:var(--mute)}
+.act.is-loading{color:transparent!important;background:linear-gradient(100deg,var(--line) 25%,color-mix(in srgb,var(--line) 48%,var(--panel)) 38%,var(--line) 62%);background-size:300% 100%;animation:skeleton-shimmer 1.4s ease-in-out infinite}
 .gt{position:fixed;z-index:80;background:var(--ink);color:var(--bg);font-size:.78rem;padding:4px 9px;border-radius:6px;pointer-events:none;max-width:260px}
 .toolnav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
 .toolnav a{border:1px solid var(--line);border-radius:999px;padding:5px 12px;text-decoration:none;font-size:.84rem;color:var(--mute)}
@@ -96,11 +120,12 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
 .field-title{display:flex;align-items:center;gap:2px}
 .chart-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 8px}
 .chart-tools button.on{background:var(--accent);color:var(--onaccent);border-color:var(--accent)}
-.visual-tools{display:flex;flex-direction:column;align-items:center;gap:2px;border:1px solid var(--line);border-radius:10px;padding:3px;background:var(--bg)}
+.visual-tools{display:flex;flex-direction:column;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:6px;background:var(--bg)}
+.visual-group{display:flex;flex-direction:column;align-items:center;gap:4px}
+.visual-group+.visual-group{padding-top:8px;border-top:1px solid var(--line)}
 .visual-tools button{width:36px;height:36px;min-height:36px;padding:0;display:inline-flex;align-items:center;justify-content:center;border:0;background:transparent}
 .visual-tools button.on{background:var(--accent);color:var(--onaccent);border-color:var(--accent)}
 .visual-tools button:disabled{opacity:.35}
-.visual-sep{width:22px;height:1px;background:var(--line);margin:2px 0}
 .route-panel{display:grid;grid-template-columns:minmax(250px,.42fr) minmax(0,.58fr);align-items:start;gap:10px 0;width:100%}
 .route-panel>h2{grid-column:1/-1}
 .route-content,.route-chart,.distance-scroll{width:100%;min-width:0;margin:0}
@@ -130,8 +155,53 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
 .route-chart{align-content:center}
 #cv{height:auto}
 .route-chart .distance-scroll{margin-top:10px}
-@media(max-width:760px){.route-content{aspect-ratio:1/1;min-height:0;max-height:360px}}
+@media(max-width:760px){.route-content{aspect-ratio:auto;height:clamp(200px,58vw,280px);min-height:0;max-height:none}}
 .cnote{display:block;font-size:11.5px;color:var(--mute,#667);font-weight:400;margin-top:2px;line-height:1.35}
+.mobile-tabs{display:none}
+.mobile-panel{display:contents}
+.mobile-panel[data-mobile-panel="splits"]{display:block}
+@media(max-width:560px){
+  .srow{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;align-items:stretch}
+  .srow label{width:100%;min-width:0}
+  button,.srow input,.srow select{min-height:44px}
+  .chart-scroll>svg#cv{width:700px;max-width:none}
+  .chart-scroll>.chart-loading{width:700px;max-width:none}
+  .distance-scroll{position:sticky;bottom:calc(8px + env(safe-area-inset-bottom,0px));z-index:6;padding:8px;background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:0 4px 16px #17211b1a}
+  .visual-tools button{width:44px;height:44px;min-height:44px}
+}
+@media(max-width:760px){
+  html,body{height:100%;overflow:hidden}
+  body{height:100vh;height:100dvh}
+  main{height:100vh;height:100dvh;max-width:none;min-height:0;display:flex;flex-direction:column;gap:8px;overflow:hidden;padding:calc(8px + env(safe-area-inset-top,0px)) 10px calc(8px + env(safe-area-inset-bottom,0px))}
+  .top{flex:none;gap:6px}
+  .acct{margin:0}
+  .toolnav{flex:none;gap:6px;margin:0;overflow-x:auto;flex-wrap:nowrap;white-space:nowrap;scrollbar-width:none}
+  .toolnav::-webkit-scrollbar{display:none}
+  .box{margin:0;padding:10px;border-radius:12px}
+  main>section.box:first-of-type{flex:none;max-height:34vh;overflow-y:auto;overscroll-behavior:contain}
+  #empty{flex:1;min-height:0;align-content:center;overflow:auto}
+  #res{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;overflow:hidden}
+  #res[hidden]{display:none}
+  .mobile-content{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+  #res .mobile-panel{display:none}
+  #res[data-mobile-view="summary"] .mobile-panel[data-mobile-panel="summary"],
+  #res[data-mobile-view="splits"] .mobile-panel[data-mobile-panel="splits"],
+  #res[data-mobile-view="more"] .mobile-panel[data-mobile-panel="more"]{display:grid;gap:8px}
+  #res .route-panel[data-mobile-panel="map-chart"]{display:none}
+  #res[data-mobile-view="map"] .route-panel[data-mobile-panel="map-chart"],
+  #res[data-mobile-view="chart"] .route-panel[data-mobile-panel="map-chart"]{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);align-content:stretch;gap:8px;height:100%;min-height:0}
+  #res[data-mobile-view="map"] .route-chart{display:none}
+  #res[data-mobile-view="chart"] .route-content{display:none}
+  #res[data-mobile-view="map"] .route-content{height:100%;min-height:0;aspect-ratio:auto}
+  #res[data-mobile-view="splits"] .mobile-panel[data-mobile-panel="splits"]{height:100%;min-height:0;grid-template-rows:auto auto minmax(0,1fr)}
+  #res[data-mobile-view="splits"] #reps{max-height:none;min-width:0;min-height:0;height:auto;overflow:auto;overscroll-behavior:contain}
+  #res[data-mobile-view="more"] .mobile-panel[data-mobile-panel="more"]{height:100%;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+  .mobile-tabs{display:flex;flex:none;gap:4px;padding:4px;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow-x:auto;overscroll-behavior-x:contain}
+  .mobile-tabs button{flex:1 0 58px;min-width:58px;min-height:44px;padding:4px 6px;font-size:.75rem;line-height:1.2;touch-action:manipulation}
+  .mobile-tabs button[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--onaccent)}
+  .route-panel .distance-scroll{position:sticky;bottom:0}
+}
+@media(prefers-reduced-motion:reduce){.skeleton-line,.skeleton-profile i,.act.is-loading{animation:none}.drop,.drop>span:first-child,#trackLine,#hl,#trackPace,#trackHR,#hd,#hd2{transition:none}}
 </style>
 </head>
 <body>
@@ -144,7 +214,7 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
   <a href="/tools/race%20planner/">วางแผนแข่ง</a>
 </nav>
 
-<section class="box">
+<section class="box upload-box">
   <h2>1. ใส่กิจกรรม</h2>
   <div class="srow">
     <label class="drop" id="drop" tabindex="0" style="flex-direction:row;color:var(--mute);font-size:.9rem"><span data-ic="upload"></span><span><strong>ลากไฟล์ .gpx / .tcx มาวาง หรือเลือกหลายไฟล์พร้อมกัน</strong><br><span class="note">ต้องมีเวลา; ระบบเริ่มวิเคราะห์อัตโนมัติและบันทึกผลไว้ให้</span></span><input type="file" id="file" accept=".gpx,.tcx" multiple hidden></label>
@@ -162,34 +232,41 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
   <p class="err" id="err" role="alert"></p>
 </section>
 
-<div id="empty" class="box"><p class="note">ใส่ไฟล์วิ่ง (.gpx / .tcx) หรือเลือกจาก Strava แล้วระบบจะบอกว่าวันนี้ซ้อมแบบไหน หนักแค่ไหน แบ่งรอบวิ่งและช่วงพัก ดูโซนหัวใจ เทียบกับการซ้อมครั้งก่อน และสรุปคำแนะนำให้ ไม่รู้ค่าหัวใจก็เว้นว่างได้</p></div>
+<div id="empty" class="box empty-actions"><p class="note">ใส่ไฟล์วิ่ง (.gpx / .tcx) หรือเลือกจาก Strava แล้วระบบจะบอกว่าวันนี้ซ้อมแบบไหน หนักแค่ไหน แบ่งรอบวิ่งและช่วงพัก ดูโซนหัวใจ เทียบกับการซ้อมครั้งก่อน และสรุปคำแนะนำให้ ไม่รู้ค่าหัวใจก็เว้นว่างได้</p><button class="pri" id="emptyImport">เลือกไฟล์วิ่ง</button><a href="/tools/race%20planner/">วางแผนแข่ง</a></div>
 
-<div id="res" hidden>
-  <section class="box coach" id="coach"></section>
-  <section class="box"><div class="hgrid" id="hero"></div></section>
-  <section class="box route-panel">
+<div id="res" data-mobile-view="summary" hidden>
+  <div class="mobile-content">
+  <div class="mobile-panel" id="summaryPanel" data-mobile-panel="summary" role="tabpanel" aria-labelledby="tabSummary">
+    <section class="box coach" id="coach"></section>
+    <section class="box"><div class="hgrid" id="hero"></div></section>
+  </div>
+  <section class="box route-panel" id="routePanel" data-mobile-panel="map-chart" role="tabpanel" aria-labelledby="tabMap">
     <h2>แผนที่และกราฟ</h2>
     <div class="route-content">
     <svg id="routeMap" viewBox="0 0 350 350" role="img" aria-label="แผนที่เส้นทางกิจกรรม"></svg>
     </div>
     <div class="route-chart">
     <div class="chart-main">
-      <div class="cw"><svg id="cv" viewBox="0 0 700 260" role="img" aria-label="กราฟเพซและอัตราการเต้นหัวใจตามระยะทาง"></svg><div class="tip" id="tip" hidden></div></div>
+      <div class="cw chart-scroll"><div id="streamSkeleton" class="chart-loading" hidden role="status" aria-label="กำลังโหลดข้อมูลกิจกรรม"><span class="skeleton-line" style="width:38%"></span><span class="skeleton-profile" aria-hidden="true"><i style="height:25%"></i><i style="height:44%"></i><i style="height:70%"></i><i style="height:52%"></i><i style="height:84%"></i><i style="height:60%"></i><i style="height:35%"></i><i style="height:74%"></i><i style="height:48%"></i><i style="height:92%"></i></span><span class="skeleton-line" style="width:58%"></span></div><svg id="cv" viewBox="0 0 700 320" role="img" aria-label="กราฟเพซและอัตราการเต้นหัวใจตามระยะทาง"></svg><div class="tip" id="tip" hidden></div></div>
       <p class="note" id="cvN"></p>
       <p class="note">ปุ่มข้างกราฟ: ✂ ปรับรอบ · ＋ เพิ่มรอบโดยลากบนกราฟ · ↶ ↷ เลิกทำ/ทำซ้ำ</p>
       <label class="distance-scroll">เลื่อนตามระยะทาง <input id="distanceScroll" type="range" min="0" max="1" step="1" value="0" disabled><output id="distanceValue">- กม.</output></label>
     </div>
     <div class="visual-tools" role="toolbar" aria-label="เครื่องมือแก้ไขรอบวิ่ง">
-      <button id="bEditReps" type="button" aria-pressed="false" data-tip="ปรับรอบบนกราฟ" aria-label="ปรับรอบบนกราฟ"><span data-ic="cut"></span></button>
-      <button id="bAddRep" type="button" aria-pressed="false" data-tip="เพิ่มรอบโดยลาก" aria-label="เพิ่มรอบโดยลาก"><span data-ic="plus"></span></button>
-      <i class="visual-sep" aria-hidden="true"></i>
-      <button id="bUndo" type="button" disabled data-tip="เลิกทำ" aria-label="เลิกทำ"><span data-ic="undo"></span></button>
-      <button id="bRedo" type="button" disabled data-tip="ทำซ้ำ" aria-label="ทำซ้ำ"><span data-ic="redo"></span></button>
+      <div class="visual-group" role="group" aria-label="แก้ไขรอบ">
+        <button id="bEditReps" type="button" aria-pressed="false" data-tip="ปรับรอบบนกราฟ" aria-label="ปรับรอบบนกราฟ"><span data-ic="cut"></span></button>
+        <button id="bAddRep" type="button" aria-pressed="false" data-tip="เพิ่มรอบโดยลาก" aria-label="เพิ่มรอบโดยลาก"><span data-ic="plus"></span></button>
+      </div>
+      <div class="visual-group" role="group" aria-label="ประวัติการแก้ไข">
+        <button id="bUndo" type="button" disabled data-tip="เลิกทำ" aria-label="เลิกทำ"><span data-ic="undo"></span></button>
+        <button id="bRedo" type="button" disabled data-tip="ทำซ้ำ" aria-label="ทำซ้ำ"><span data-ic="redo"></span></button>
+      </div>
     </div>
     <span class="tool-status" id="splitStatus" aria-live="polite"></span>
     </div>
   </section>
-  <section class="box"><h2 id="repT">เที่ยววิ่งและช่วงพัก <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบายรายละเอียดเที่ยววิ่ง" data-tip="แต่ละเที่ยวเร็วที่ระบบตรวจพบ แก้เวลาเริ่ม/จบด้วยการลากขอบบนกราฟหรือปรับตัวเลขในตาราง; เพิ่มรอบที่ตกหล่นได้ด้วยการลากเลือกช่วง">?</span></h2><p class="note" id="repEditHelp">ลากขอบซ้าย/ขวาของแถบสีบนกราฟเพื่อแก้รอบ หรือปรับเวลาเริ่ม/จบในตาราง</p><div class="tw" id="reps"></div></section>
+  <section class="box mobile-panel" id="splitsPanel" data-mobile-panel="splits" role="tabpanel" aria-labelledby="tabSplits"><h2 id="repT">เที่ยววิ่งและช่วงพัก <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบายรายละเอียดเที่ยววิ่ง" data-tip="แต่ละเที่ยวเร็วที่ระบบตรวจพบ แก้เวลาเริ่ม/จบด้วยการลากขอบบนกราฟหรือปรับตัวเลขในตาราง; เพิ่มรอบที่ตกหล่นได้ด้วยการลากเลือกช่วง">?</span></h2><p class="note" id="repEditHelp">ลากขอบซ้าย/ขวาของแถบสีบนกราฟเพื่อแก้รอบ หรือปรับเวลาเริ่ม/จบในตาราง</p><div class="tw" id="reps"></div></section>
+  <div class="mobile-panel" id="detailsPanel" data-mobile-panel="more" role="tabpanel" aria-labelledby="tabMore">
   <div class="two">
     <section class="box"><h2>สัดส่วนโซนหัวใจ <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบายสัดส่วนโซนหัวใจ" data-tip="เวลาที่ใช้ในแต่ละช่วงความหนักซึ่งคำนวณจาก HR threshold หรือ Max HR ที่ตั้งไว้">?</span></h2><div id="zones"></div></section>
     <section class="box"><h2>ข้อสังเกตจากการซ้อมนี้ <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบายข้อสังเกตจากการซ้อมนี้" data-tip="ข้อสังเกตและโหลดเป็นค่าประมาณจากข้อมูลกิจกรรม ไม่ใช่คำวินิจฉัยการบาดเจ็บ">?</span></h2><div id="flags"></div></section>
@@ -199,6 +276,16 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
     <section class="box"><h2>คาดการณ์เวลาแข่ง <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบายคาดการณ์เวลาแข่ง" data-tip="คำนวณจากผลงานวิ่งต่อเนื่องที่ผ่านมา เป็นช่วงประมาณ ไม่รับประกันผลจริง">?</span></h2><div id="pred"></div></section>
   </div>
   <section class="box"><div class="shd"><h2 style="margin:0">การซ้อมที่บันทึกไว้ <span class="help-icon" tabindex="0" role="img" aria-label="คำอธิบายการซ้อมที่บันทึกไว้" data-tip="เปิดไฟล์ต้นฉบับเพื่อวิเคราะห์หรือแก้ชนิดการวิ่ง/รอบ แล้วอัปเดตผลเดิมได้">?</span></h2><button class="sbtn pri" id="bSave"><span data-ic="save"></span><span id="saveLabel">บันทึกการซ้อมนี้</span></button></div><p class="note" id="saveN" style="margin:6px 0"></p><p class="note">รายการที่บันทึกก่อนหน้านี้มีเฉพาะผลสรุป หากต้องการเปิดแก้ไข ให้นำเข้าไฟล์ GPX/TCX ต้นฉบับอีกครั้ง</p><div id="hist"></div></section>
+  </div>
+  </div>
+  </div>
+  <div class="mobile-tabs" role="tablist" aria-label="มุมมองผลวิเคราะห์">
+    <button type="button" id="tabSummary" role="tab" aria-controls="summaryPanel" data-mobile-view="summary" aria-selected="true">สรุป</button>
+    <button type="button" id="tabMap" role="tab" aria-controls="routePanel" data-mobile-view="map" aria-selected="false">แผนที่</button>
+    <button type="button" id="tabChart" role="tab" aria-controls="routePanel" data-mobile-view="chart" aria-selected="false">กราฟ</button>
+    <button type="button" id="tabSplits" role="tab" aria-controls="splitsPanel" data-mobile-view="splits" aria-selected="false">สปลิต</button>
+    <button type="button" id="tabMore" role="tab" aria-controls="detailsPanel" data-mobile-view="more" aria-selected="false">เพิ่มเติม</button>
+  </div>
 </div>
 </main>
 
@@ -220,19 +307,44 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
   <input type="text" id="q" placeholder="ค้นหาชื่อกิจกรรม">
   <div class="srow"><label style="flex:1">ประเภท<select id="stvType"><option value="run">วิ่ง / วิ่งเทรล</option><option value="">ทั้งหมด</option><option value="walk">เดิน / เดินป่า</option><option value="ride">ปั่นจักรยาน</option></select></label><label style="flex:1">ตั้งแต่วันที่<input type="date" id="dFrom"></label><label style="flex:1">ถึงวันที่<input type="date" id="dTo"></label></div>
   <p class="note" id="stvMsg"></p>
-  <div id="stvList" style="max-height:320px;overflow-y:auto"></div>
+  <div id="stvList" style="max-height:320px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch"></div>
   <button id="stvAll" class="pri" style="margin-top:8px">นำเข้าประวัติการวิ่งทั้งหมดในช่วงวันที่</button>
   <p class="note">ดึงข้อมูลสรุปทุกหน้า เช่น ระยะ เวลา เพซ และ HR ที่ Strava มีให้ โดยไม่โหลดสตรีมทีละกิจกรรม; ต้องเชื่อมบัญชี Strava ก่อน</p>
   <button id="stvMore" hidden>โหลดเพิ่ม</button>
 </div></div>
 
+<script src="../../shared-ui.js"></script>
 <script>
 const $=s=>document.querySelector(s);
+function setMobileView(view,focus=false){
+  const tabs=[...document.querySelectorAll(".mobile-tabs [data-mobile-view]")];
+  if(!tabs.some(tab=>tab.dataset.mobileView===view))return;
+  $("#res").dataset.mobileView=view;
+  tabs.forEach(tab=>{const selected=tab.dataset.mobileView===view;tab.setAttribute("aria-selected",String(selected));tab.tabIndex=selected?0:-1;if(selected&&focus)tab.focus()});
+  const activeTab=tabs.find(tab=>tab.dataset.mobileView===view);
+  if(view==="map"||view==="chart")$("#routePanel").setAttribute("aria-labelledby",activeTab.id);
+  $(".mobile-content").scrollTop=0;
+}
+$(".mobile-tabs").addEventListener("click",e=>{const tab=e.target.closest("[data-mobile-view]");if(tab)setMobileView(tab.dataset.mobileView)});
+$(".mobile-tabs").addEventListener("keydown",e=>{
+  if(!["ArrowLeft","ArrowRight","Home","End"].includes(e.key))return;
+  const tabs=[...document.querySelectorAll(".mobile-tabs [data-mobile-view]")],index=tabs.indexOf(document.activeElement);
+  if(index<0)return;
+  e.preventDefault();
+  const next=e.key==="Home"?0:e.key==="End"?tabs.length-1:(index+(e.key==="ArrowRight"?1:-1)+tabs.length)%tabs.length;
+  setMobileView(tabs[next].dataset.mobileView,true);
+});
+setMobileView($("#res").dataset.mobileView);
+function syncModalScrollLock(){const open=!!document.querySelector(".modal:not([hidden])");document.documentElement.classList.toggle("modal-open",open);document.body.classList.toggle("modal-open",open)}
+const modalScrollObserver=new MutationObserver(syncModalScrollLock);
+document.querySelectorAll(".modal").forEach(modal=>modalScrollObserver.observe(modal,{attributes:true,attributeFilter:["hidden"]}));
+syncModalScrollLock();
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const P={upload:"M12 16V4m0 0L8 8m4-4l4 4M4 20h16",user:"M20 21a8 8 0 00-16 0M12 12a4 4 0 100-8 4 4 0 000 8z",out:"M9 4H5v16h4M16 8l4 4-4 4M20 12H9",act:"M3 12h4l3-8 4 16 3-8h4",save:"M5 4h11l3 3v13H5zM8 4v5h7V4M8 20v-6h8v6",trash:"M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3",cut:"M6 6a2 2 0 100 4 2 2 0 000-4zM6 14a2 2 0 100 4 2 2 0 000-4zM8 9l12 9M8 15L20 6",plus:"M12 5v14M5 12h14",undo:"M9 14L4 9l5-5M4 9h10a6 6 0 010 12h-3",redo:"M15 14l5-5-5-5M20 9H10a6 6 0 000 12h3"};
 const ic=n=>'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+P[n]+'"/></svg>';
 const icons=r=>r.querySelectorAll("[data-ic]").forEach(b=>b.innerHTML=ic(b.dataset.ic));icons(document);
-const err=m=>{$("#err").textContent=m||""};
+const err=m=>window.RunsArtUI.report("#err",m||"");
+const setBatchStatus=m=>window.RunsArtUI.status("#batchStatus",m||"");
 
 /* ================= การวิเคราะห์ (ฟังก์ชันล้วน ไม่แตะหน้าเว็บ) ================= */
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
@@ -523,7 +635,7 @@ let sb=null,CFGERR="",USER=null,SESS=null;
 try{if(CFG.SUPABASE_URL&&CFG.SUPABASE_ANON_KEY){if(!window.supabase)CFGERR="โหลดไลบรารี Supabase ไม่ได้";else sb=window.supabase.createClient(String(CFG.SUPABASE_URL).trim(),String(CFG.SUPABASE_ANON_KEY).trim())}}catch(e){CFGERR=e.message||String(e)}
 const cloud=()=>!!(sb&&USER);
 let CUR=null,HIST=[],lastR=null,lastSess=null,REP_RANGES=null,REP_UNDO=[],REP_REDO=[],REP_DRAG=null,repEditMode=false,repAddMode=false,ACTIVE_INDEX=0;
-const ZC=["#8a8f98","#5b9a6b","#c9b44a","#e08a3c","#c4503f"],ZN=["โซน 1","โซน 2","โซน 3","โซน 4","โซน 5"];
+const ZC=["#667085","#4c78a8","#8c6500","#a64100","#b2182b"],ZN=["โซน 1","โซน 2","โซน 3","โซน 4","โซน 5"];
 const HELP={
   "ชนิดคอร์ส":"ชนิดการซ้อมที่ระบบตรวจจับหรือคุณเลือกเอง เทรลและทางชันอาจทำให้เพซเปลี่ยนมาก",
   "ระยะ":"ระยะทางรวมจากไฟล์กิจกรรม",
@@ -584,7 +696,7 @@ function ingest(raw,meta){
   try{
     const S=buildSeries(raw);
     if(S.d[S.N-1]<500)throw new Error("short");
-    CUR={S,meta};$("#analysisOptions").hidden=false;REP_RANGES=null;REP_UNDO=[];REP_REDO=[];REP_DRAG=null;repEditMode=false;repAddMode=false;ACTIVE_INDEX=0;recompute();return true;
+    CUR={S,meta};$("#analysisOptions").hidden=false;REP_RANGES=null;REP_UNDO=[];REP_REDO=[];REP_DRAG=null;repEditMode=false;repAddMode=false;ACTIVE_INDEX=0;recompute();window.RunsArtUI.setFile(meta.fileName||meta.name||"กิจกรรม");return true;
   }catch(e){err(e.message==="few"||e.message==="short"?"ข้อมูลในไฟล์น้อยเกินไปหรือสั้นเกินไปสำหรับวิเคราะห์ (ต้องมีเวลาและระยะอย่างน้อย 500 ม.)":"อ่านข้อมูลไม่สำเร็จ ไฟล์ต้องมีเวลาของแต่ละจุด");return false}
 }
 function rebuildEditedReps(R,S,ranges){
@@ -685,7 +797,7 @@ function render(){
   renderHist();
 }
 /* กราฟเพซ + หัวใจ */
-const CW=700,CH=260,CL=44,CR=44,CT=14,CB=22;
+const CW=700,CH=320,CL=44,CR=44,CT=18,CB=26;
 function drawChart(){
   const R=lastR,S=CUR.S,N=S.N,totalDist=Math.max(S.d[N-1]-S.d[0],1),X=i=>CL+(S.d[clamp(Math.round(i),0,N-1)]-S.d[0])/totalDist*(CW-CL-CR);
   const pace=new Float64Array(N);let pmin=1e9,pmax=0;
@@ -707,16 +819,16 @@ function drawChart(){
     const x1=X(Math.min(REP_DRAG.start,REP_DRAG.current)),x2=X(Math.max(REP_DRAG.start,REP_DRAG.current));
     h+='<rect class="rep-add-preview" x="'+x1+'" y="'+CT+'" width="'+Math.max(2,x2-x1)+'" height="'+(CH-CT-CB)+'" fill="var(--blue)" fill-opacity=".18" stroke="var(--blue)" stroke-dasharray="4 3"/>';
   }
-  const line=(arr,Y,col,w)=>{let pts=[],out="";for(let i=0;i<N;i+=Math.max(1,Math.floor(N/700)))if(fin(arr[i]))pts.push(X(i).toFixed(1)+","+Y(arr[i]).toFixed(1));return pts.length?'<polyline fill="none" stroke="'+col+'" stroke-width="'+w+'" stroke-linejoin="round" points="'+pts.join(" ")+'"/>':""};
-  if(S.hasHR)h+=line(S.hrS,HY,"var(--bad)",1.8);
+  const line=(arr,Y,col,w,dash="")=>{let pts=[];for(let i=0;i<N;i+=Math.max(1,Math.floor(N/700)))if(fin(arr[i]))pts.push(X(i).toFixed(1)+","+Y(arr[i]).toFixed(1));return pts.length?'<polyline fill="none" stroke="'+col+'" stroke-width="'+w+'" '+(dash?'stroke-dasharray="'+dash+'" ':'')+'stroke-linejoin="round" points="'+pts.join(" ")+'"/>':""};
+  if(S.hasHR)h+=line(S.hrS,HY,"var(--blue)",2.5,"5 3");
   for(const p of[pmin,(pmin+pmax)/2,pmax])h+='<line x1="'+CL+'" y1="'+PY(p).toFixed(1)+'" x2="'+(CW-CR)+'" y2="'+PY(p).toFixed(1)+'" stroke="var(--line)" stroke-opacity=".55" stroke-width="1"/>';
-  h+=line(pace,PY,"var(--accent)",2.2);
+  h+=line(pace,PY,"var(--accent)",2.8);
   for(const p of[pmin,(pmin+pmax)/2,pmax])h+='<text x="'+(CL-6)+'" y="'+(PY(p)+4)+'" text-anchor="end" font-size="11" fill="var(--accent)">'+fmtPace(p)+'</text>';
-  if(S.hasHR)for(const x of[hmin,(hmin+hmax)/2,hmax])h+='<text x="'+(CW-CR+6)+'" y="'+(HY(x)+4)+'" font-size="11" fill="var(--bad)">'+Math.round(x)+'</text>';
+  if(S.hasHR)for(const x of[hmin,(hmin+hmax)/2,hmax])h+='<text x="'+(CW-CR+6)+'" y="'+(HY(x)+4)+'" font-size="11" fill="var(--blue)">'+Math.round(x)+'</text>';
   for(const f of[0,.5,1])h+='<text x="'+X(f*(N-1))+'" y="'+(CH-8)+'" text-anchor="'+(f===0?"start":f===1?"end":"middle")+'" font-size="11" fill="var(--mute)">'+((S.d[0]+totalDist*f)/1000).toFixed(1)+' กม.</text>';
-  h+='<line id="trackLine" y1="'+CT+'" y2="'+(CH-CB)+'" stroke="var(--ink)" stroke-opacity=".7" stroke-dasharray="3 3"/><circle id="trackPace" r="5" fill="var(--panel)" stroke="var(--accent)" stroke-width="2"/><circle id="trackHR" r="5" fill="var(--panel)" stroke="var(--bad)" stroke-width="2" visibility="hidden"/><line id="hl" y1="'+CT+'" y2="'+(CH-CB)+'" stroke="var(--ink)" stroke-opacity=".5" stroke-dasharray="2 3" visibility="hidden"/><circle id="hd" r="4.5" fill="var(--panel)" stroke="var(--accent)" stroke-width="2.5" visibility="hidden"/><circle id="hd2" r="4.5" fill="var(--panel)" stroke="var(--bad)" stroke-width="2.5" visibility="hidden"/>';
+  h+='<line id="trackLine" y1="'+CT+'" y2="'+(CH-CB)+'" stroke="var(--ink)" stroke-opacity=".7" stroke-dasharray="3 3"/><circle id="trackPace" cx="0" cy="0" r="5" fill="var(--panel)" stroke="var(--accent)" stroke-width="2"/><circle id="trackHR" cx="0" cy="0" r="5" fill="var(--panel)" stroke="var(--blue)" stroke-width="2" visibility="hidden"/><line id="hl" y1="'+CT+'" y2="'+(CH-CB)+'" stroke="var(--ink)" stroke-opacity=".5" stroke-dasharray="2 3" visibility="hidden"/><circle id="hd" cx="0" cy="0" r="4.5" fill="var(--panel)" stroke="var(--accent)" stroke-width="2.5" visibility="hidden"/><circle id="hd2" cx="0" cy="0" r="4.5" fill="var(--panel)" stroke="var(--blue)" stroke-width="2.5" visibility="hidden"/>';
   $("#cv").innerHTML=h;CUR.cg={X,PY,HY,pace,pmin,pmax,hmin,hmax};
-  $("#cvN").innerHTML='<span style="color:var(--accent)">●</span> เพซ (แกนซ้าย เร็วอยู่บน) '+(S.hasHR?' <span style="color:var(--bad)">●</span> หัวใจ (แกนขวา)':'')+(R.reps.length?' · แถบเขียวอ่อน = ช่วงเร็ว':'');
+  $("#cvN").innerHTML='<span style="color:var(--accent)">━</span> เพซ (แกนซ้าย เร็วอยู่บน) '+(S.hasHR?' <span style="color:var(--blue)">┅</span> หัวใจ (แกนขวา)':'')+(R.reps.length?' · แถบเขียวอ่อน = ช่วงเร็ว':'');
 }
 const SEG_COLORS=["#2c5a43","#c4503f","#2877a4","#9a6bb5","#c9964a","#1d8b80"];
 function indexAtDistance(distance){
@@ -732,9 +844,9 @@ function updateActivePosition(index){
   const g=CUR.cg,i=ACTIVE_INDEX;
   if(g){
     const x=g.X(i),p=g.pace[i],hr=S.hrS[i],line=$("#trackLine"),dot=$("#trackPace"),hd=$("#trackHR");
-    line.setAttribute("x1",x);line.setAttribute("x2",x);
-    if(fin(p)){dot.setAttribute("cx",x);dot.setAttribute("cy",g.PY(p));dot.setAttribute("visibility","visible")}else dot.setAttribute("visibility","hidden");
-    if(fin(hr)){hd.setAttribute("cx",x);hd.setAttribute("cy",g.HY(hr));hd.setAttribute("visibility","visible")}else hd.setAttribute("visibility","hidden");
+    line.setAttribute("transform","translate("+x+" 0)");
+    if(fin(p)){dot.setAttribute("transform","translate("+x+" "+g.PY(p)+")");dot.setAttribute("visibility","visible")}else dot.setAttribute("visibility","hidden");
+    if(fin(hr)){hd.setAttribute("transform","translate("+x+" "+g.HY(hr)+")");hd.setAttribute("visibility","visible")}else hd.setAttribute("visibility","hidden");
   }
   if(CUR.routePoints){const pt=CUR.routePoints[i],marker=$("#routeActive");if(pt&&marker){marker.setAttribute("cx",pt.x);marker.setAttribute("cy",pt.y);marker.setAttribute("visibility","visible")}else if(marker)marker.setAttribute("visibility","hidden")}
 }
@@ -761,7 +873,7 @@ function drawRouteMap(){
     return points.length>1?'<polyline points="'+points.join(" ")+'" fill="none" stroke="'+color+'" stroke-opacity="'+(r.fast?1:.68)+'" stroke-width="'+(r.fast?5:3)+'" stroke-linecap="round" stroke-linejoin="round"/>':"";
   }).join("");
   const first=point(valid[0]),last=point(valid[valid.length-1]);
-  let markers='<circle cx="'+first.x.toFixed(1)+'" cy="'+first.y.toFixed(1)+'" r="7" fill="#3a9a5b" stroke="var(--panel)" stroke-width="2"/><circle cx="'+last.x.toFixed(1)+'" cy="'+last.y.toFixed(1)+'" r="7" fill="var(--bad)" stroke="var(--panel)" stroke-width="2"/>';
+  let markers='<circle cx="'+first.x.toFixed(1)+'" cy="'+first.y.toFixed(1)+'" r="7" fill="var(--good)" stroke="var(--panel)" stroke-width="2"/><circle cx="'+last.x.toFixed(1)+'" cy="'+last.y.toFixed(1)+'" r="7" fill="var(--bad)" stroke="var(--panel)" stroke-width="2"/>';
   svg.innerHTML=paths+markers+'<circle id="routeActive" cx="0" cy="0" r="8" fill="var(--panel)" stroke="var(--ink)" stroke-width="3" visibility="hidden"/>';
   updateActivePosition(ACTIVE_INDEX);
 }
@@ -836,9 +948,9 @@ $("#cv").addEventListener("pointermove",e=>{
   const distance=S.d[0]+fx*(S.d[S.N-1]-S.d[0]),i=indexAtDistance(distance),g=CUR.cg,p=g.pace[i],hh=S.hrS[i],px=g.X(i);
   updateActivePosition(i);
   const rep=lastR.reps.findIndex(x=>i>=x.a&&i<x.b);
-  $("#hl").setAttribute("x1",px);$("#hl").setAttribute("x2",px);$("#hl").setAttribute("visibility","visible");
-  const d1=$("#hd"),d2=$("#hd2");if(fin(p)){d1.setAttribute("cx",px);d1.setAttribute("cy",g.PY(p));d1.setAttribute("visibility","visible")}else d1.setAttribute("visibility","hidden");
-  if(fin(hh)){d2.setAttribute("cx",px);d2.setAttribute("cy",g.HY(hh));d2.setAttribute("visibility","visible")}else d2.setAttribute("visibility","hidden");
+  $("#hl").setAttribute("transform","translate("+px+" 0)");$("#hl").setAttribute("visibility","visible");
+  const d1=$("#hd"),d2=$("#hd2");if(fin(p)){d1.setAttribute("transform","translate("+px+" "+g.PY(p)+")");d1.setAttribute("visibility","visible")}else d1.setAttribute("visibility","hidden");
+  if(fin(hh)){d2.setAttribute("transform","translate("+px+" "+g.HY(hh)+")");d2.setAttribute("visibility","visible")}else d2.setAttribute("visibility","hidden");
   const tip=$("#tip");tip.hidden=false;
   tip.innerHTML='<b>'+fmtDur(i)+' · '+(S.d[i]/1000).toFixed(2)+' กม.</b><br>เพซ '+fmtPace(fin(p)?p:NaN)+' /กม.'+(fin(hh)?' · หัวใจ '+Math.round(hh):'')+(fin(S.cad[i])?' · รอบขา '+Math.round(S.cad[i]):'')+(rep>=0?'<br>เที่ยวที่ '+(rep+1):'');
   tip.style.left=(r.left+px/CW*r.width-w.left)+"px";tip.style.top=(r.top+(fin(p)?g.PY(p):60)/CH*r.height-w.top)+"px";
@@ -948,7 +1060,8 @@ $("#hist").addEventListener("click",async e=>{
     $("#plan").value=["auto","trail","interval","tempo","long","easy","recovery"].includes(h.plan)?h.plan:"auto";
     if(!loadFileText(h.sourceText,h.fileName||h.name+".gpx"))return;
     if(Array.isArray(h.repRanges)){REP_RANGES=h.repRanges.map(r=>({a:r.a,b:r.b}));recompute()}
-    $("#batchStatus").textContent="เปิดไฟล์ที่บันทึกไว้แล้ว แก้ชนิดการวิ่งหรือรอบได้ จากนั้นกด “อัปเดตการซ้อมนี้”";
+    setBatchStatus("เปิดไฟล์ที่บันทึกไว้แล้ว แก้ชนิดการวิ่งหรือรอบได้ จากนั้นกด “อัปเดตการซ้อมนี้”");
+    setMobileView("summary");
     $("#res").scrollIntoView({behavior:"smooth",block:"start"});
     return;
   }
@@ -966,7 +1079,7 @@ $("#plan").onchange=recompute;
 function storeSharedFile(text,name){try{sessionStorage.setItem("sharedActivityFile",JSON.stringify({name,text}));return true}catch(_){return false}}
 function loadFileText(text,name,keepShared=true){
   if(!/\.(gpx|tcx)$/i.test(name)){err("รองรับเฉพาะไฟล์ .gpx และ .tcx ตอนนี้ไฟล์ .fit ยังใช้ไม่ได้");return false}
-  if(keepShared&&!storeSharedFile(text,name))$("#batchStatus").textContent="วิเคราะห์ไฟล์นี้ได้ แต่เก็บไฟล์ไว้สลับเครื่องมือไม่ได้เพราะไฟล์ใหญ่เกินพื้นที่ชั่วคราว";
+  if(keepShared&&!storeSharedFile(text,name))setBatchStatus("วิเคราะห์ไฟล์นี้ได้ แต่เก็บไฟล์ไว้สลับเครื่องมือไม่ได้เพราะไฟล์ใหญ่เกินพื้นที่ชั่วคราว");
   try{
     const doc=new DOMParser().parseFromString(text,"application/xml"),tcx=/\.tcx$/i.test(name);
     const raw=tcx?parseTCX(doc):parseGPX(doc);
@@ -1028,7 +1141,7 @@ function readTextFile(file){return new Promise((resolve,reject)=>{const rd=new F
 async function takeFiles(fileList){
   const files=Array.from(fileList||[]);if(!files.length)return;
   $("#plan").value="auto";
-  $("#batchStatus").textContent="กำลังวิเคราะห์ "+files.length+" ไฟล์…";
+  setBatchStatus("กำลังวิเคราะห์ "+files.length+" ไฟล์…");
   const records=[],failures=[];
   for(let i=0;i<files.length;i++){
     const f=files[i];
@@ -1037,20 +1150,23 @@ async function takeFiles(fileList){
       const text=await readTextFile(f);
       if(!loadFileText(text,f.name))throw new Error($("#err").textContent||"วิเคราะห์ไม่สำเร็จ");
       records.push({...lastSess});
-      $("#batchStatus").textContent="วิเคราะห์แล้ว "+(i+1)+"/"+files.length+" ไฟล์…";
+      setBatchStatus("วิเคราะห์แล้ว "+(i+1)+"/"+files.length+" ไฟล์…");
     }catch(e){failures.push(f.name+": "+e.message)}
   }
   const saved=await autoSaveSessions(records);
   if(records.length)render();
-  $("#batchStatus").textContent="วิเคราะห์ "+records.length+" จาก "+files.length+" ไฟล์; บันทึกอัตโนมัติ "+saved+" การซ้อม"+(failures.length?" · ไฟล์ที่ไม่สำเร็จ: "+failures.join(" | "):"");
+  setBatchStatus("วิเคราะห์ "+records.length+" จาก "+files.length+" ไฟล์; บันทึกอัตโนมัติ "+saved+" การซ้อม"+(failures.length?" · ไฟล์ที่ไม่สำเร็จ: "+failures.join(" | "):""));
   if(failures.length)err(failures.join(" | "));
 }
 const drop=$("#drop");
-drop.addEventListener("dragover",e=>{e.preventDefault();drop.classList.add("over")});
-drop.addEventListener("dragleave",()=>drop.classList.remove("over"));
-drop.addEventListener("drop",e=>{e.preventDefault();drop.classList.remove("over");takeFiles(e.dataTransfer.files)});
+let dropDepth=0;
+drop.addEventListener("dragenter",e=>{e.preventDefault();dropDepth++;drop.classList.add("over")});
+drop.addEventListener("dragover",e=>{e.preventDefault();if(e.dataTransfer)e.dataTransfer.dropEffect="copy";drop.classList.add("over")});
+drop.addEventListener("dragleave",()=>{dropDepth=Math.max(0,dropDepth-1);if(!dropDepth)drop.classList.remove("over")});
+drop.addEventListener("drop",e=>{e.preventDefault();dropDepth=0;drop.classList.remove("over");takeFiles(e.dataTransfer.files)});
 drop.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();$("#file").click()}});
 $("#file").onchange=e=>{takeFiles(e.target.files);e.target.value=""};
+$("#emptyImport").onclick=()=>$("#file").click();
 
 /* บัญชี */
 function renderAcct(){
@@ -1099,14 +1215,14 @@ $("#bStv").onclick=()=>{
 };
 $("#stvX").onclick=()=>{$("#stv").hidden=true};
 async function loadActs(reset){
-  if(reset){ACT=[];actPage=1}
+  if(reset){ACT=[];actPage=1;$("#stvList").innerHTML=Array.from({length:3},()=>'<div class="act skeleton-row" aria-hidden="true"><span class="skeleton-line"></span><span class="skeleton-line"></span></div>').join("");$("#stvList").setAttribute("aria-busy","true")}
   $("#stvMsg").textContent="กำลังโหลด…";
   const p=new URLSearchParams({page:actPage}),f=$("#dFrom").value,t=$("#dTo").value;
   if(f)p.set("after",Math.floor(new Date(f+"T00:00:00").getTime()/1000));if(t)p.set("before",Math.floor(new Date(t+"T23:59:59").getTime()/1000));
-  let r;try{r=await api("/api/strava-activities?"+p)}catch(_){$("#stvMsg").textContent="เรียก API ไม่ได้ ต้องใช้บน Vercel ที่ตั้งค่าโฟลเดอร์ api แล้ว";return}
-  if(r.status===409){$("#stvMsg").textContent="";$("#stvMore").hidden=true;$("#stvList").innerHTML='<button class="pri" id="stvConn">เชื่อมต่อบัญชี Strava</button><p class="note">ครั้งแรกต้องกดอนุญาตให้แอปอ่านกิจกรรมของคุณ</p>';return}
-  if(!r.ok){$("#stvMsg").textContent="โหลดกิจกรรมไม่สำเร็จ ("+r.status+")";return}
-  const a=await r.json();ACT=ACT.concat(a);$("#stvMore").hidden=a.length<100;$("#stvMsg").textContent="";renderActs();
+  let r;try{r=await api("/api/strava-activities?"+p)}catch(_){$("#stvMsg").textContent="เรียก API ไม่ได้ ต้องใช้บน Vercel ที่ตั้งค่าโฟลเดอร์ api แล้ว";$("#stvList").innerHTML="";$("#stvList").setAttribute("aria-busy","false");return}
+  if(r.status===409){$("#stvMsg").textContent="";$("#stvMore").hidden=true;$("#stvList").innerHTML='<button class="pri" id="stvConn">เชื่อมต่อบัญชี Strava</button><p class="note">ครั้งแรกต้องกดอนุญาตให้แอปอ่านกิจกรรมของคุณ</p>';$("#stvList").setAttribute("aria-busy","false");return}
+  if(!r.ok){$("#stvMsg").textContent="โหลดกิจกรรมไม่สำเร็จ ("+r.status+")";$("#stvList").innerHTML="";$("#stvList").setAttribute("aria-busy","false");return}
+  const a=await r.json();ACT=ACT.concat(a);$("#stvMore").hidden=a.length<100;$("#stvMsg").textContent="";$("#stvList").setAttribute("aria-busy","false");renderActs();
 }
 async function importAllStrava(){
   const b=$("#stvAll");b.disabled=true;
@@ -1148,14 +1264,16 @@ $("#stvList").onclick=async e=>{
   if(e.target.closest("#stvConn")){try{const r=await api("/api/strava-connect?back="+encodeURIComponent("/tools/workout/")),j=await r.json();if(j.url)location.href=j.url;else $("#stvMsg").textContent="เชื่อมต่อไม่ได้ ตรวจค่า Environment Variables บน Vercel"}catch(_){$("#stvMsg").textContent="เรียก API ไม่ได้"}return}
   const b=e.target.closest("[data-id]");if(!b)return;const a=ACT.find(x=>String(x.id)===b.dataset.id);
   $("#stvMsg").textContent="กำลังดึงข้อมูลกิจกรรม…";
+  b.classList.add("is-loading");b.disabled=true;$("#stvList").setAttribute("aria-busy","true");
+  $("#streamSkeleton").hidden=false;$("#cv").setAttribute("aria-busy","true");
   try{
     const r=await api("/api/strava-stream?full=1&id="+encodeURIComponent(a.id));if(!r.ok)throw 0;const j=await r.json();
     if(!j.time||!j.distance)throw 1;
     const ll=j.latlng||[];
     const ok=ingest(j.time.map((t,i)=>({t,d:j.distance[i],hr:j.heartrate?j.heartrate[i]:NaN,cad:j.cadence?j.cadence[i]:NaN,ele:j.altitude?j.altitude[i]:NaN,lat:ll[i]?ll[i][0]:NaN,lon:ll[i]?ll[i][1]:NaN})),{name:a.name,activityType:a.type,date:new Date(a.date).toISOString()});
     if(!ok){$("#stvMsg").textContent="ข้อมูลกิจกรรมไม่เพียงพอสำหรับวิเคราะห์ ดูข้อความแจ้งข้อผิดพลาดในหน้า";return}
-    await autoSaveSessions([lastSess]);$("#stvMsg").textContent="วิเคราะห์และบันทึกกิจกรรมแล้ว";$("#stv").hidden=true;render();
-  }catch(x){$("#stvMsg").textContent=x===1?"กิจกรรมนี้ไม่มีข้อมูลเวลาและระยะ":"ดึงข้อมูลไม่สำเร็จ"}
+    await autoSaveSessions([lastSess]);$("#stvMsg").textContent="วิเคราะห์และบันทึกกิจกรรมแล้ว";$("#streamSkeleton").hidden=true;$("#cv").setAttribute("aria-busy","false");$("#stv").hidden=true;render();
+  }catch(x){b.classList.remove("is-loading");b.disabled=false;$("#stvList").setAttribute("aria-busy","false");$("#streamSkeleton").hidden=true;$("#cv").setAttribute("aria-busy","false");$("#stvMsg").textContent=x===1?"กิจกรรมนี้ไม่มีข้อมูลเวลาและระยะ":"ดึงข้อมูลไม่สำเร็จ"}
 };
 $("#q").oninput=renderActs;$("#stvType").onchange=renderActs;$("#dFrom").onchange=$("#dTo").onchange=()=>loadActs(true);$("#stvMore").onclick=()=>{actPage++;loadActs(false)};
 
@@ -1181,11 +1299,11 @@ async function loadSharedFiles(){
       sessionStorage.removeItem("sharedActivityFiles");
       for(const o of files){if(loadFileText(o.text,o.name,false))records.push({...lastSess});else failures.push(o.name)}
       const n=await autoSaveSessions(records);
-      $("#batchStatus").textContent="วิเคราะห์และบันทึก "+n+" ไฟล์จากหน้าแรกแล้ว"+(failures.length?" · วิเคราะห์ไม่ได้: "+failures.join(", "):"");
+      setBatchStatus("วิเคราะห์และบันทึก "+n+" ไฟล์จากหน้าแรกแล้ว"+(failures.length?" · วิเคราะห์ไม่ได้: "+failures.join(", "):""));
       if(records.length)render();
     }else{
       const pf=sessionStorage.getItem("sharedActivityFile");
-      if(pf){const o=JSON.parse(pf);if(loadFileText(o.text,o.name,false)){const n=await autoSaveSessions([lastSess]);$("#batchStatus").textContent=n?"วิเคราะห์และบันทึกไฟล์ที่ส่งมาจากหน้าแรกแล้ว":"ไฟล์นี้มีอยู่ในประวัติแล้ว";render()}}
+      if(pf){const o=JSON.parse(pf);if(loadFileText(o.text,o.name,false)){const n=await autoSaveSessions([lastSess]);setBatchStatus(n?"วิเคราะห์และบันทึกไฟล์ที่ส่งมาจากหน้าแรกแล้ว":"ไฟล์นี้มีอยู่ในประวัติแล้ว");render()}}
     }
   }catch(e){err("เปิดไฟล์ชั่วคราวไม่ได้: "+(e.message||e))}
 }

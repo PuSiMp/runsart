@@ -8,9 +8,9 @@
 <script src="/config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <style>
-:root{--bg:#eceee4;--panel:#fafaf4;--ink:#1b2a21;--mute:#667366;--line:#cdd3c3;--accent:#2c5a43;--onaccent:#f4f7ef;--field:#fff;--bad:#c4503f;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121a15;--panel:#1b2620;--ink:#e5ebdf;--mute:#93a095;--line:#33423a;--accent:#7fc29c;--onaccent:#102017;--field:#141d18;--bad:#e0705e;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#121a15;--panel:#1b2620;--ink:#e5ebdf;--mute:#93a095;--line:#33423a;--accent:#7fc29c;--onaccent:#102017;--field:#141d18;--bad:#e0705e;color-scheme:dark}
+:root{--bg:#eceee4;--panel:#fafaf4;--ink:#1b2a21;--mute:#667366;--line:#cdd3c3;--accent:#2c5a43;--onaccent:#f4f7ef;--field:#fff;--good:#087f5b;--warn:#8c6500;--bad:#c4503f;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121a15;--panel:#1b2620;--ink:#e5ebdf;--mute:#93a095;--line:#33423a;--accent:#7fc29c;--onaccent:#102017;--field:#141d18;--good:#7fc29c;--warn:#e0b25a;--bad:#e0705e;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#121a15;--panel:#1b2620;--ink:#e5ebdf;--mute:#93a095;--line:#33423a;--accent:#7fc29c;--onaccent:#102017;--field:#141d18;--good:#7fc29c;--warn:#e0b25a;--bad:#e0705e;color-scheme:dark}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Thai",system-ui,sans-serif;line-height:1.5;font-variant-numeric:tabular-nums}
@@ -26,7 +26,7 @@ h2{font-size:1rem;margin:0 0 8px}
 .stats div{font-size:.78rem;color:var(--mute)}
 .stats strong{display:block;font-size:1rem;color:var(--ink);font-weight:500}
 .grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:14px;margin-bottom:14px}
-@media(max-width:820px){.grid{grid-template-columns:1fr}.side{height:440px}}
+@media(max-width:820px){.grid{grid-template-columns:minmax(0,1fr)}.grid>.box{min-width:0}.side{height:440px}}
 .side{position:relative;min-height:400px;padding:0}
 .side .in{position:absolute;inset:0;display:flex;flex-direction:column;padding:12px}
 #segs{overflow-y:auto;flex:1;min-height:0;margin-top:6px}
@@ -76,16 +76,32 @@ table{width:100%;border-collapse:collapse;font-size:.85rem;margin-top:8px}
 th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
 th{color:var(--mute);font-weight:500;font-size:.78rem}
 .tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-size:.78rem;line-height:1.4;padding:5px 9px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-125%);z-index:2;text-align:left}
-.bar{display:flex;align-items:center;gap:2px;flex-wrap:wrap;border:1px solid var(--line);border-radius:10px;padding:3px;margin-bottom:8px;background:var(--bg)}
+.bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1px solid var(--line);border-radius:10px;padding:6px;margin-bottom:8px;background:var(--bg)}
 .mb{border:0;background:none;display:inline-flex;align-items:center;justify-content:center;gap:5px;width:auto;min-height:36px;padding:0 8px}
 .mb b{font-weight:500}
 .tool-label{font-size:.76rem;white-space:nowrap}
-.sep{width:1px;height:20px;background:var(--line);margin:0 4px}
+.route-tools{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-left:10px;border-left:1px solid var(--line)}
+.tool-group{display:flex;align-items:center;gap:4px;padding:3px;border-radius:8px;background:color-mix(in srgb,var(--panel) 70%,transparent)}
+.tool-group+.tool-group{margin-left:2px}
+.route-tools .tabs{margin-left:2px}
 .bar .tabs{display:flex;gap:2px}
 .bar .tabs button{border:0;background:none;min-width:36px;height:36px;padding:0 8px;display:inline-flex;align-items:center;justify-content:center;gap:5px}
 .bar .tabs button.on{background:var(--accent);color:var(--onaccent)}
-@media(max-width:560px){.mb b{display:none}}
-.zc{position:absolute;top:8px;right:8px;display:flex;flex-direction:column;gap:4px;z-index:3}
+@media(max-width:560px){.mb b{display:none}.route-tools{gap:8px;padding-left:8px}.tool-group{gap:2px}}
+.bar{position:sticky;bottom:calc(8px + env(safe-area-inset-bottom,0px));z-index:12;padding:6px;background:var(--panel);box-shadow:0 4px 16px #17211b1a}
+.chart-scroll{min-width:0;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-color:var(--line) transparent}
+.chart-loading{position:absolute;inset:0;z-index:4;display:flex;flex-direction:column;justify-content:center;gap:14px;padding:24px;background:color-mix(in srgb,var(--panel) 94%,transparent);pointer-events:none}
+.chart-loading[hidden]{display:none}
+.skeleton-row{height:48px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;padding:12px}
+.skeleton-line{height:10px;display:block;width:60%;border-radius:6px;background:linear-gradient(100deg,var(--line) 25%,color-mix(in srgb,var(--line) 48%,var(--panel)) 38%,var(--line) 62%);background-size:300% 100%;animation:skeleton-shimmer 1.4s ease-in-out infinite}
+.skeleton-line+.skeleton-line{width:38%;margin-top:6px;height:7px}
+.chart-loading .skeleton-line{height:12px;border-radius:6px;background:linear-gradient(100deg,var(--line) 25%,color-mix(in srgb,var(--line) 48%,var(--panel)) 38%,var(--line) 62%);background-size:300% 100%;animation:skeleton-shimmer 1.4s ease-in-out infinite}
+.chart-loading .skeleton-profile{height:110px;display:flex;align-items:end;gap:6px;padding:10px 0}
+.skeleton-profile i{flex:1;border-radius:4px 4px 0 0;background:linear-gradient(100deg,var(--line) 25%,color-mix(in srgb,var(--line) 48%,var(--panel)) 38%,var(--line) 62%);background-size:300% 100%;animation:skeleton-shimmer 1.4s ease-in-out infinite}
+@keyframes skeleton-shimmer{to{background-position:-150% 0}}
+@media(max-width:560px){.chart-scroll #cv{width:700px;max-width:none;touch-action:pan-x pan-y}.chart-scroll .chart-loading{width:700px;max-width:none}.ib,.ter button,.bar .mb,.bar .tabs button,.zc button{min-width:44px;min-height:44px}.bar .tabs button{height:44px}}
+@media(prefers-reduced-motion:reduce){.skeleton-line,.skeleton-profile i{animation:none}}
+.zc{position:absolute;top:8px;right:8px;display:flex;flex-direction:column;gap:6px;padding:4px;border:1px solid var(--line);border-radius:10px;background:color-mix(in srgb,var(--panel) 92%,transparent);z-index:3}
 .zc button{width:30px;height:30px;padding:0;background:var(--panel);opacity:.92;display:flex;align-items:center;justify-content:center}
 .srow2{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.srow2 label{width:200px}
 .gt{position:fixed;z-index:50;background:var(--ink);color:var(--bg);font-size:.78rem;padding:4px 9px;border-radius:6px;pointer-events:none;max-width:260px}
@@ -96,13 +112,20 @@ th{color:var(--mute);font-weight:500;font-size:.78rem}
 .inf{cursor:help;display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;border:1.5px solid currentColor;border-radius:50%;font-size:.76rem;font-weight:700;line-height:1}
 .hbig .big b{font-size:clamp(2.8rem,8vw,4.2rem)}
 @media(max-width:900px){.hgrid{grid-template-columns:1fr 1fr}.hg{border-left:0;padding-left:0;border-top:1px solid var(--line);padding-top:10px}}
-@media(max-width:560px){.hgrid{grid-template-columns:1fr}}
+@media(max-width:560px){
+  .hgrid{grid-template-columns:1fr}
+  .srow,.srow2{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
+  .srow2 label{width:100%;min-width:0}
+  .srow input,.srow2 input,.srow2 select{min-height:44px}
+  .srow button{min-height:44px}
+}
 [hidden]{display:none!important}
 .top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .acct{display:flex;align-items:center;gap:6px;margin-bottom:12px}
 .sbtn{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 12px;font-size:.85rem}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px}
-.mbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;width:min(380px,100%);display:flex;flex-direction:column;gap:10px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px;overscroll-behavior:contain}
+.modal-open{overflow:hidden;overscroll-behavior:none}
+.mbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;width:min(380px,100%);display:flex;flex-direction:column;gap:10px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .tabs2{display:flex;gap:4px;border:1px solid var(--line);border-radius:10px;padding:3px}
 .tabs2 button{flex:1;border:0;background:none;padding:8px}
 .tabs2 button.on{background:var(--accent);color:var(--onaccent)}
@@ -164,20 +187,26 @@ th{color:var(--mute);font-weight:500;font-size:.78rem}
   <section class="box" id="cbox">
     <div class="bar" role="toolbar" aria-label="เครื่องมือกราฟ">
       <button class="mb" id="bUp" data-tip="นำเข้าไฟล์ GPX" aria-label="นำเข้าไฟล์ GPX"><span data-ic="upload"></span></button>
-      <i class="sep"></i>
-      <button class="mb" id="bRev" data-tip="กลับทิศทางเส้นทาง (วิ่งย้อนกลับ)" aria-label="กลับทิศทางเส้นทาง"><span data-ic="swap"></span></button>
-      
-      <button class="mb" id="bCut" data-tip="แบ่งหรือตัดช่วงบนกราฟ" aria-label="แบ่งหรือตัดช่วงบนกราฟ"><span data-ic="cut"></span><span class="tool-label">แบ่งช่วง</span></button>
-      <i class="sep"></i>
-      <div class="tabs"><button data-v="p" class="on" data-tip="กราฟโปรไฟล์ความสูง" aria-label="กราฟโปรไฟล์ความสูง"><span data-ic="chart"></span><span class="tool-label">กราฟ</span></button><button data-v="m" data-tip="แผนที่เส้นทาง" aria-label="แผนที่เส้นทาง"><span data-ic="map"></span><span class="tool-label">แผนที่</span></button><button data-v="3" data-tip="มุมมอง 3D" aria-label="มุมมอง 3D"><span data-ic="cube"></span><span class="tool-label">3D</span></button></div>
-      <i class="sep"></i>
-      <button class="mb" id="bUndo" data-tip="เลิกทำ" aria-label="เลิกทำ" disabled><span data-ic="undo"></span></button>
-      <button class="mb" id="bRedo" data-tip="ทำซ้ำ" aria-label="ทำซ้ำ" disabled><span data-ic="redo"></span></button>
+      <div class="route-tools" id="routeTools" hidden>
+        <div class="tool-group" role="group" aria-label="แก้ไขเส้นทาง">
+          <button class="mb" id="bRev" data-tip="กลับทิศทางเส้นทาง (วิ่งย้อนกลับ)" aria-label="กลับทิศทางเส้นทาง"><span data-ic="swap"></span></button>
+          <button class="mb" id="bCut" data-tip="แบ่งหรือตัดช่วงบนกราฟ" aria-label="แบ่งหรือตัดช่วงบนกราฟ"><span data-ic="cut"></span><span class="tool-label">แบ่งช่วง</span></button>
+        </div>
+        <div class="tool-group tabs" role="group" aria-label="มุมมอง">
+          <button data-v="p" class="on" data-tip="กราฟโปรไฟล์ความสูง" aria-label="กราฟโปรไฟล์ความสูง"><span data-ic="chart"></span><span class="tool-label">กราฟ</span></button>
+          <button data-v="m" data-tip="แผนที่เส้นทาง" aria-label="แผนที่เส้นทาง"><span data-ic="map"></span><span class="tool-label">แผนที่</span></button>
+          <button data-v="3" data-tip="มุมมอง 3D" aria-label="มุมมอง 3D"><span data-ic="cube"></span><span class="tool-label">3D</span></button>
+        </div>
+        <div class="tool-group" role="group" aria-label="ประวัติการแก้ไข">
+          <button class="mb" id="bUndo" data-tip="เลิกทำ" aria-label="เลิกทำ" disabled><span data-ic="undo"></span></button>
+          <button class="mb" id="bRedo" data-tip="ทำซ้ำ" aria-label="ทำซ้ำ" disabled><span data-ic="redo"></span></button>
+        </div>
+      </div>
     </div>
     <input type="file" id="gpx" accept=".gpx,.tcx" hidden>
     <div class="ter" id="ter"></div>
     <p class="note" id="hint"></p>
-    <div style="position:relative"><svg id="cv" viewBox="0 0 700 270" role="img" aria-label="กราฟโปรไฟล์ความสูง"></svg><div id="tip" class="tip" hidden></div><div class="zc"><button id="zi" data-tip="ซูมเข้า" aria-label="ซูมเข้า"><span data-ic="plus"></span></button><button id="zo" data-tip="ซูมออก" aria-label="ซูมออก"><span data-ic="minus"></span></button><button id="zr" data-tip="รีเซ็ตซูม" aria-label="รีเซ็ตซูม"><span data-ic="fit"></span></button></div></div>
+    <div class="chart-scroll" style="position:relative"><div id="streamSkeleton" class="chart-loading" hidden role="status" aria-label="กำลังโหลดข้อมูลเส้นทาง"><span class="skeleton-line" style="width:38%"></span><span class="skeleton-profile" aria-hidden="true"><i style="height:25%"></i><i style="height:44%"></i><i style="height:70%"></i><i style="height:52%"></i><i style="height:84%"></i><i style="height:60%"></i><i style="height:35%"></i><i style="height:74%"></i><i style="height:48%"></i><i style="height:92%"></i></span><span class="skeleton-line" style="width:58%"></span></div><svg id="cv" viewBox="0 0 700 270" role="img" aria-label="กราฟโปรไฟล์ความสูง"></svg><div id="tip" class="tip" hidden></div><div class="zc" id="zoomControls" hidden role="group" aria-label="ควบคุมการซูม"><button id="zi" data-tip="ซูมเข้า" aria-label="ซูมเข้า"><span data-ic="plus"></span></button><button id="zo" data-tip="ซูมออก" aria-label="ซูมออก"><span data-ic="minus"></span></button><button id="zr" data-tip="รีเซ็ตซูม" aria-label="รีเซ็ตซูม"><span data-ic="fit"></span></button></div></div>
     <input type="range" id="pan" min="0" max="1000" value="0" hidden aria-label="เลื่อนช่วงที่ซูม">
     <div class="slbox" id="sl" hidden><label>ความละเอียดการแบ่งช่วง: <span id="tolV"></span><input type="range" id="tol" min="1" max="150" step="1" value="10" aria-label="ความไวจุดเปลี่ยนความชัน"></label><p class="note">เลื่อนซ้ายแบ่งละเอียดขึ้น เลื่อนขวารวมช่วงที่ความชันใกล้กัน</p></div>
     <p class="err" id="err" role="alert"></p>
@@ -199,8 +228,13 @@ th{color:var(--mute);font-weight:500;font-size:.78rem}
 </section>
 </main>
 
+<script src="../../shared-ui.js"></script>
 <script>
 const $=s=>document.querySelector(s);
+function syncModalScrollLock(){const open=!!document.querySelector(".modal:not([hidden])");document.documentElement.classList.toggle("modal-open",open);document.body.classList.toggle("modal-open",open)}
+const modalScrollObserver=new MutationObserver(syncModalScrollLock);
+document.querySelectorAll(".modal").forEach(modal=>modalScrollObserver.observe(modal,{attributes:true,attributeFilter:["hidden"]}));
+syncModalScrollLock();
 const P={upload:"M12 16V4m0 0L8 8m4-4l4 4M4 20h16",swap:"M7 4v14m0 0l-3-3m3 3l3-3M17 20V6m0 0l-3 3m3-3l3 3",mount:"M3 19l6-11 4 7 3-4 5 8z",cut:"M6 6a2 2 0 100 4 2 2 0 000-4zM6 14a2 2 0 100 4 2 2 0 000-4zM8 9l12 9M8 15L20 6",undo:"M9 14L4 9l5-5M4 9h10a6 6 0 010 12h-3",redo:"M15 14l5-5-5-5M20 9H10a6 6 0 000 12h3",plus:"M12 5v14M5 12h14",trash:"M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3",save:"M5 4h11l3 3v13H5zM8 4v5h7V4M8 20v-6h8v6",grip:"M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01",minus:"M5 12h14",fit:"M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5",download:"M12 4v12m0 0l-4-4m4 4l4-4M4 20h16",user:"M20 21a8 8 0 00-16 0M12 12a4 4 0 100-8 4 4 0 000 8z",out:"M9 4H5v16h4M16 8l4 4-4 4M20 12H9",act:"M3 12h4l3-8 4 16 3-8h4",cloudup:"M7 18a4 4 0 010-8 5 5 0 019.6-1A4.5 4.5 0 0117 18M12 12v7m0-7l-3 3m3-3l3 3",chart:"M3 17l5-6 4 4 5-8 4 5",map:"M9 4L3 6v14l6-2 6 2 6-2V4l-6 2zM9 4v14M15 6v14",cube:"M12 3l8 4.5v9L12 21l-8-4.5v-9zM12 12l8-4.5M12 12v9M12 12L4 7.5"};
 const ic=n=>'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+P[n]+'"/></svg>';
 document.querySelectorAll("[data-ic]").forEach(b=>b.innerHTML=ic(b.dataset.ic));
@@ -208,7 +242,7 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",
 
 const TH=3.2,DSTEP=0.008;
 const TER=[{n:"ถนน/ทางเรียบ",f:.95,c:"#8a8f98"},{n:"เทรลทั่วไป",f:1,c:"#5b9a6b"},{n:"ขรุขระ/หิน/รากไม้",f:1.15,c:"#c9964a"},{n:"ลื่น/โคลน/ทราย",f:1.25,c:"#9a6bb5"},{n:"ปีนป่าย/ใช้มือ",f:1.5,c:"#c4503f"}];
-const S={segs:[{d:5,s:1000,e:1400,g:8,t:1}],rev:false,gpx:false,sel:0,end:0,mode:"sel",tr:2,view:"p",hov:-1,hi:-1,yaw:-.7,ph:.9,cmp:[],zk:1,zs:0,mk:1,mx:350,my:135,z3:1,dm:"f"};
+const S={segs:[{d:5,s:1000,e:1400,g:8,t:1}],rev:false,gpx:false,ready:false,sel:0,end:0,mode:"sel",tr:2,view:"p",hov:-1,hi:-1,yaw:-.7,ph:.9,cmp:[],zk:1,zs:0,mk:1,mx:350,my:135,z3:1,dm:"f"};
 let G=null,U=[],R=[],pend=null,drag=-1,d3=null,dragI=-1,SV=[];
 const r3=v=>Math.round(v*1000)/1000,r1=v=>Math.round(v*10)/10;
 const sg=(n,k)=>(n>0?"+":"")+n.toFixed(k);
@@ -219,7 +253,18 @@ function pIdx(v){v=Math.max(0,Math.min(1000,v));for(let i=1;i<IDX.length;i++){if
 const uiV=()=>{const v=parseFloat($("#ui").value);return isNaN(v)?null:v},paceV=()=>parseFloat($("#pace").value)||6;
 function tIdx(ek){const u=uiV();return u==null?null:ek*pIdx(u)*(1+.0012*Math.max(0,ek-50))}
 const lab=s=>s<25?"เบา":s<50?"ปานกลาง":s<75?"ยาก":"โหด";
-function gc(g){if(g>=0){const t=Math.min(g/20,1);return"hsl("+Math.round(100-92*t)+",58%,42%)"}const t=Math.min(-g/20,1);return"hsl(198,"+Math.round(35+25*t)+"%,"+Math.round(52-10*t)+"%)"}
+function gc(g){
+  if(g<-.5){const t=Math.min(-g/20,1);return colorMix("#396fad","#2166ac",t)}
+  const stops=[[.5,"#087f5b"],[4,"#8c6500"],[10,"#a64100"],[20,"#b2182b"]];
+  if(g<=0.5)return"#667085";
+  for(let i=1;i<stops.length;i++)if(g<=stops[i][0])return colorMix(stops[i-1][1],stops[i][1],(g-stops[i-1][0])/(stops[i][0]-stops[i-1][0]));
+  return stops[stops.length-1][1];
+}
+function colorMix(a,b,t){
+  const rgb=s=>[1,3,5].map(i=>parseInt(s.slice(i,i+2),16));
+  const x=rgb(a),y=rgb(b);
+  return"rgb("+x.map((v,i)=>Math.round(v+(y[i]-v)*t)).join(",")+")";
+}
 
 function calc(){let x=0;return S.segs.map(q=>{const d=Math.max(+q.d||0,0),s=+q.s||0;let e,g;if(S.rev){g=+q.g||0;e=s+g/100*d*1000}else{e=+q.e||0;g=d>0?(e-s)/(d*10):0}const r={d,x0:x,x1:x+d,y0:s,y1:e,g,dz:e-s};x+=d;return r})}
 function cost(g){g=Math.max(-.45,Math.min(.45,g/100));return 155.4*g**5-30.4*g**4-43.3*g**3+46.3*g**2+19.5*g+3.6}
@@ -249,10 +294,10 @@ function stats(rows,a,b){
 }
 
 /* history */
-function snap(){return{segs:S.segs.map(q=>({...q})),rev:S.rev,gpx:S.gpx,G:G,tol:$("#tol").value,terr:G&&G.terr?Uint8Array.from(G.terr):null,x:G?G.x:null,dm:S.dm}}
+function snap(){return{segs:S.segs.map(q=>({...q})),rev:S.rev,gpx:S.gpx,ready:S.ready,G:G,tol:$("#tol").value,terr:G&&G.terr?Uint8Array.from(G.terr):null,x:G?G.x:null,dm:S.dm}}
 function sync(){$("#bUndo").disabled=!U.length;$("#bRedo").disabled=!R.length}
 function push(){U.push(snap());if(U.length>60)U.shift();R=[];sync()}
-function restore(p){S.segs=p.segs.map(q=>({...q}));S.rev=p.rev;S.gpx=p.gpx;G=p.G;if(G){if(p.terr)G.terr=Uint8Array.from(p.terr);if(p.x)G.x=p.x}S.dm=p.dm;$("#tol").value=p.tol;S.sel=-1;S.end=-1;S.hov=-1;render()}
+function restore(p){S.segs=p.segs.map(q=>({...q}));S.rev=p.rev;S.gpx=p.gpx;S.ready=!!p.ready;G=p.G;if(G){if(p.terr)G.terr=Uint8Array.from(p.terr);if(p.x)G.x=p.x}S.dm=p.dm;$("#tol").value=p.tol;S.sel=-1;S.end=-1;S.hov=-1;render()}
 function undo(){if(!U.length)return;R.push(snap());restore(U.pop());sync()}
 function redo(){if(!R.length)return;U.push(snap());restore(R.pop());sync()}
 
@@ -282,6 +327,7 @@ function importPts(pts,name){
       if(kept.length<2||cr[cr.length-1]<=0)throw 0;
       const xr=kept.map(i=>cr[i]),k=Math.cos(pts[0][0]*Math.PI/180)*111320;
       push();
+      S.ready=true;
       G={x:xr,xr,y:kept.map(i=>sm[i]),px:kept.map(i=>(pts[i][1]-pts[0][1])*k),py:kept.map(i=>(pts[i][0]-pts[0][0])*111320),terr:new Uint8Array(kept.length).fill(1)};
       let lo=1e9,hi=-1e9;G.y.forEach(v=>{lo=Math.min(lo,v);hi=Math.max(hi,v)});
       $("#name").value=name;
@@ -289,16 +335,17 @@ function importPts(pts,name){
 }
 $("#bUp").onclick=()=>$("#gpx").click();
 function loadFileText(text,name,keepShared=true){
-  $("#err").textContent="";
-  if(/\.fit$/i.test(name)){$("#err").textContent="ยังไม่รองรับไฟล์ .fit ตอนนี้ ส่งออกเป็น GPX หรือ TCX ก่อน";return}
-  if(keepShared){try{sessionStorage.setItem("sharedActivityFile",JSON.stringify({name,text}))}catch(_){$("#err").textContent="นำเข้าไฟล์นี้ได้ แต่เก็บไฟล์ไว้สลับเครื่องมือไม่ได้เพราะไฟล์ใหญ่เกินพื้นที่ชั่วคราว"}}
+  err("");
+  if(/\.fit$/i.test(name)){err("ยังไม่รองรับไฟล์ .fit ตอนนี้ ส่งออกเป็น GPX หรือ TCX ก่อน");return}
+  if(keepShared){try{sessionStorage.setItem("sharedActivityFile",JSON.stringify({name,text}))}catch(_){err("นำเข้าไฟล์นี้ได้ แต่เก็บไฟล์ไว้สลับเครื่องมือไม่ได้เพราะไฟล์ใหญ่เกินพื้นที่ชั่วคราว")}}
   try{
     const doc=new DOMParser().parseFromString(text,"application/xml");
     const tcx=/\.tcx$/i.test(name),tx=(p,n)=>{const e=p.getElementsByTagName(n)[0];return e?parseFloat(e.textContent):NaN};
     const pts=(tcx?[...doc.getElementsByTagName("Trackpoint")].map(p=>[tx(p,"LatitudeDegrees"),tx(p,"LongitudeDegrees"),tx(p,"AltitudeMeters")]):[...doc.getElementsByTagName("trkpt")].map(p=>{const el=p.getElementsByTagName("ele")[0];return[parseFloat(p.getAttribute("lat")),parseFloat(p.getAttribute("lon")),el?parseFloat(el.textContent):NaN]})).filter(p=>!isNaN(p[0])&&!isNaN(p[1])&&!isNaN(p[2]));
     if(pts.length<2)throw 0;
     importPts(pts,name.replace(/\.(gpx|tcx)$/i,""));
-  }catch(x){$("#err").textContent="อ่านไฟล์ไม่ได้ ไฟล์ GPX หรือ TCX ต้องมีจุดพิกัดพร้อมค่าความสูง"}
+    window.RunsArtUI.setFile(name);
+  }catch(x){err("อ่านไฟล์ไม่ได้ ไฟล์ GPX หรือ TCX ต้องมีจุดพิกัดพร้อมค่าความสูง")}
 }
 $("#gpx").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>loadFileText(rd.result,f.name);rd.readAsText(f);e.target.value=""};
 $("#tol").onpointerdown=push;$("#tol").onkeydown=push;
@@ -498,6 +545,7 @@ sgm.addEventListener("dragend",()=>{dragI=-1;document.querySelectorAll(".seg.dra
 /* refresh everything numeric */
 function refresh(){
   const rows=calc(),n=rows.length;
+  $("#routeTools").hidden=!S.ready;$("#zoomControls").hidden=!S.ready;
   if(S.sel>=n){S.sel=-1;S.end=-1}
   const full=n?stats(rows,0,n-1):null;
   let si=-1,sm=0;rows.forEach((r,i)=>{if(r.d>0&&Math.abs(r.g)>sm){sm=Math.abs(r.g);si=i}});
@@ -537,7 +585,7 @@ function refresh(){
 
 /* saved routes + compare */
 function lsGet(){try{return JSON.parse(localStorage.getItem("trail-routes3")||"[]")}catch(_){return[]}}
-function lsSet(a){try{localStorage.setItem("trail-routes3",JSON.stringify(a))}catch(_){$("#err").textContent="บันทึกในเบราว์เซอร์นี้ไม่ได้"}}
+function lsSet(a){try{localStorage.setItem("trail-routes3",JSON.stringify(a))}catch(_){err("บันทึกในเบราว์เซอร์นี้ไม่ได้")}}
 function profile(rows){
   const o=[];
   if(G&&S.gpx){const st=Math.max(1,Math.floor(G.x.length/80));for(let i=0;i<G.x.length;i+=st)o.push([r3(G.x[i]),Math.round(G.y[i])]);o.push([r3(G.x[G.x.length-1]),Math.round(G.y[G.y.length-1])]);return o}
@@ -559,7 +607,7 @@ function renderSaved(){
 $("#saved").onclick=async e=>{
   const c=e.target.closest("[data-c]"),o=e.target.closest("[data-o]"),x=e.target.closest("[data-x]");
   if(c){const i=+c.dataset.c;S.cmp=c.checked?S.cmp.concat(i):S.cmp.filter(v=>v!==i);renderCmp()}
-  else if(o){const r=SV[+o.dataset.o];push();S.segs=r.segs.map(q=>({...q,g:0}));S.rev=false;S.sel=-1;S.end=-1;S.hov=-1;S.hi=-1;$("#name").value=r.name;
+  else if(o){const r=SV[+o.dataset.o];push();S.segs=r.segs.map(q=>({...q,g:0}));S.rev=false;S.ready=true;S.sel=-1;S.end=-1;S.hov=-1;S.hi=-1;$("#name").value=r.name;window.RunsArtUI.setFile(r.name);
     if(r.gp){const g=r.gp,xr=g.xr||g.xf;G={xr,x:xr,y:g.y,px:g.px,py:g.py,terr:Uint8Array.from(g.terr.split("").map(Number))};S.gpx=r.gx!==false;if(S.gpx)S.segs.forEach(q=>{if(q.ia!=null)q.d=r3(G.x[q.ib]-G.x[q.ia])});$("#tol").value=r.tol||10}else{S.gpx=false;G=null}
     render()}
   else if(x){const i=+x.dataset.x,r=SV[i];if(cloud()&&r.id){const{error}=await sb.from("routes").delete().eq("id",r.id);if(error){err("ลบไม่สำเร็จ: "+error.message);return}}SV.splice(i,1);S.cmp=S.cmp.filter(v=>v!==i).map(v=>v>i?v-1:v);if(!cloud())lsSet(SV);renderSaved()}
@@ -606,7 +654,7 @@ document.addEventListener("pointerover",e=>{const t=e.target.closest&&e.target.c
 document.addEventListener("focusin",e=>{const t=e.target.closest&&e.target.closest("[data-tip]");if(t)showTip(t)});
 document.addEventListener("focusout",()=>{gt.hidden=true});
 document.addEventListener("pointerdown",()=>{gt.hidden=true});
-$("#bExp").onclick=()=>{if(!SV.length){$("#err").textContent="ยังไม่มีเส้นทางที่บันทึกไว้";return}const b=new Blob([JSON.stringify({v:3,routes:SV})],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="trail-routes.json";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
+$("#bExp").onclick=()=>{if(!SV.length){err("ยังไม่มีเส้นทางที่บันทึกไว้");return}const b=new Blob([JSON.stringify({v:3,routes:SV})],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="trail-routes.json";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
 $("#bImp").onclick=()=>$("#jsonIn").click();
 $("#jsonIn").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=async()=>{try{const d=JSON.parse(rd.result),a=Array.isArray(d)?d:d.routes;if(!Array.isArray(a))throw 0;const have=new Set(SV.map(r=>r.name+"|"+r.tot)),fresh=a.filter(r=>r&&r.segs&&!have.has(r.name+"|"+r.tot));
     if(cloud()){const{error}=await sb.from("routes").insert(fresh.map(r=>{const{id,...rest}=r;return{name:r.name,data:rest}}));if(error)throw error;await loadRoutes()}
@@ -617,7 +665,7 @@ let sb=null,CFGERR="";
 try{if(CFG.SUPABASE_URL&&CFG.SUPABASE_ANON_KEY){if(!window.supabase)CFGERR="โหลดไลบรารี Supabase ไม่ได้";else sb=window.supabase.createClient(String(CFG.SUPABASE_URL).trim(),String(CFG.SUPABASE_ANON_KEY).trim())}}catch(e){CFGERR=e.message||String(e)}
 let USER=null,SESS=null,ACT=[],actPage=1,synced=false;
 const cloud=()=>!!(sb&&USER);
-const err=m=>{$("#err").textContent=m||""};
+const err=m=>window.RunsArtUI.report("#err",m||"");
 function renderAcct(){
   const a=$("#acct");
   if(!sb){a.innerHTML='<span class="err" style="margin:0">'+(CFGERR?'เชื่อมต่อบัญชีไม่ได้ในตอนนี้ แต่ยังนำเข้าไฟล์ GPX/TCX ได้ตามปกติ':'ยังไม่ได้ตั้งค่า Supabase ใน config.js จึงยังไม่มีบัญชีและ Strava')+'</span>';return}
@@ -671,19 +719,24 @@ $("#bUpLocal").onclick=async()=>{
 };
 /* Strava */
 const api=p=>fetch(p,{headers:{Authorization:"Bearer "+SESS.access_token}});
+function setStreamLoading(loading){
+  $("#streamSkeleton").hidden=!loading;
+  $("#cbox").setAttribute("aria-busy",String(loading));
+}
+const activitySkeleton=()=>'<div class="skeleton-row"><span class="skeleton-line"></span><span class="skeleton-line"></span></div>'.repeat(3);
 function showStvLogin(){$("#stvMsg").textContent="";$("#stvMore").hidden=true;$("#stvList").innerHTML='<p class="note">เข้าสู่ระบบก่อน แล้วเลือกกิจกรรมจาก Strava มาคำนวณได้เลย</p><button class="pri" id="stvLogin">เข้าสู่ระบบ</button>'}
 function stvInit(){if(!sb){$("#stvMsg").textContent="";$("#stvMore").hidden=true;$("#stvList").innerHTML='<p class="note">ตอนนี้ยังเชื่อมต่อ Strava ไม่ได้ แต่นำเข้าไฟล์ GPX หรือ TCX ได้ตามปกติ</p>';return}if(USER)loadActs(true);else showStvLogin()}
 async function loadActs(reset){
-  if(reset){ACT=[];actPage=1}
+  if(reset){ACT=[];actPage=1;$("#stvList").innerHTML=activitySkeleton();$("#stvList").setAttribute("aria-busy","true");$("#stvMore").hidden=true}
   $("#stvMsg").textContent="กำลังโหลด…";
   const p=new URLSearchParams({page:actPage}),f=$("#dFrom").value,t=$("#dTo").value;
   if(f)p.set("after",Math.floor(new Date(f+"T00:00:00").getTime()/1000));
   if(t)p.set("before",Math.floor(new Date(t+"T23:59:59").getTime()/1000));
-  let r;try{r=await api("/api/strava-activities?"+p)}catch(_){$("#stvMsg").textContent="เรียก API ไม่ได้ ต้องใช้บน Vercel ที่ตั้งค่าโฟลเดอร์ api แล้ว";return}
-  if(r.status===503){const j=await r.json();$("#stvMsg").textContent=j.error==="strava_app_inactive"?"แอป Strava ถูกปิดใช้งาน เจ้าของแอปต้องแก้สถานะใน Strava ก่อนจึงจะโหลดกิจกรรมได้":"โหลดกิจกรรมไม่สำเร็จ (503)";$("#stvMore").hidden=true;return}
-  if(r.status===409){const j=await r.json();$("#stvMsg").textContent="";$("#stvMore").hidden=true;$("#stvList").innerHTML='<button class="pri" id="stvConn">เชื่อมต่อบัญชี Strava ใหม่</button><p class="note">'+(j.error==="reconnect_strava"?"Strava ปฏิเสธการอ่านกิจกรรม กรุณาเชื่อมต่อใหม่และกดอนุญาตให้แอปอ่านกิจกรรม":"ยังไม่ได้เชื่อมต่อบัญชี Strava")+'</p>';return}
-  if(!r.ok){$("#stvMsg").textContent="โหลดกิจกรรมไม่สำเร็จ ("+r.status+")";return}
-  const a=await r.json();ACT=ACT.concat(a);$("#stvMore").hidden=a.length<100;$("#stvMsg").textContent="";renderActs();
+  let r;try{r=await api("/api/strava-activities?"+p)}catch(_){$("#stvMsg").textContent="เรียก API ไม่ได้ ต้องใช้บน Vercel ที่ตั้งค่าโฟลเดอร์ api แล้ว";$("#stvList").innerHTML="";$("#stvList").setAttribute("aria-busy","false");return}
+  if(r.status===503){const j=await r.json();$("#stvMsg").textContent=j.error==="strava_app_inactive"?"แอป Strava ถูกปิดใช้งาน เจ้าของแอปต้องแก้สถานะใน Strava ก่อนจึงจะโหลดกิจกรรมได้":"โหลดกิจกรรมไม่สำเร็จ (503)";$("#stvList").innerHTML="";$("#stvList").setAttribute("aria-busy","false");$("#stvMore").hidden=true;return}
+  if(r.status===409){const j=await r.json();$("#stvMsg").textContent="";$("#stvMore").hidden=true;$("#stvList").innerHTML='<button class="pri" id="stvConn">เชื่อมต่อบัญชี Strava ใหม่</button><p class="note">'+(j.error==="reconnect_strava"?"Strava ปฏิเสธการอ่านกิจกรรม กรุณาเชื่อมต่อใหม่และกดอนุญาตให้แอปอ่านกิจกรรม":"ยังไม่ได้เชื่อมต่อบัญชี Strava")+'</p>';$("#stvList").setAttribute("aria-busy","false");return}
+  if(!r.ok){$("#stvMsg").textContent="โหลดกิจกรรมไม่สำเร็จ ("+r.status+")";$("#stvList").innerHTML="";$("#stvList").setAttribute("aria-busy","false");return}
+  const a=await r.json();ACT=ACT.concat(a);$("#stvMore").hidden=a.length<100;$("#stvMsg").textContent="";$("#stvList").setAttribute("aria-busy","false");renderActs();
 }
 function renderActs(){
   const q=$("#q").value.trim().toLowerCase(),tf=$("#stvType").value,okT=t=>!tf||(tf==="run"?/run/i.test(t):tf==="walk"?/walk|hike/i.test(t):/ride|bike|cycl/i.test(t)),L=ACT.filter(a=>a.dist>0&&okT(String(a.type))&&(!q||String(a.name).toLowerCase().includes(q)));
@@ -695,10 +748,13 @@ $("#stvList").onclick=async e=>{
   const b=e.target.closest("[data-id]");if(!b)return;
   const a=ACT.find(x=>String(x.id)===b.dataset.id);
   $("#stvMsg").textContent="กำลังดึงข้อมูลเส้นทาง…";
+  setStreamLoading(true);
   try{const r=await api("/api/strava-stream?id="+b.dataset.id);if(!r.ok)throw 0;const j=await r.json();if(!j.latlng||!j.altitude)throw 1;
     importPts(j.latlng.map((ll,i)=>[ll[0],ll[1],j.altitude[i]]).filter(p=>p[2]!=null),a?a.name:"Strava");
+    window.RunsArtUI.setFile("Strava: "+(a?a.name:"กิจกรรม"));
+    setStreamLoading(false);
     $("#stvMsg").textContent="";$("#cbox").scrollIntoView({behavior:"smooth",block:"nearest"})}
-  catch(x){$("#stvMsg").textContent=x===1?"กิจกรรมนี้ไม่มีข้อมูลพิกัดหรือความสูง":"ดึงข้อมูลไม่สำเร็จ"}
+  catch(x){setStreamLoading(false);$("#stvMsg").textContent=x===1?"กิจกรรมนี้ไม่มีข้อมูลพิกัดหรือความสูง":"ดึงข้อมูลไม่สำเร็จ"}
 };
 $("#q").oninput=renderActs;$("#stvType").onchange=renderActs;
 $("#dFrom").onchange=$("#dTo").onchange=()=>loadActs(true);
@@ -712,9 +768,10 @@ async function initAuth(){
 }
 /* รับของที่ส่งมาจากหน้าแรก: ไฟล์ที่ลากมาวาง, กิจกรรม Strava (?activity=), เส้นทางที่บันทึก (?route=) */
 async function loadActivity(id,name){
+  setStreamLoading(true);
   try{const r=await api("/api/strava-stream?id="+encodeURIComponent(id));if(!r.ok)throw 0;const j=await r.json();if(!j.latlng||!j.altitude)throw 1;
-    importPts(j.latlng.map((ll,i)=>[ll[0],ll[1],j.altitude[i]]).filter(p=>p[2]!=null),name||"Strava")}
-  catch(x){err(x===1?"กิจกรรมนี้ไม่มีข้อมูลพิกัดหรือความสูง":"ดึงข้อมูลกิจกรรมไม่สำเร็จ")}
+    importPts(j.latlng.map((ll,i)=>[ll[0],ll[1],j.altitude[i]]).filter(p=>p[2]!=null),name||"Strava");window.RunsArtUI.setFile("Strava: "+(name||"กิจกรรม"));setStreamLoading(false)}
+  catch(x){setStreamLoading(false);err(x===1?"กิจกรรมนี้ไม่มีข้อมูลพิกัดหรือความสูง":"ดึงข้อมูลกิจกรรมไม่สำเร็จ")}
 }
 async function boot(){
   const q=new URLSearchParams(location.search),act=q.get("activity"),rid=q.get("route");
@@ -723,7 +780,7 @@ async function boot(){
   if(act||rid)history.replaceState(null,"",location.pathname);
 }
 SV=lsGet();sync();renderSaved();render();
-try{const pf=sessionStorage.getItem("sharedActivityFile");if(pf){const o=JSON.parse(pf);loadFileText(o.text,o.name,false)}}catch(e){$("#err").textContent="เปิดไฟล์ชั่วคราวไม่ได้: "+(e.message||e)}
+try{const pf=sessionStorage.getItem("sharedActivityFile");if(pf){const o=JSON.parse(pf);loadFileText(o.text,o.name,false)}}catch(e){err("เปิดไฟล์ชั่วคราวไม่ได้: "+(e.message||e))}
 initAuth().catch(e=>err("บัญชีใช้งานไม่ได้: "+(e.message||e))).then(boot);
 </script>
 </body>

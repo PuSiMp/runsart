@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RunsArt · เครื่องมือวิเคราะห์การวิ่ง</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap">
 <script src="/config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <style>
-:root{--bg:#eceee4;--panel:#fafaf4;--ink:#1b2a21;--mute:#667366;--line:#cdd3c3;--accent:#2c5a43;--onaccent:#f4f7ef;--field:#fff;--bad:#c4503f;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121a15;--panel:#1b2620;--ink:#e5ebdf;--mute:#93a095;--line:#33423a;--accent:#7fc29c;--onaccent:#102017;--field:#141d18;--bad:#e0705e;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#121a15;--panel:#1b2620;--ink:#e5ebdf;--mute:#93a095;--line:#33423a;--accent:#7fc29c;--onaccent:#102017;--field:#141d18;--bad:#e0705e;color-scheme:dark}
+:root{--bg:#eceee4;--panel:#fafaf4;--ink:#1b2a21;--mute:#667366;--line:#cdd3c3;--accent:#2c5a43;--onaccent:#f4f7ef;--field:#fff;--good:#087f5b;--warn:#8c6500;--bad:#c4503f;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121a15;--panel:#1b2620;--ink:#e5ebdf;--mute:#93a095;--line:#33423a;--accent:#7fc29c;--onaccent:#102017;--field:#141d18;--good:#7fc29c;--warn:#e0b25a;--bad:#e0705e;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#121a15;--panel:#1b2620;--ink:#e5ebdf;--mute:#93a095;--line:#33423a;--accent:#7fc29c;--onaccent:#102017;--field:#141d18;--good:#7fc29c;--warn:#e0b25a;--bad:#e0705e;color-scheme:dark}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -47,15 +47,19 @@ label{display:flex;flex-direction:column;font-size:.8rem;color:var(--mute);gap:3
 .box h2,.sec h2{font-size:1rem;margin-bottom:12px}
 .cgrid{display:grid;grid-template-columns:1.2fr 1fr;gap:14px}
 @media(max-width:760px){.cgrid{grid-template-columns:1fr}}
-.drop{border:2px dashed var(--line);border-radius:12px;min-height:170px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;padding:16px;cursor:pointer;color:var(--mute)}
+.drop{border:2px dashed var(--line);border-radius:12px;min-height:170px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;padding:16px;cursor:pointer;color:var(--mute);transition:background-color .18s ease,border-color .18s ease,border-style .18s ease,box-shadow .18s ease,transform .18s ease}
 .drop strong{color:var(--ink)}
-.drop:hover,.drop.over{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,transparent)}
-.drop .ic{width:28px;height:28px;color:var(--accent)}
+.drop:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.drop.over{border:3px solid var(--accent);background:color-mix(in srgb,var(--accent) 13%,var(--panel));box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 16%,transparent);transform:translateY(-2px)}
+.drop.over strong{color:var(--accent)}
+.drop .ic{width:28px;height:28px;color:var(--accent);transition:transform .18s ease}
+.drop.over .ic{transform:translateY(-3px) scale(1.12)}
+@media(prefers-reduced-motion:reduce){.drop,.drop .ic{transition:none}}
 .cloud{border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px}
 .chead{font-weight:500}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{font-size:.75rem;border:1px solid var(--line);border-radius:99px;padding:2px 10px;color:var(--mute)}
-.ok{color:var(--accent);font-weight:500}
+.ok{color:var(--good);font-weight:500}
 .sec{margin-bottom:18px}
 .cat{font-size:.78rem;color:var(--mute);margin-bottom:8px}
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
@@ -75,7 +79,9 @@ label{display:flex;flex-direction:column;font-size:.8rem;color:var(--mute);gap:3
 .item span{font-size:.8rem;color:var(--mute)}
 #msg{min-height:1.3em;margin:-4px 0 12px}
 footer{border-top:1px solid var(--line);padding-top:16px;color:var(--mute);font-size:.8rem}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px;overscroll-behavior:contain}
+.modal-open{overflow:hidden;overscroll-behavior:none}
+.mbox{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .mbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;width:min(380px,100%);display:flex;flex-direction:column;gap:10px}
 .shd{display:flex;justify-content:space-between;align-items:center}
 .tabs2{display:flex;gap:4px;border:1px solid var(--line);border-radius:10px;padding:3px}
@@ -83,30 +89,166 @@ footer{border-top:1px solid var(--line);padding-top:16px;color:var(--mute);font-
 .tabs2 button.on{background:var(--accent);color:var(--onaccent)}
 .gbtn{height:42px}
 .choose-tools{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.choose-tools button{min-height:58px}
+.choose-tools button{min-height:142px;display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:14px;text-align:left}
+.choose-tool-icon{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px;background:color-mix(in srgb,var(--accent) 10%,var(--panel));color:var(--accent)}
+.choose-tool-icon .ic{width:23px;height:23px}
+.choose-tool-copy{display:grid;gap:3px}
+.choose-tool-copy .note{line-height:1.4}
+.choose-tools button:disabled{opacity:.45;cursor:not-allowed}
 @media(max-width:480px){.choose-tools{grid-template-columns:1fr}}
+/* Dashboard workspace */
+:root{--bg:#f4f4ef;--panel:#fff;--ink:#17211b;--mute:#68736c;--line:#e1e5df;--accent:#245b3f;--onaccent:#fff;--field:#fff}
+body{font-family:Inter,"IBM Plex Sans Thai",system-ui,sans-serif}
+.wrap{max-width:none;min-height:100vh;margin:0;padding:0;display:grid;grid-template-columns:238px minmax(0,1fr);transition:grid-template-columns .24s cubic-bezier(.2,.7,.25,1)}
+.sidebar{position:sticky;top:0;height:100vh;padding:22px 14px;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;gap:26px;z-index:5;transition:padding .24s cubic-bezier(.2,.7,.25,1)}
+.sidehead{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 6px}
+.sidehead .brand{min-width:0}
+.sidehead .brand small{display:block;font-size:.7rem}
+.side-toggle{flex:0 0 34px}
+.sidenav{display:flex;flex-direction:column;gap:6px}
+.side-label{padding:0 10px 6px;color:var(--mute);font-size:.72rem;font-weight:700;letter-spacing:.04em}
+.sidenav a{display:flex;align-items:center;gap:11px;min-height:42px;padding:8px 10px;text-decoration:none;color:var(--mute);border-radius:9px;font-size:.9rem}
+.sidenav a:hover,.sidenav a[aria-current="page"]{color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.sidenav a[aria-current="page"]{font-weight:700}
+.sidenav .ic{flex:0 0 20px}
+.side-spacer{flex:1}
+.side-note{margin:0 8px;color:var(--mute);font-size:.76rem}
+.workspace{width:min(100%,1320px);min-width:0;padding:0 clamp(20px,4vw,56px) 40px;margin:0 auto}
+.hd{padding:20px 0 12px;border-bottom:1px solid var(--line)}
+.toolnav{display:none}
+.hero{padding:36px 0 22px}
+.hero h1{font-size:clamp(1.7rem,3vw,2.4rem);letter-spacing:-.03em}
+.hero p{margin:8px 0 0;max-width:680px}
+.hero input{margin-top:20px;max-width:460px;background:var(--panel);box-shadow:0 1px 2px #17211b0a}
+.overview{margin:0 0 30px}
+.section-head{display:flex;align-items:end;justify-content:space-between;gap:14px;margin-bottom:12px}
+.section-head h2,.box h2,.sec h2{font-size:1.04rem;letter-spacing:-.01em;margin:0}
+.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.metric{min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:20px 22px}
+.metric-label{color:var(--mute);font-size:.82rem}
+.metric-value{font-size:clamp(1.5rem,3vw,2.1rem);font-weight:700;letter-spacing:-.04em;line-height:1.2;margin:7px 0 3px}
+.metric-unit{font-size:.85rem;font-weight:500;letter-spacing:0;color:var(--mute)}
+.overview-note{margin-top:10px}
+.metrics.is-loading .metric-value span:first-child,.skeleton-line{color:transparent!important;background:linear-gradient(100deg,var(--line) 25%,color-mix(in srgb,var(--line) 48%,var(--panel)) 38%,var(--line) 62%);background-size:300% 100%;animation:skeleton-shimmer 1.4s ease-in-out infinite;border-radius:6px;min-width:3.2em;display:inline-block}
+.metrics.is-loading .metric-value span:first-child{user-select:none}
+.skeleton-row{height:48px;border:1px solid var(--line);border-radius:10px;margin-bottom:10px;padding:12px}
+.skeleton-row .skeleton-line{height:10px;display:block;width:60%}
+.skeleton-row .skeleton-line+.skeleton-line{width:38%;margin-top:6px;height:7px}
+.empty-cta{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;margin-top:14px;border:1px dashed var(--line);border-radius:12px;background:color-mix(in srgb,var(--accent) 4%,var(--panel))}
+.empty-cta p{max-width:560px}
+.empty-actions{display:flex;gap:8px;flex-wrap:wrap}
+.empty-actions a{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;text-decoration:none}
+@keyframes skeleton-shimmer{to{background-position:-150% 0}}
+.box{border-radius:14px;padding:22px;margin-bottom:28px;box-shadow:0 2px 8px #17211b06}
+.box h2{margin-bottom:14px}
+.cgrid{gap:18px}
+.drop{min-height:180px;background:var(--bg)}
+.cloud{border-radius:10px}
+.sec{margin-bottom:30px}
+.sec h2{margin-bottom:12px}
+.cat{margin-bottom:10px}
+.cards{grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:18px}
+.card{gap:10px;border-radius:13px;padding:20px;box-shadow:0 2px 8px #17211b06}
+.card:hover{transform:translateY(-2px);box-shadow:0 8px 22px #17211b0c}
+.two{gap:24px}
+.item{padding:12px 14px;margin-bottom:10px;border-radius:10px}
+.recent-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.recent-title h2{margin:0}
+footer{margin-top:12px;padding:18px 0 0}
+.wrap.is-collapsed{grid-template-columns:76px minmax(0,1fr)}
+.is-collapsed .sidebar{padding-inline:10px}
+.is-collapsed .sidehead{justify-content:center;padding:0}
+.is-collapsed .sidehead .brand,.is-collapsed .side-label,.is-collapsed .sidenav a span,.is-collapsed .side-note{display:none}
+.is-collapsed .sidehead{position:relative}
+.is-collapsed .sidenav a{justify-content:center;padding-inline:0}
+.is-collapsed .sidenav .ic{width:21px;height:21px}
+@media(max-width:760px){
+  .wrap,.wrap.is-collapsed{grid-template-columns:minmax(0,1fr);transition:none}
+  .sidebar,.is-collapsed .sidebar{position:sticky;top:0;width:100%;height:auto;padding:8px 14px;background:color-mix(in srgb,var(--panel) 95%,transparent);backdrop-filter:blur(12px);border-right:0;border-bottom:1px solid var(--line);gap:8px}
+  .sidehead{padding:0 4px}
+  .sidehead .brand small{display:none}
+  .side-toggle{display:none}
+  .sidenav{flex-direction:row;gap:4px;overflow-x:auto;padding-bottom:2px}
+  .side-label,.side-spacer,.side-note{display:none}
+  .sidenav a{flex:0 0 auto;min-height:38px;gap:7px;padding:7px 10px;font-size:.81rem}
+  .sidenav .ic{width:17px;height:17px}
+  .workspace{padding:0 18px 32px}
+  .hd{padding:12px 0}
+  .hero{padding:28px 0 18px}
+  .metrics{gap:10px}
+  .metric{padding:15px 13px}
+  .metric-value{font-size:1.55rem}
+}
+@media(max-width:480px){
+  .workspace{padding-inline:14px}
+  .metrics{grid-template-columns:1fr;gap:9px}
+  .metric{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 15px}
+  .metric-value{margin:0;font-size:1.4rem;white-space:nowrap}
+  .metric-label{font-size:.8rem}
+  .box{padding:16px}
+  .cards{gap:12px}
+  .card{padding:16px}
+  .section-head{align-items:flex-start;flex-direction:column}
+  .empty-cta{align-items:stretch;flex-direction:column}
+  .empty-actions>*{flex:1}
+}
+@media(prefers-reduced-motion:reduce){.skeleton-line,.metrics.is-loading .metric-value span:first-child{animation:none}}
+@media(prefers-reduced-motion:reduce){.wrap,.sidebar{transition:none}}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--bg:#121a15;--panel:#1b2620;--ink:#e5ebdf;--mute:#a1ada4;--line:#33423a;--accent:#7fc29c;--onaccent:#102017;--field:#141d18;--bad:#e0705e;color-scheme:dark}
+}
+:root[data-theme="dark"]{--bg:#121a15;--panel:#1b2620;--ink:#e5ebdf;--mute:#a1ada4;--line:#33423a;--accent:#7fc29c;--onaccent:#102017;--field:#141d18;--bad:#e0705e;color-scheme:dark}
 </style>
 </head>
 <body>
 <div class="wrap">
+  <aside class="sidebar" aria-label="เมนูหลัก">
+    <div class="sidehead">
+      <a class="brand" href="/"><span class="logo" data-ic="mount"></span><span>RunSart <small>ศาสตร์แห่งการวิ่ง</small></span></a>
+      <button class="ib side-toggle" id="sideToggle" aria-label="ยุบเมนู" aria-expanded="true" title="ยุบเมนู">‹</button>
+    </div>
+    <nav class="sidenav">
+      <span class="side-label">WORKSPACE</span>
+      <a href="#overview" aria-current="page" title="ภาพรวม"><span data-ic="home"></span><span>ภาพรวม</span></a>
+      <a href="#upload" title="นำเข้ากิจกรรม"><span data-ic="upload"></span><span>นำเข้ากิจกรรม</span></a>
+      <span class="side-label">เครื่องมือ</span>
+      <a href="/tools/slope/" title="แผนที่และความชัน"><span data-ic="mount"></span><span>แผนที่และความชัน</span></a>
+      <a href="/tools/training%20analysis/" title="วิเคราะห์การซ้อม"><span data-ic="pulse"></span><span>วิเคราะห์การซ้อม</span></a>
+      <a href="/tools/race%20planner/" title="วางแผนแข่ง"><span data-ic="flag"></span><span>วางแผนแข่ง</span></a>
+      <a href="#recentSection" id="recentNav" title="กิจกรรมล่าสุด" hidden><span data-ic="clock"></span><span>กิจกรรมล่าสุด</span></a>
+    </nav>
+    <div class="side-spacer"></div>
+    <p class="side-note">ข้อมูลวิ่งของคุณ จัดเป็นระเบียบในที่เดียว</p>
+  </aside>
+  <main class="workspace">
   <header class="hd">
-    <a class="brand" href="/"><span class="logo" data-ic="mount"></span><span>RunSart <small>ศาสตร์แห่งการวิ่ง</small></span></a>
+    <span class="note">พื้นที่ทำงาน</span>
     <div class="acct" id="acct"></div>
   </header>
-  <nav class="toolnav" role="toolbar" aria-label="เครื่องมือ">
-    <a href="/" aria-current="page">หน้าแรก</a>
-    <a href="/tools/slope/">แผนที่และแบ่งช่วง</a>
-    <a href="/tools/training%20analysis/">วิเคราะห์การซ้อม</a>
-    <a href="/tools/race%20planner/">วางแผนแข่ง</a>
-  </nav>
 
-  <section class="hero">
+  <section class="hero" id="overview">
     <h1>วิเคราะห์การวิ่งของคุณ<br>ครบในที่เดียว</h1>
     <p>ใส่ไฟล์วิ่งจากนาฬิกา แล้วดูเส้นทาง วิเคราะห์การซ้อม หรือวางแผนแข่ง</p>
     <input type="search" id="tq" placeholder="ค้นหาเครื่องมือ เช่น ความชัน" aria-label="ค้นหาเครื่องมือ">
   </section>
 
-  <section class="box" aria-labelledby="hConn">
+  <section class="overview" aria-labelledby="hOverview">
+    <div class="section-head">
+      <div><h2 id="hOverview">ภาพรวมกิจกรรมล่าสุด</h2><p class="note">สรุปจากกิจกรรม Strava ล่าสุดของคุณ</p></div>
+    </div>
+    <div class="metrics is-loading" id="overviewMetrics" aria-live="polite" aria-busy="true">
+      <article class="metric"><span class="metric-label">ระยะทาง</span><p class="metric-value"><span id="overviewDistance">—</span> <span class="metric-unit">กม.</span></p></article>
+      <article class="metric"><span class="metric-label">เพซเฉลี่ย</span><p class="metric-value"><span id="overviewPace">—</span> <span class="metric-unit">นาที/กม.</span></p></article>
+      <article class="metric"><span class="metric-label">ไต่สะสม</span><p class="metric-value"><span id="overviewGain">—</span> <span class="metric-unit">ม.</span></p></article>
+    </div>
+    <p class="note overview-note" id="overviewNote">เชื่อมต่อ Strava เพื่อดูสถิติ หรือเลือกไฟล์กิจกรรมจากอุปกรณ์ของคุณ</p>
+    <div class="empty-cta" id="overviewEmpty" hidden>
+      <p class="note">ยังไม่มีสถิติกิจกรรมให้แสดง นำเข้าไฟล์ GPX/TCX เพื่อดูเส้นทางหรือวิเคราะห์การซ้อมได้ทันที</p>
+      <div class="empty-actions"><button class="pri" id="overviewImport">อิมพอร์ตไฟล์ GPX / TCX</button><a href="/tools/race%20planner/">ลองวางแผนแข่ง</a></div>
+    </div>
+  </section>
+
+  <section class="box" id="upload" aria-labelledby="hConn">
     <h2 id="hConn">เริ่มจากกิจกรรมของคุณ</h2>
     <p class="note" style="margin:-6px 0 12px">ขั้นที่ 1 ใส่ไฟล์วิ่ง · ขั้นที่ 2 เลือกสิ่งที่อยากดู</p>
     <div class="cgrid">
@@ -160,11 +302,12 @@ footer{border-top:1px solid var(--line);padding-top:16px;color:var(--mute);font-
   </section>
 
   <section class="box" id="recentSection" aria-labelledby="hRec" hidden>
-    <h2 id="hRec">กิจกรรมและเส้นทางล่าสุด</h2>
+    <div class="recent-title"><h2 id="hRec">กิจกรรมและเส้นทางล่าสุด</h2></div>
     <div id="recentBody"></div>
   </section>
 
   <footer>ไฟล์ของคุณถูกประมวลผลในเบราว์เซอร์ ไม่ถูกส่งไปที่อื่น ถ้าเข้าสู่ระบบ ประวัติการซ้อมและเส้นทางจะถูกเก็บไว้ในบัญชีของคุณ (Supabase) เพื่อเปิดดูได้จากทุกเครื่อง</footer>
+  </main>
 </div>
 
 <div id="login" class="modal" hidden><div class="mbox" role="dialog" aria-modal="true" aria-labelledby="lgT">
@@ -184,22 +327,39 @@ footer{border-top:1px solid var(--line);padding-top:16px;color:var(--mute);font-
   <p class="note" id="chooseToolHint"></p>
   <p class="note">เลือกว่าจะใช้ไฟล์นี้ทำอะไร (ชนิดการวิ่ง เช่น Tempo หรือ Long Run เลือกได้ในหน้าวิเคราะห์การซ้อม)</p>
   <div class="choose-tools">
-    <button id="chooseSlope"><b>แผนที่และแบ่งช่วง</b><br><span class="note">ดูเส้นทาง กราฟความสูง และตัดช่วงเอง</span></button>
-    <button id="chooseTraining"><b>วิเคราะห์การซ้อม</b><br><span class="note">ดูเพซ หัวใจ และอินเทอร์วัล</span></button>
-    <button id="choosePlanner"><b>วางแผนแข่ง</b><br><span class="note">วางแผนเพซและจุดเตือนจากเส้นทางสนาม</span></button>
+    <button id="chooseSlope"><span class="choose-tool-icon" data-ic="mount"></span><span class="choose-tool-copy"><b>แผนที่และแบ่งช่วง</b><span class="note">ดูเส้นทาง กราฟความสูง และตัดช่วงเอง</span></span></button>
+    <button id="chooseTraining"><span class="choose-tool-icon" data-ic="pulse"></span><span class="choose-tool-copy"><b>วิเคราะห์การซ้อม</b><span class="note">ดูเพซ หัวใจ และอินเทอร์วัล</span></span></button>
+    <button id="choosePlanner"><span class="choose-tool-icon" data-ic="flag"></span><span class="choose-tool-copy"><b>วางแผนแข่ง</b><span class="note">วางแผนเพซและจุดเตือนจากเส้นทางสนาม</span></span></button>
   </div>
   <button class="lnk" id="chooseToolCancel">ยกเลิก</button>
 </div></div>
 
+<script src="./shared-ui.js"></script>
 <script>
 const $=s=>document.querySelector(s);
+function syncModalScrollLock(){const open=!!document.querySelector(".modal:not([hidden])");document.documentElement.classList.toggle("modal-open",open);document.body.classList.toggle("modal-open",open)}
+const modalScrollObserver=new MutationObserver(syncModalScrollLock);
+document.querySelectorAll(".modal").forEach(modal=>modalScrollObserver.observe(modal,{attributes:true,attributeFilter:["hidden"]}));
+syncModalScrollLock();
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const P={mount:"M3 19l6-11 4 7 3-4 5 8z",upload:"M12 16V4m0 0L8 8m4-4l4 4M4 20h16",user:"M20 21a8 8 0 00-16 0M12 12a4 4 0 100-8 4 4 0 000 8z",out:"M9 4H5v16h4M16 8l4 4-4 4M20 12H9"};
+const P={mount:"M3 19l6-11 4 7 3-4 5 8z",upload:"M12 16V4m0 0L8 8m4-4l4 4M4 20h16",user:"M20 21a8 8 0 00-16 0M12 12a4 4 0 100-8 4 4 0 000 8z",out:"M9 4H5v16h4M16 8l4 4-4 4M20 12H9",home:"M3 10.5L12 3l9 7.5M5 9v12h14V9M9 21v-7h6v7",pulse:"M3 12h4l3-8 4 16 3-8h4",flag:"M5 21V4m0 0c5-4 9 4 14 0v11c-5 4-9-4-14 0",clock:"M12 8v4l3 2M21 12a9 9 0 11-18 0 9 9 0 0118 0z"};
 const ic=n=>'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+P[n]+'"/></svg>';
 const icons=root=>root.querySelectorAll("[data-ic]").forEach(b=>b.innerHTML=ic(b.dataset.ic));
 icons(document);
+$("#sideToggle").onclick=()=>{
+  const collapsed=$("#sideToggle").getAttribute("aria-expanded")==="true";
+  $(".wrap").classList.toggle("is-collapsed",collapsed);
+  $("#sideToggle").setAttribute("aria-expanded",String(!collapsed));
+  $("#sideToggle").setAttribute("aria-label",collapsed?"ขยายเมนู":"ยุบเมนู");
+  $("#sideToggle").title=collapsed?"ขยายเมนู":"ยุบเมนู";
+  $("#sideToggle").textContent=collapsed?"›":"‹";
+};
+document.querySelectorAll('.sidenav a[href^="#"]').forEach(a=>a.addEventListener("click",()=>{
+  document.querySelectorAll('.sidenav a[aria-current="page"]').forEach(x=>x.removeAttribute("aria-current"));
+  a.setAttribute("aria-current","page");
+}));
 function go(u){location.href=u}
-const setMsg=t=>{$("#msg").textContent=t||""};
+const setMsg=t=>window.RunsArtUI.report("#msg",t||"","info");
 
 /* ---- บัญชี ---- */
 const CFG=window.APP_CONFIG||{};
@@ -266,6 +426,7 @@ async function sendFiles(destination){
     sessionStorage.setItem("sharedActivityFile",JSON.stringify(imported[imported.length-1]));
     if(destination==="/tools/training%20analysis/")sessionStorage.setItem("sharedActivityFiles",JSON.stringify(imported));
     else sessionStorage.removeItem("sharedActivityFiles");
+    window.RunsArtUI.setFile(imported.length===1?imported[0].name:imported.length+" ไฟล์ (ล่าสุด: "+imported[imported.length-1].name+")");
     pendingFiles=[];$("#chooseTool").hidden=true;
     go(destination);
   }catch(e){setMsg("เก็บไฟล์ชั่วคราวไม่สำเร็จ ไฟล์อาจใหญ่เกินไป; เปิดเครื่องมือที่เลือกแล้วลองนำเข้าไฟล์จากในเครื่องมือนั้น")}
@@ -278,9 +439,11 @@ $("#chooseToolClose").onclick=$("#chooseToolCancel").onclick=closeToolChooser;
 $("#chooseTool").addEventListener("click",e=>{if(e.target.id==="chooseTool")closeToolChooser()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeToolChooser()});
 const drop=$("#drop");
-drop.addEventListener("dragover",e=>{e.preventDefault();drop.classList.add("over")});
-drop.addEventListener("dragleave",()=>drop.classList.remove("over"));
-drop.addEventListener("drop",e=>{e.preventDefault();drop.classList.remove("over");takeFiles(e.dataTransfer.files)});
+let dropDepth=0;
+drop.addEventListener("dragenter",e=>{e.preventDefault();dropDepth++;drop.classList.add("over")});
+drop.addEventListener("dragover",e=>{e.preventDefault();if(e.dataTransfer)e.dataTransfer.dropEffect="copy";drop.classList.add("over")});
+drop.addEventListener("dragleave",()=>{dropDepth=Math.max(0,dropDepth-1);if(!dropDepth)drop.classList.remove("over")});
+drop.addEventListener("drop",e=>{e.preventDefault();dropDepth=0;drop.classList.remove("over");takeFiles(e.dataTransfer.files)});
 drop.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();$("#file").click()}});
 $("#file").onchange=e=>{takeFiles(e.target.files);e.target.value=""};
 
@@ -296,6 +459,30 @@ function renderStrava(){
   const b=$("#stravaBox");
   b.innerHTML=STV==="connected"?'<p class="ok">เชื่อมต่อ Strava แล้ว</p><p class="note">เลือกกิจกรรมได้ในเครื่องมือหรือจากรายการล่าสุดด้านล่าง</p>':STV==="inactive"?'<p class="err">แอป Strava ถูกปิดใช้งาน ติดต่อเจ้าของแอปเพื่อแก้สถานะ</p>':'<button class="pri big" id="bStrava">เชื่อมต่อ Strava</button>';
 }
+function resetOverview(note){
+  $("#overviewMetrics").classList.remove("is-loading");
+  $("#overviewMetrics").setAttribute("aria-busy","false");
+  $("#overviewDistance").textContent="—";
+  $("#overviewPace").textContent="—";
+  $("#overviewGain").textContent="—";
+  $("#overviewNote").textContent=note;
+  $("#overviewEmpty").hidden=false;
+}
+function renderOverview(activity){
+  if(!activity){resetOverview("ยังไม่มีกิจกรรมจาก Strava ให้แสดง เชื่อมต่ออุปกรณ์หรือเลือกไฟล์กิจกรรมเพื่อเริ่มต้น");return}
+  $("#overviewMetrics").classList.remove("is-loading");
+  $("#overviewMetrics").setAttribute("aria-busy","false");
+  $("#overviewEmpty").hidden=true;
+  const distance=Number(activity.dist),speed=Number(activity.avgSpeed),gain=Number(activity.gain);
+  $("#overviewDistance").textContent=Number.isFinite(distance)?(distance/1000).toFixed(2):"—";
+  $("#overviewGain").textContent=Number.isFinite(gain)?Math.round(gain).toLocaleString("th-TH"):"—";
+  if(Number.isFinite(speed)&&speed>0){
+    const secondsPerKm=Math.round(1000/speed);
+    $("#overviewPace").textContent=Math.floor(secondsPerKm/60)+":"+String(secondsPerKm%60).padStart(2,"0");
+  }else $("#overviewPace").textContent="—";
+  const date=activity.date?new Date(activity.date).toLocaleDateString("th-TH"):"";
+  $("#overviewNote").textContent="กิจกรรมล่าสุด"+(activity.name?" · "+activity.name:"")+(date?" · "+date:"");
+}
 async function connectStrava(){
   if(!sb){setMsg("ต้องตั้งค่า Supabase ใน config.js ก่อน");return}
   if(!USER){openLogin("เข้าสู่ระบบก่อนจึงจะเชื่อม Strava ได้");return}
@@ -306,12 +493,18 @@ $("#stravaBox").addEventListener("click",e=>{if(e.target.closest("#bStrava"))con
 async function loadRecent(){
   const box=$("#recentBody"),uid=USER&&USER.id,request=++recentRequest;renderStrava();
   $("#recentSection").hidden=!uid;
-  if(!sb||!uid){box.innerHTML="";return}
+  $("#recentNav").hidden=!uid;
+  if(!sb||!uid){box.innerHTML="";resetOverview(sb?"เข้าสู่ระบบและเชื่อมต่อ Strava เพื่อดูสถิติกิจกรรม":"เชื่อมต่อ Strava เพื่อดูสถิติ หรือเลือกไฟล์กิจกรรมจากอุปกรณ์ของคุณ");return}
+  $("#overviewMetrics").classList.add("is-loading");
+  $("#overviewMetrics").setAttribute("aria-busy","true");
+  $("#overviewEmpty").hidden=true;
+  $("#overviewNote").textContent="กำลังโหลดกิจกรรมล่าสุด…";
   const isCurrent=()=>request===recentRequest&&USER&&USER.id===uid;
-  box.innerHTML='<div class="two"><div><h3>กิจกรรมล่าสุดจาก Strava</h3><div id="recAct" class="note">กำลังโหลด…</div></div><div><h3>เส้นทางที่บันทึกไว้</h3><div id="recRoutes" class="note">กำลังโหลด…</div></div></div>';
+  box.innerHTML='<div class="two"><div><h3>กิจกรรมล่าสุดจาก Strava</h3><div id="recAct" aria-label="กำลังโหลดกิจกรรม" aria-busy="true"><div class="skeleton-row" aria-hidden="true"><span class="skeleton-line"></span><span class="skeleton-line"></span></div><div class="skeleton-row" aria-hidden="true"><span class="skeleton-line"></span><span class="skeleton-line"></span></div></div></div><div><h3>เส้นทางที่บันทึกไว้</h3><div id="recRoutes" aria-label="กำลังโหลดเส้นทาง" aria-busy="true"><div class="skeleton-row" aria-hidden="true"><span class="skeleton-line"></span><span class="skeleton-line"></span></div><div class="skeleton-row" aria-hidden="true"><span class="skeleton-line"></span><span class="skeleton-line"></span></div></div></div></div>';
   const rr=$("#recRoutes"),ra=$("#recAct");
   const{data,error}=await sb.from("routes").select("id,name,data,created_at").order("created_at",{ascending:false}).limit(3);
   if(!isCurrent())return;
+  rr.setAttribute("aria-busy","false");
   rr.className="";
   if(error)rr.innerHTML='<p class="err">โหลดเส้นทางไม่สำเร็จ</p>';
   else if(!data.length)rr.innerHTML='<p class="note">ยังไม่มีเส้นทางที่บันทึกไว้ เปิดเครื่องมือความชันแล้วกดบันทึกได้เลย</p>';
@@ -319,14 +512,16 @@ async function loadRecent(){
   try{
     const r=await fetch("/api/strava-activities?limit=3",{headers:{Authorization:"Bearer "+SESS.access_token}});
     if(!isCurrent())return;
+    ra.setAttribute("aria-busy","false");
     ra.className="";
-    if(r.status===503){const j=await r.json();if(j.error==="strava_app_inactive"){STV="inactive";renderStrava();ra.innerHTML='<p class="err">แอป Strava ถูกปิดใช้งาน เจ้าของแอปต้องแก้สถานะใน Strava ก่อนจึงจะโหลดกิจกรรมได้</p>'}else ra.innerHTML='<p class="err">โหลดกิจกรรมไม่สำเร็จ ('+r.status+')</p>'}
-    else if(r.status===409){const j=await r.json();STV="none";renderStrava();ra.innerHTML='<p class="note" style="margin-bottom:8px">'+(j.error==="reconnect_strava"?"Strava ต้องการสิทธิ์อ่านกิจกรรมอีกครั้ง กรุณาเชื่อมต่อใหม่และกดอนุญาต":"ยังไม่ได้เชื่อมต่อ Strava")+'</p><button id="recConn">เชื่อมต่อ Strava ใหม่</button>'}
-    else if(!r.ok)ra.innerHTML='<p class="err">โหลดกิจกรรมไม่สำเร็จ ('+r.status+')</p>';
-    else{const a=await r.json();if(!isCurrent())return;STV="connected";renderStrava();ra.innerHTML=a.length?a.map(x=>'<a class="item" href="/tools/slope/?activity='+encodeURIComponent(x.id)+'&name='+encodeURIComponent(x.name)+'"><b>'+esc(x.name)+'</b><span>'+esc(new Date(x.date).toLocaleDateString("th-TH"))+' · '+((x.dist||0)/1000).toFixed(1)+' กม. · ขึ้น '+Math.round(x.gain||0)+' ม.</span></a>').join(""):'<p class="note">ยังไม่มีกิจกรรม</p>'}
-  }catch(_){ra.className="";ra.innerHTML='<p class="note">เรียก API ไม่ได้ ใช้ได้เมื่ออัปขึ้น Vercel แล้ว</p>'}
+    if(r.status===503){const j=await r.json();resetOverview("โหลดสถิติกิจกรรมไม่ได้ในตอนนี้");if(j.error==="strava_app_inactive"){STV="inactive";renderStrava();ra.innerHTML='<p class="err">แอป Strava ถูกปิดใช้งาน เจ้าของแอปต้องแก้สถานะใน Strava ก่อนจึงจะโหลดกิจกรรมได้</p>'}else ra.innerHTML='<p class="err">โหลดกิจกรรมไม่สำเร็จ ('+r.status+')</p>'}
+    else if(r.status===409){const j=await r.json();STV="none";renderStrava();resetOverview("เชื่อมต่อ Strava เพื่อดูสถิติกิจกรรมล่าสุด");ra.innerHTML='<p class="note" style="margin-bottom:8px">'+(j.error==="reconnect_strava"?"Strava ต้องการสิทธิ์อ่านกิจกรรมอีกครั้ง กรุณาเชื่อมต่อใหม่และกดอนุญาต":"ยังไม่ได้เชื่อมต่อ Strava")+'</p><button id="recConn">เชื่อมต่อ Strava ใหม่</button>'}
+    else if(!r.ok){resetOverview("โหลดสถิติกิจกรรมไม่สำเร็จ");ra.innerHTML='<p class="err">โหลดกิจกรรมไม่สำเร็จ ('+r.status+')</p>'}
+    else{const a=await r.json();if(!isCurrent())return;STV="connected";renderStrava();renderOverview(a[0]);ra.innerHTML=a.length?a.slice(0,3).map(x=>'<a class="item" href="/tools/slope/?activity='+encodeURIComponent(x.id)+'&name='+encodeURIComponent(x.name)+'"><b>'+esc(x.name)+'</b><span>'+esc(new Date(x.date).toLocaleDateString("th-TH"))+' · '+((x.dist||0)/1000).toFixed(1)+' กม. · ขึ้น '+Math.round(x.gain||0)+' ม.</span></a>').join(""):'<p class="note">ยังไม่มีกิจกรรม</p>'}
+  }catch(_){ra.setAttribute("aria-busy","false");ra.className="";resetOverview("เรียกข้อมูลกิจกรรมไม่ได้ในตอนนี้");ra.innerHTML='<p class="note">เรียก API ไม่ได้ ใช้ได้เมื่ออัปขึ้น Vercel แล้ว</p>'}
 }
 $("#recentBody").addEventListener("click",e=>{if(e.target.closest("#recConn"))connectStrava()});
+$("#overviewImport").onclick=()=>$("#file").click();
 
 let recentRequest=0;
 async function init(){

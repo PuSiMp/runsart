@@ -6,9 +6,9 @@
 <title>วางแผนแข่ง · RunsArt</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;700&display=swap">
 <style>
-:root{--bg:#eceee4;--panel:#fafaf4;--ink:#1b2a21;--mute:#667366;--line:#cdd3c3;--accent:#2c5a43;--onaccent:#f4f7ef;--field:#fff;--bad:#c4503f;--warn:#c9964a;--blue:#3b6fb5;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121a15;--panel:#1b2620;--ink:#e5ebdf;--mute:#93a095;--line:#33423a;--accent:#7fc29c;--onaccent:#102017;--field:#141d18;--bad:#e0705e;--warn:#e0b25a;--blue:#7fa8e0;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#121a15;--panel:#1b2620;--ink:#e5ebdf;--mute:#93a095;--line:#33423a;--accent:#7fc29c;--onaccent:#102017;--field:#141d18;--bad:#e0705e;--warn:#e0b25a;--blue:#7fa8e0;color-scheme:dark}
+:root{--bg:#eceee4;--panel:#fafaf4;--ink:#1b2a21;--mute:#667366;--line:#cdd3c3;--accent:#2c5a43;--onaccent:#f4f7ef;--field:#fff;--good:#087f5b;--warn:#8c6500;--bad:#c4503f;--blue:#3b6fb5;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121a15;--panel:#1b2620;--ink:#e5ebdf;--mute:#93a095;--line:#33423a;--accent:#7fc29c;--onaccent:#102017;--field:#141d18;--good:#7fc29c;--warn:#e0b25a;--bad:#e0705e;--blue:#7fa8e0;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#121a15;--panel:#1b2620;--ink:#e5ebdf;--mute:#93a095;--line:#33423a;--accent:#7fc29c;--onaccent:#102017;--field:#141d18;--good:#7fc29c;--warn:#e0b25a;--bad:#e0705e;--blue:#7fa8e0;color-scheme:dark}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -41,8 +41,27 @@ label>input,label>select,label>.tbox,label>output{margin-top:4px}
 [data-ic]{display:inline-flex;align-items:center;justify-content:center;line-height:0}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
 .row>label{width:160px}
-.drop{border:2px dashed var(--line);border-radius:12px;padding:12px 16px;display:flex;flex-direction:row;align-items:center;gap:10px;cursor:pointer;color:var(--mute);flex:1;min-width:240px;font-size:.9rem}
-.drop:hover,.drop.over{border-color:var(--accent)}
+.row>.water-field{width:240px}
+.water-field>label{display:block}
+.water-tags{display:flex;flex-wrap:wrap;align-items:center;gap:6px;min-height:42px;margin-top:4px;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--field);color:var(--ink)}
+.water-tags:focus-within{border-color:var(--accent);outline:2px solid color-mix(in srgb,var(--accent) 25%,transparent);outline-offset:1px}
+.water-tags.invalid{border-color:var(--bad)}
+.water-tags input{flex:1;min-width:80px;width:auto;min-height:30px;margin:0;padding:3px 4px;border:0;border-radius:0;background:transparent;outline:0}
+.water-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 7px;border-radius:999px;background:color-mix(in srgb,var(--accent) 12%,var(--panel));color:var(--ink);font-size:.78rem;line-height:1.4}
+.water-chip button{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;padding:0;border:0;border-radius:50%;background:transparent;color:var(--mute);font:inherit;line-height:1}
+.water-chip button:hover{background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--ink)}
+.water-hint{min-height:1.2em;margin-top:3px}
+.water-hint[aria-invalid="true"]{color:var(--bad)}
+.water-field input[hidden]{display:none}
+.form-group{border-top:1px solid color-mix(in srgb,var(--line) 75%,transparent);margin-top:14px;padding-top:12px}
+.form-heading{font-size:.78rem;font-weight:500;color:var(--mute);margin:0 0 8px}
+.mobile-actions{display:none}
+.drop{border:2px dashed var(--line);border-radius:12px;padding:12px 16px;display:flex;flex-direction:row;align-items:center;gap:10px;cursor:pointer;color:var(--mute);flex:1;min-width:240px;font-size:.9rem;transition:background-color .18s ease,border-color .18s ease,border-style .18s ease,box-shadow .18s ease,transform .18s ease}
+.drop:hover{border-color:var(--accent)}
+.drop.over{border:3px solid var(--accent);background:color-mix(in srgb,var(--accent) 13%,var(--panel));box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 16%,transparent);transform:translateY(-2px)}
+.drop.over strong{color:var(--accent)}
+.drop>span:first-child{transition:transform .18s ease}
+.drop.over>span:first-child{transform:translateY(-3px) scale(1.12);color:var(--accent)}
 .drop strong{color:var(--ink);font-weight:500}
 .hgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:14px}
 .hg{border-left:1px solid var(--line);padding-left:14px}
@@ -59,16 +78,27 @@ label>input,label>select,label>.tbox,label>output{margin-top:4px}
 .chips i{width:12px;height:12px;border-radius:50%;display:inline-block}
 .chips button.on{background:var(--accent);color:var(--onaccent);border-color:var(--accent)}
 .zoomtools{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:6px 0}
-.zoomtools button{min-width:34px;padding:4px 9px}
+.zoomtools #zoomOut,.zoomtools #zoomIn{display:inline-flex;align-items:center;justify-content:center;flex:none;width:44px;height:44px;min-width:44px;padding:0;border:1px solid var(--line);border-radius:50%;font-size:1.2rem;line-height:1;touch-action:manipulation;transition:background-color .15s ease,border-color .15s ease,color .15s ease,transform .15s ease}
+.zoomtools #zoomOut:hover,.zoomtools #zoomIn:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--panel));color:var(--accent)}
+.zoomtools #zoomOut:active,.zoomtools #zoomIn:active{background:color-mix(in srgb,var(--accent) 18%,var(--panel));transform:scale(.94)}
+.zoomtools #zoomOut:focus-visible,.zoomtools #zoomIn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .zoomtools input{flex:1;min-width:100px}
 .zoomlabel{font-size:.78rem;color:var(--mute);min-width:42px}
-svg.viz{width:100%;height:auto;display:block;touch-action:pan-y}
+svg.viz{width:100%;height:auto;display:block;touch-action:pan-x pan-y}
 .cw{position:relative}
-.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-size:.78rem;line-height:1.4;padding:5px 9px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-125%);z-index:2}
+.chart-scroll{min-width:0;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-color:var(--line) transparent}
+.empty-planner{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:18px}
+.empty-preview{width:min(100%,360px);height:auto;opacity:.62}
+.empty-copy{display:grid;gap:10px}
+.empty-copy h2{margin:0}
+.empty-copy p{max-width:620px}
+.empty-copy button{justify-self:start;min-height:44px}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-size:.78rem;line-height:1.4;padding:5px 9px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-125%);transition:transform .1s ease-out,opacity .15s ease,left .1s ease-out,top .1s ease-out;z-index:2}
+#chl{transition:transform .1s ease-out,opacity .15s ease-out}
 .leg{display:flex;gap:12px;flex-wrap:wrap;font-size:.76rem;color:var(--mute);margin-top:6px}
 .leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px}
-.slopebar{display:flex;width:100%;height:18px;overflow:hidden;border-radius:6px;background:var(--line);margin:8px 0}
-.slopebar span{min-width:2px;border-right:1px solid var(--panel)}
+.slopebar{display:flex;width:100%;height:18px;overflow:hidden;border-radius:99px;background:var(--line);margin:8px 0}
+.slopebar span{min-width:2px;border-right:3px solid var(--panel);cursor:help}
 .slopebar span:last-child{border-right:0}
 .rangelegend{display:flex;gap:10px 14px;flex-wrap:wrap;color:var(--mute);font-size:.76rem}
 .rangelegend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px}
@@ -78,10 +108,15 @@ svg.viz{width:100%;height:auto;display:block;touch-action:pan-y}
 table{width:100%;border-collapse:collapse;font-size:.84rem}
 th,td{text-align:left;padding:5px 7px;border-bottom:1px solid var(--line);white-space:nowrap}
 th{color:var(--mute);font-weight:500;font-size:.75rem;position:sticky;top:0;background:var(--panel)}
+.actual-table table{background:transparent}
+.actual-table th,.actual-table td{border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent)}
+.actual-table th{position:sticky;top:0;z-index:2;background:var(--panel)}
+.actual-table tbody tr:nth-child(even){background:color-mix(in srgb,var(--panel) 65%,var(--bg))}
+.actual-table tbody tr:hover{background:color-mix(in srgb,var(--accent) 7%,var(--panel))}
 td input,td select{padding:4px 6px;font-size:.82rem}
 tr.sel td{background:color-mix(in srgb,var(--accent) 12%,transparent)}
-.badge{display:inline-block;border-radius:99px;padding:1px 10px;font-size:.78rem;font-weight:500;color:#fff}
-.g-A{background:#3a9a5b}.g-B{background:#7aa83a}.g-C{background:#c9964a}.g-D{background:var(--bad)}
+.badge{display:inline-block;border-radius:99px;padding:1px 10px;font-size:.78rem;font-weight:500;color:var(--onaccent)}
+.g-A,.g-B{background:var(--good)}.g-C{background:var(--warn)}.g-D{background:var(--bad)}
 .band{width:100%}
 .two>.box{min-width:0}
 .band table{font-size:.8rem}
@@ -97,6 +132,21 @@ tr.sel td{background:color-mix(in srgb,var(--accent) 12%,transparent)}
   .band table{font-size:9pt}
   #bandTable{column-count:2;column-gap:10px}
 }
+@media(max-width:560px){
+  .row{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;align-items:stretch}
+  .row>label,.row>.water-field{width:100%;min-width:0}
+  .row input,.row select{min-height:44px}
+  .row button,.zoomtools button,.zoomtools input,.row select,.row input{min-height:44px}
+  .zoomtools{position:sticky;bottom:calc(8px + env(safe-area-inset-bottom,0px));z-index:10;padding:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 4px 16px #17211b1a}
+  .zoomtools input{min-width:80px}
+  .chart-scroll>svg.viz{width:700px;max-width:none}
+  .empty-planner{grid-template-columns:1fr}
+  .empty-preview{width:100%;max-height:150px}
+  .has-results main{padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))}
+  .mobile-actions{position:fixed;inset:auto 0 0;z-index:30;display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));background:color-mix(in srgb,var(--panel) 88%,transparent);border-top:1px solid var(--line);box-shadow:0 -4px 18px #17211b1a;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+  .mobile-actions .sbtn{flex:1;justify-content:center;gap:4px;min-height:48px;padding:0 6px;font-size:.78rem;white-space:nowrap}
+}
+@media(prefers-reduced-motion:reduce){.drop,.drop>span:first-child,.zoomtools #zoomOut,.zoomtools #zoomIn,.tip,#chl{transition:none}}
 </style>
 </head>
 <body>
@@ -112,14 +162,28 @@ tr.sel td{background:color-mix(in srgb,var(--accent) 12%,transparent)}
 <section class="box noprint">
   <div class="row">
     <label class="drop" id="drop" tabindex="0"><span data-ic="upload"></span><span><strong>ลากไฟล์เส้นทางแข่ง (.gpx / .tcx) มาวาง หรือคลิกเลือกไฟล์</strong><br><span class="note">ไฟล์จากผู้จัดงาน ต้องมีความสูง</span></span><input type="file" id="file" accept=".gpx,.tcx" hidden></label>
+  </div>
+  <section class="form-group" aria-labelledby="goalHeading">
+    <h2 class="form-heading" id="goalHeading">เป้าหมายเวลาและเพซ</h2>
+    <div class="row">
     <label>โหมดสนาม <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="อัตโนมัติเลือกเทรลเมื่อไต่ขึ้นตั้งแต่ 35 ม./กม. หรือมีช่วงชันตั้งแต่ 12% อย่างน้อย 8% ของระยะ; ไม่สามารถรู้พื้นผิวทางจริงจากไฟล์ความสูงได้ หากไม่ตรงให้เลือกถนนหรือเทรลเอง">ⓘ</span><select id="mode"><option value="auto">อัตโนมัติจากความสูง</option><option value="road">ถนน</option><option value="trail">เทรล</option></select></label>
     <label>กำหนดแผนจาก <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="เลือกเวลาจบเป้าหมายเพื่อคำนวณเพซทางราบที่ต้องทำ หรือเลือกเพซทางราบเพื่อให้ระบบประมาณเวลาเข้าเส้นชัย">ⓘ</span><select id="tsel"><option value="time">เวลาเข้าเส้นชัย</option><option value="pace">เพซทางราบ</option></select></label>
     <label id="lT">เวลาเป้าหมาย <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="เวลาที่ต้องการเข้าเส้นชัย ใช้ปรับเพซในแต่ละความชันให้เวลารวมตรงกับเป้าหมาย">ⓘ</span><span class="tbox"><input id="th" type="text" inputmode="numeric" maxlength="3" value="4" aria-label="ชั่วโมง" autocomplete="off"><span class="u">ชม.</span><input id="tm" type="text" inputmode="numeric" maxlength="2" value="00" aria-label="นาที" autocomplete="off"><span class="u">นาที</span><input id="ts" type="text" inputmode="numeric" maxlength="2" value="00" aria-label="วินาที" autocomplete="off"><span class="u">วิ</span></span></label>
     <label id="lF" hidden>เพซทางราบ (ต่อ กม.) <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="เพซสมมติบนทางราบ ก่อนระบบปรับเร็วหรือช้าตามความชันของเส้นทาง">ⓘ</span><span class="tbox"><input id="pm" type="text" inputmode="numeric" maxlength="2" value="5" aria-label="นาที" autocomplete="off"><span class="u">นาที</span><input id="ps" type="text" inputmode="numeric" maxlength="2" value="30" aria-label="วินาที" autocomplete="off"><span class="u">วิ</span></span></label>
-  </div>
-  <div class="row" style="margin-top:10px">
+    </div>
+  </section>
+  <section class="form-group" aria-labelledby="alertsHeading">
+    <h2 class="form-heading" id="alertsHeading">โภชนาการและการเตือน</h2>
+    <div class="row">
     <label>เตือนล่วงหน้า <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="จุดเตือนในไฟล์ส่งออกจะอยู่ก่อนจุดจริงตามระยะที่ตั้งไว้ เพื่อให้นาฬิกาเตือนก่อนถึงเนินหรือจุดให้น้ำ">ⓘ</span> <span><span id="offV">80</span> ม.</span><input type="range" id="off" min="50" max="100" step="5" value="80"></label>
-    <label style="width:240px">จุดให้น้ำ (กม. คั่นด้วยจุลภาค) <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="ระบุตำแหน่งจุดให้น้ำตามระยะทาง เช่น 5, 10, 15.5 ระบบจะเพิ่มเป็นจุดเตือนให้แก้ไขได้">ⓘ</span><input type="text" id="aid" placeholder="เช่น 5, 10, 15.5"></label>
+    <div class="water-field">
+      <label for="aidEntry">จุดให้น้ำ (กม.) <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="พิมพ์ระยะทางแล้วกดจุลภาคหรือ Enter เพื่อเพิ่มเป็นป้ายกำกับ ระบบจะเพิ่มเป็นจุดเตือนให้แก้ไขได้">ⓘ</span></label>
+      <div class="water-tags" id="aidTags" role="group" aria-label="จุดให้น้ำ">
+        <input type="text" id="aidEntry" inputmode="decimal" autocomplete="off" placeholder="เช่น 5, 10, 15.5" aria-describedby="aidHelp">
+      </div>
+      <input type="hidden" id="aid">
+      <p class="note water-hint" id="aidHelp" aria-live="polite">กดจุลภาคหรือ Enter เพื่อเพิ่มแต่ละระยะ</p>
+    </div>
     <label>กินเจลทุกกี่นาที (0 = ไม่ใช้) <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="วางจุดกินเจลตามเวลาสะสมของแผน แล้วแปลงเป็นตำแหน่งบนเส้นทาง">ⓘ</span><input type="number" id="gel" value="0" min="0" max="300" step="5"></label>
     <label>เกลือแร่ทุกกี่นาที (0 = ไม่ใช้) <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="วางจุดเตือนกินเกลือแร่ตามเวลาสะสมของแผน แล้วแปลงเป็นตำแหน่งบนเส้นทาง">ⓘ</span><input type="number" id="salt" value="0" min="0" max="300" step="5"></label>
     <button class="sbtn pri" id="bAuto"><span data-ic="spark"></span>สร้างจุดเตือนอัตโนมัติ</button>
@@ -128,10 +192,22 @@ tr.sel td{background:color-mix(in srgb,var(--accent) 12%,transparent)}
     <input type="file" id="planFile" accept=".json" hidden>
     <button class="sbtn" id="bReset">เริ่มใหม่</button>
   </div>
+  </section>
   <p class="err" id="err" role="alert"></p>
 </section>
 
-<div id="empty" class="box noprint"><p class="note">เริ่มยังไง: ① ใส่ไฟล์เส้นทางแข่ง (.gpx / .tcx ที่มีความสูง) ② ใส่เวลาเป้าหมาย ③ กด “สร้างจุดเตือนอัตโนมัติ” (ลากแก้ตำแหน่งบนกราฟหรือแผนที่ได้) ④ ส่งออกไปนาฬิกา หรือพิมพ์แถบเพซพกไปวันแข่ง ระบบจะบอกเพซของแต่ละช่วงตามความชัน เนินวิ่งช้าลง ทางลงเร็วขึ้น</p></div>
+<div id="empty" class="box noprint empty-planner">
+  <div class="empty-copy">
+    <h2>เริ่มวางแผนสนามของคุณ</h2>
+    <p class="note">นำเข้าไฟล์ GPX/TCX ที่มีข้อมูลความสูง แล้วตั้งเวลาเป้าหมาย ระบบจะช่วยวางเพซและจุดเตือนตามความชัน ปรับแผนต่อได้จากกราฟและแผนที่</p>
+    <button class="pri" id="emptyImport">เลือกไฟล์เส้นทาง GPX / TCX</button>
+  </div>
+  <svg class="empty-preview" viewBox="0 0 360 112" aria-hidden="true">
+    <path d="M8 92H352M8 58H352M8 24H352" fill="none" stroke="var(--line)" stroke-dasharray="3 6"/>
+    <path d="M8 82C38 77 48 32 78 46S124 91 151 68 194 24 222 44 260 88 284 63 323 48 352 18V100H8Z" fill="var(--accent)" fill-opacity=".08"/>
+    <path d="M8 82C38 77 48 32 78 46S124 91 151 68 194 24 222 44 260 88 284 63 323 48 352 18" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+  </svg>
+</div>
 
 <div id="res" hidden>
   <section class="box noprint"><div class="hgrid" id="hero"></div></section>
@@ -147,9 +223,9 @@ tr.sel td{background:color-mix(in srgb,var(--accent) 12%,transparent)}
       <span class="zoomlabel" id="zoomLabel">100%</span>
       <input type="range" id="zoomPan" min="0" max="1000" value="500" aria-label="เลื่อนตำแหน่งที่ซูม">
     </div>
-    <div class="cw"><svg class="viz" id="cv" viewBox="0 0 700 240" role="img" aria-label="กราฟความสูงของเส้นทาง"></svg><div class="tip" id="tip" hidden></div></div>
+    <div class="cw chart-scroll route-scroll"><svg class="viz" id="cv" viewBox="0 0 700 240" role="img" aria-label="กราฟความสูงของเส้นทาง"></svg><div class="tip" id="tip" hidden></div></div>
     <div class="leg" id="leg"></div>
-    <div class="cw" style="margin-top:12px"><svg class="viz" id="mv" viewBox="0 0 700 300" role="img" aria-label="แผนที่เส้นทาง"></svg></div>
+    <div class="cw chart-scroll route-scroll" style="margin-top:12px"><svg class="viz" id="mv" viewBox="0 0 700 300" role="img" aria-label="แผนที่เส้นทาง"></svg></div>
     <h2 style="margin-top:14px">ช่วงความชัน <span class="note" id="slopeRangeCount"></span> <span class="inf" tabindex="0" role="img" aria-label="คำอธิบาย" data-tip="ใช้ RDP แบบเดียวกับหน้าแผนที่/แบ่งช่วง โดยเก็บจุดที่ระดับความสูงเบี่ยงจากเส้นเชื่อมมากกว่าค่าคลาดเคลื่อน ค่าเริ่มต้นอิง 3% ของช่วงระดับสูงต่ำสุด และเพิ่มค่าอัตโนมัติเมื่อมีเกิน 30 ช่วง">ⓘ</span></h2>
     <label style="margin-top:8px">ความละเอียดการแบ่งช่วง: <span id="rangeTolValue">-</span><input type="range" id="rangeTol" min="1" max="150" step="1" value="10" aria-label="ความไวจุดเปลี่ยนความชัน"></label>
     <p class="note" style="margin:4px 0 8px">เลื่อนซ้าย = แบ่งช่วงละเอียดขึ้น · เลื่อนขวา = รวมช่วงที่ความชันใกล้กัน</p>
@@ -182,9 +258,15 @@ tr.sel td{background:color-mix(in srgb,var(--accent) 12%,transparent)}
     <label class="drop" id="adrop" tabindex="0" style="margin-bottom:10px"><span data-ic="upload"></span><span><strong>ลากไฟล์ที่วิ่งจริง (.gpx / .tcx) มาวาง หรือคลิกเลือกไฟล์</strong><br><span class="note">ต้องมีเวลาของแต่ละจุด ดาวน์โหลดได้จากนาฬิกาหรือ Strava (Export GPX)</span></span><input type="file" id="afile" accept=".gpx,.tcx" hidden></label>
     <div id="act"></div>
   </section>
+  <div class="mobile-actions noprint" role="group" aria-label="คำสั่งแผน">
+    <button class="sbtn" id="mobileSave" aria-label="บันทึกแผน"><span data-ic="down"></span>บันทึก</button>
+    <button class="sbtn pri" id="mobileGpx" aria-label="ดาวน์โหลด GPX"><span data-ic="down"></span>GPX</button>
+    <button class="sbtn pri" id="mobileTcx" aria-label="ดาวน์โหลด TCX"><span data-ic="down"></span>TCX</button>
+  </div>
 </div>
 </main>
 
+<script src="../../shared-ui.js"></script>
 <script>
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -192,7 +274,7 @@ const infoTip=t=>'<span class="inf" data-tip="'+esc(t)+'" tabindex="0" role="img
 const P={upload:"M12 16V4m0 0L8 8m4-4l4 4M4 20h16",down:"M12 4v12m0 0l-4-4m4 4l4-4M4 20h16",trash:"M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3",spark:"M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z",print:"M6 9V3h12v6M6 18H4v-7h16v7h-2M7 14h10v7H7z"};
 const ic=n=>'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+P[n]+'"/></svg>';
 const icons=r=>r.querySelectorAll("[data-ic]").forEach(b=>b.innerHTML=ic(b.dataset.ic));icons(document);
-const err=m=>{$("#err").textContent=m||""};
+const err=m=>window.RunsArtUI.report("#err",m||"");
 const fin=isFinite,clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const fmtDur=s=>{if(!fin(s))return"-";s=Math.round(s);const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return h+":"+String(m).padStart(2,"0")+":"+String(x).padStart(2,"0")};
 const fmtPace=s=>{if(!fin(s)||s<=0)return"-";let m=Math.floor(s/60),x=Math.round(s%60);if(x===60){m++;x=0}return m+":"+String(x).padStart(2,"0")};
@@ -414,6 +496,44 @@ function autoGen(){
 
 /* ============ สถานะ ============ */
 const S={course:null,plan:null,mode:"auto",tsel:"time",T:14400,fp:330,off:80,aid:[],gel:0,salt:0,wps:[],ranges:[],rangeTol:null,viewZoom:1,viewCenter:.5,autoAlertsEnabled:false,arm:null,sel:-1,actual:null,drag:null,hov:-1};
+let aidValues=[];
+function renderAidTags(){
+  const tags=$("#aidTags"),entry=$("#aidEntry");
+  tags.querySelectorAll(".water-chip").forEach(chip=>chip.remove());
+  aidValues.forEach((value,index)=>{
+    const chip=document.createElement("span");chip.className="water-chip";
+    const text=document.createElement("span");text.textContent=value+" กม.";
+    const remove=document.createElement("button");remove.type="button";remove.textContent="×";remove.setAttribute("aria-label","ลบจุดให้น้ำ "+value+" กม.");
+    remove.addEventListener("click",()=>{aidValues.splice(index,1);updateAidValues()});
+    chip.append(text,remove);tags.insertBefore(chip,entry);
+  });
+  $("#aid").value=aidValues.join(", ");
+}
+function updateAidValues(){
+  renderAidTags();
+  refreshAuto();
+}
+function commitAidEntry(all=false){
+  const entry=$("#aidEntry"),parts=entry.value.split(",");
+  if(!all&&parts.length===1)return;
+  const pending=all?parts:parts.slice(0,-1),remainder=all?"":parts[parts.length-1];
+  const invalid=[];
+  pending.forEach(part=>{
+    const token=part.trim();
+    if(!token)return;
+    if(!/^(?:\d+(?:\.\d*)?|\.\d+)$/.test(token)||!Number.isFinite(Number(token))||Number(token)<=0){invalid.push(token);return}
+    const value=Number(token);
+    if(!aidValues.includes(value))aidValues.push(value);
+  });
+  entry.value=[...invalid,remainder].filter(Boolean).join(", ");
+  const help=$("#aidHelp"),hasInvalid=invalid.length>0;
+  help.textContent=hasInvalid?"ระยะทางต้องเป็นตัวเลขมากกว่า 0 กม.":"กดจุลภาคหรือ Enter เพื่อเพิ่มแต่ละระยะ";
+  help.setAttribute("aria-invalid",String(hasInvalid));
+  entry.setAttribute("aria-invalid",String(hasInvalid));
+  $("#aidTags").classList.toggle("invalid",hasInvalid);
+  if(pending.some(part=>part.trim()))updateAidValues();
+  else renderAidTags();
+}
 function cfgNow(){return{mode:S.mode==="auto"&&S.course?courseMode(S.course).mode:S.mode,tsel:S.tsel,T:S.T,fp:S.fp}}
 function readInputs(){
   S.mode=$("#mode").value;S.tsel=$("#tsel").value;
@@ -431,10 +551,10 @@ function readInputs(){
 function replan(){if(!S.course)return;readInputs();S.plan=makePlan(S.course,cfgNow());renderAll()}
 function useCourse(pts,name){
   err("");
-  try{S.course=buildCourse(pts,name);S.rangeTol=null;S.ranges=[];S.viewZoom=1;S.viewCenter=.5;S.autoAlertsEnabled=false;S.wps=[];S.sel=-1;S.actual=null;readInputs();S.plan=makePlan(S.course,cfgNow());renderAll();persist()}
+  try{S.course=buildCourse(pts,name);S.rangeTol=null;S.ranges=[];S.viewZoom=1;S.viewCenter=.5;S.autoAlertsEnabled=false;S.wps=[];S.sel=-1;S.actual=null;readInputs();S.plan=makePlan(S.course,cfgNow());renderAll();persist();return true}
   catch(e){err(e.message==="noele"?"ไฟล์นี้ไม่มีข้อมูลความสูง วางแผนตามความชันไม่ได้":e.message==="short"?"เส้นทางสั้นเกินไป (ต้องยาวกว่า 500 ม.)":"อ่านไฟล์ไม่ได้ ไฟล์ต้องเป็น GPX หรือ TCX ที่มีพิกัด")}
 }
-function loadFile(text,name){try{useCourse(parseCourse(text,name),name.replace(/\.(gpx|tcx)$/i,""))}catch(e){err("อ่านไฟล์ไม่ได้ ไฟล์ต้องเป็น GPX หรือ TCX ที่มีพิกัด")}}
+function loadFile(text,name){try{if(useCourse(parseCourse(text,name),name.replace(/\.(gpx|tcx)$/i,"")))window.RunsArtUI.setFile(name)}catch(e){err("อ่านไฟล์ไม่ได้ ไฟล์ต้องเป็น GPX หรือ TCX ที่มีพิกัด")}}
 function readFileTo(f,cb){if(!f)return;const rd=new FileReader();rd.onload=()=>cb(rd.result,f.name);rd.readAsText(f)}
 
 /* ============ แสดงผล ============ */
@@ -462,7 +582,7 @@ function setZoom(zoom,anchor=S.viewCenter){
 }
 function renderAll(){
   const C=S.course,PL=S.plan;if(!C||!PL)return;
-  $("#empty").hidden=true;$("#res").hidden=false;
+  $("#empty").hidden=true;$("#res").hidden=false;document.body.classList.add("has-results");
   const OBV=["ระยะ","เวลาเข้าเส้นชัย","เพซเฉลี่ย","ขึ้นชัน 12%+","ขึ้น 3 ถึง 12%","ราบ","ลง","ทั้งหมด","น้ำ/เจล/เกลือแร่","เนิน/โพล","อันตราย"],cell=(l,v,d)=>'<div>'+l+(d&&!OBV.includes(l)?' '+infoTip(d):'')+'<strong>'+v+'</strong></div>',sp=splitsOf(C,PL),paces=sp.map(s=>s.pace);
   const segmentation=slopeRanges(C,S.rangeTol);S.ranges=segmentation.ranges;S.rangeTol=segmentation.tolerance;
   $("#rangeTol").value=S.rangeTol;$("#rangeTolValue").textContent=S.rangeTol+" ม.";
@@ -512,7 +632,7 @@ function drawChartBase(){
   for(const e of[lo+pad,(lo+hi)/2,hi-pad])h+='<text x="'+(CL-5)+'" y="'+(Y(e)+4)+'" text-anchor="end" font-size="11" fill="var(--mute)">'+Math.round(e)+'</text>';
   const kmStep=(m1-m0)/1000>30?5:(m1-m0)/1000>12?2:1,first=Math.ceil(m0/1000/kmStep)*kmStep;
   for(let k=first;k*1000<=m1;k+=kmStep)h+='<text x="'+X(k*1000)+'" y="'+(CH-6)+'" text-anchor="middle" font-size="11" fill="var(--mute)">'+k+'</text>';
-  h+='<g id="cmk"></g><line id="chl" y1="'+CT+'" y2="'+base+'" stroke="var(--ink)" stroke-opacity=".5" stroke-dasharray="2 3" visibility="hidden"/><circle id="cdot" r="4.5" fill="var(--panel)" stroke="var(--ink)" stroke-width="2.5" visibility="hidden"/>';
+  h+='<g id="cmk"></g><line id="chl" x1="0" x2="0" y1="'+CT+'" y2="'+base+'" stroke="var(--ink)" stroke-opacity=".5" stroke-dasharray="2 3" visibility="hidden"/><circle id="cdot" r="4.5" fill="var(--panel)" stroke="var(--ink)" stroke-width="2.5" visibility="hidden"/>';
   $("#cv").innerHTML=h;S.cx={X,Y,base,lo,hi,m0,m1};
 }
 function drawMapBase(){
@@ -551,7 +671,7 @@ function setHover(i){
   const C=S.course,cx=S.cx,mx=S.mx;if(!C||!cx)return;
   if(i==null||i<0||i*C.step<cx.m0||i*C.step>cx.m1){for(const id of["#chl","#cdot","#mdot"])$(id).setAttribute("visibility","hidden");$("#tip").hidden=true;return}
   const x=cx.X(i*C.step),y=cx.Y(C.ele[i]);
-  $("#chl").setAttribute("x1",x);$("#chl").setAttribute("x2",x);$("#chl").setAttribute("visibility","visible");
+  $("#chl").setAttribute("transform","translate("+x+" 0)");$("#chl").setAttribute("visibility","visible");
   $("#cdot").setAttribute("cx",x);$("#cdot").setAttribute("cy",y);$("#cdot").setAttribute("visibility","visible");
   $("#mdot").setAttribute("cx",mx.MX(i));$("#mdot").setAttribute("cy",mx.MY(i));$("#mdot").setAttribute("visibility","visible");
   const tip=$("#tip"),r=$("#cv").getBoundingClientRect(),w=$("#cv").parentNode.getBoundingClientRect();
@@ -616,6 +736,10 @@ function bindViz(svg,getM,getI){
 }
 bindViz($("#cv"),e=>chartM(e));
 bindViz($("#mv"),e=>mapIdx(e).i*S.course.step);
+const routeScrolls=document.querySelectorAll(".route-scroll");
+routeScrolls.forEach(el=>el.addEventListener("scroll",()=>{
+  routeScrolls.forEach(other=>{if(other!==el&&Math.abs(other.scrollLeft-el.scrollLeft)>1)other.scrollLeft=el.scrollLeft});
+},{passive:true}));
 $("#zoomIn").addEventListener("click",()=>setZoom(S.viewZoom*1.5));
 $("#zoomOut").addEventListener("click",()=>setZoom(S.viewZoom/1.5));
 $("#zoomReset").addEventListener("click",()=>{S.viewZoom=1;S.viewCenter=.5;if(S.course)renderAll()});
@@ -696,10 +820,10 @@ function renderActual(){
   const box=$("#act");if(!S.actual){box.innerHTML='<p class="note">ยังไม่ได้เลือกไฟล์ที่วิ่งจริง</p>';return}
   const R=actualOf(S.actual),PL=S.plan,gr=gradeOf(R.score),W=700,H=150,max=Math.max(8,...R.rows.map(r=>Math.abs(r.dev))),bw=(W-30)/R.rows.length;
   let svg='<svg viewBox="0 0 700 150" class="viz" role="img" aria-label="ส่วนต่างเพซรายกิโลเมตรเทียบแผน"><line x1="20" x2="690" y1="75" y2="75" stroke="var(--line)"/>';
-  R.rows.forEach((r,i)=>{const h=Math.abs(r.dev)/max*60,x=20+i*bw;svg+='<rect x="'+(x+1)+'" y="'+(r.dev>0?75:75-h)+'" width="'+Math.max(1,bw-2)+'" height="'+Math.max(1,h)+'" fill="'+(r.dev>0?"var(--bad)":"#3a9a5b")+'" fill-opacity="'+(r.partial?.4:.85)+'"/>'});
+  R.rows.forEach((r,i)=>{const h=Math.abs(r.dev)/max*60,x=20+i*bw;svg+='<rect x="'+(x+1)+'" y="'+(r.dev>0?75:75-h)+'" width="'+Math.max(1,bw-2)+'" height="'+Math.max(1,h)+'" fill="'+(r.dev>0?"var(--bad)":"var(--good)")+'" fill-opacity="'+(r.partial?.4:.85)+'"/>'});
   svg+='<text x="22" y="12" font-size="11" fill="var(--mute)">ช้ากว่าแผน</text><text x="22" y="146" font-size="11" fill="var(--mute)">เร็วกว่าแผน (แท่งแต่ละอันคือ 1 กม.)</text></svg>';
   const d=R.finish-PL.T;
-  box.innerHTML='<div class="hgrid" style="margin-bottom:12px"><div class="hg"><div class="hl2">คะแนนวินัยการคุมเพซ '+infoTip("คะแนน 0–100 หัก 4 คะแนนต่อส่วนต่างเพซเฉลี่ย 1%; คิดจากกิโลเต็มและนับทั้งเร็วหรือช้ากว่าแผน")+'</div><div class="stats"><div>คะแนน '+infoTip("เกรด A–D แบ่งตามคะแนน: A ตั้งแต่ 85, B ตั้งแต่ 70, C ตั้งแต่ 55 และ D ต่ำกว่า 55")+'<strong><span class="badge g-'+gr+'">'+gr+'</span> '+R.score+'</strong></div><div>ส่วนต่างเฉลี่ย '+infoTip("ค่าเฉลี่ยค่าสัมบูรณ์ของเปอร์เซ็นต์ต่างเพซรายกิโลเมตร ไม่หักล้างกันระหว่างเร็วและช้า")+'<strong>'+R.mape.toFixed(1)+'%</strong></div></div></div><div class="hg"><div class="hl2">เวลา '+infoTip("เวลาจริงคำนวณจากเวลาของแต่ละจุดใน GPX/TCX และเทียบกับเวลาเข้าเส้นชัยตามแผน")+'</div><div class="stats"><div>แผน<strong>'+fmtDur(PL.T)+'</strong></div><div>จริง<strong>'+fmtDur(R.finish)+' ('+(d>=0?"+":"−")+fmtDur(Math.abs(d))+')</strong></div></div></div><div class="hg"><div class="hl2">จุดที่เพซตก (Fade) '+infoTip("แสดงเมื่อช่วงท้ายเฉลี่ยช้าลงตามเกณฑ์เทียบกับช่วงต้น และระบุจุดเริ่มที่เพซช้ากว่าแผนต่อเนื่อง")+'</div><div class="stats"><div>เริ่มตกที่<strong>'+(R.fade?"กม. "+R.fade.km:"ไม่พบ")+'</strong></div><div>ช่วงท้ายช้ากว่าแผน<strong>'+(R.fade?R.fade.avg.toFixed(0)+"%":"-")+'</strong></div></div></div><div class="hg"><div class="hl2">ระยะ GPS '+infoTip("ระยะ GPS ที่วัดได้เทียบกับระยะเส้นทาง แล้วปรับสัดส่วนระยะจริงให้เท่ากับเส้นทางก่อนแบ่งสปลิต")+'</div><div class="stats"><div>ที่วัดได้/ในแผน<strong>'+(R.scale*C_L()/1000).toFixed(2)+" / "+(C_L()/1000).toFixed(2)+' กม.</strong></div></div></div></div>'+svg+'<div class="tw" style="max-height:300px"><table><tr><th>กม. '+infoTip("ลำดับช่วงหนึ่งกิโลเมตรจากจุดเริ่ม; แถวสุดท้ายอาจเป็นระยะไม่เต็มกิโลเมตร")+'</th><th>เพซแผน '+infoTip("เวลาแผนในช่วงหารด้วยระยะทางของช่วง")+'</th><th>เพซจริง '+infoTip("เวลาจริงที่อ่านจากจุด GPS ในช่วงหารด้วยระยะทาง")+'</th><th>ต่าง '+infoTip("เปอร์เซ็นต์ที่เพซจริงช้าหรือเร็วกว่าแผน; ค่าบวกหมายถึงช้ากว่า")+'</th><th>เวลาเสียสะสม '+infoTip("เวลาจริงสะสมลบเวลาแผนสะสม ณ ปลายช่วง")+'</th></tr>'+R.rows.map(r=>'<tr><td>'+r.k+(r.partial?" (ส่วนท้าย)":"")+'</td><td>'+fmtPace(r.plan)+'</td><td>'+fmtPace(r.act)+'</td><td style="color:'+(r.dev>2?"var(--bad)":r.dev<-2?"#3a9a5b":"inherit")+'">'+(r.dev>=0?"+":"")+r.dev.toFixed(1)+'%</td><td>'+(r.cum>=0?"+":"−")+fmtDur(Math.abs(r.cum))+'</td></tr>').join("")+'</table></div><p class="note" style="margin-top:6px">ระยะจริงจาก GPS ถูกปรับสัดส่วนให้เท่ากับระยะเส้นทางก่อนเทียบ เพราะ GPS วัดได้ยาวสั้นต่างจากสนามเล็กน้อย</p>';
+  box.innerHTML='<div class="hgrid" style="margin-bottom:12px"><div class="hg"><div class="hl2">คะแนนวินัยการคุมเพซ '+infoTip("คะแนน 0–100 หัก 4 คะแนนต่อส่วนต่างเพซเฉลี่ย 1%; คิดจากกิโลเต็มและนับทั้งเร็วหรือช้ากว่าแผน")+'</div><div class="stats"><div>คะแนน '+infoTip("เกรด A–D แบ่งตามคะแนน: A ตั้งแต่ 85, B ตั้งแต่ 70, C ตั้งแต่ 55 และ D ต่ำกว่า 55")+'<strong><span class="badge g-'+gr+'">'+gr+'</span> '+R.score+'</strong></div><div>ส่วนต่างเฉลี่ย '+infoTip("ค่าเฉลี่ยค่าสัมบูรณ์ของเปอร์เซ็นต์ต่างเพซรายกิโลเมตร ไม่หักล้างกันระหว่างเร็วและช้า")+'<strong>'+R.mape.toFixed(1)+'%</strong></div></div></div><div class="hg"><div class="hl2">เวลา '+infoTip("เวลาจริงคำนวณจากเวลาของแต่ละจุดใน GPX/TCX และเทียบกับเวลาเข้าเส้นชัยตามแผน")+'</div><div class="stats"><div>แผน<strong>'+fmtDur(PL.T)+'</strong></div><div>จริง<strong>'+fmtDur(R.finish)+' ('+(d>=0?"+":"−")+fmtDur(Math.abs(d))+')</strong></div></div></div><div class="hg"><div class="hl2">จุดที่เพซตก (Fade) '+infoTip("แสดงเมื่อช่วงท้ายเฉลี่ยช้าลงตามเกณฑ์เทียบกับช่วงต้น และระบุจุดเริ่มที่เพซช้ากว่าแผนต่อเนื่อง")+'</div><div class="stats"><div>เริ่มตกที่<strong>'+(R.fade?"กม. "+R.fade.km:"ไม่พบ")+'</strong></div><div>ช่วงท้ายช้ากว่าแผน<strong>'+(R.fade?R.fade.avg.toFixed(0)+"%":"-")+'</strong></div></div></div><div class="hg"><div class="hl2">ระยะ GPS '+infoTip("ระยะ GPS ที่วัดได้เทียบกับระยะเส้นทาง แล้วปรับสัดส่วนระยะจริงให้เท่ากับเส้นทางก่อนแบ่งสปลิต")+'</div><div class="stats"><div>ที่วัดได้/ในแผน<strong>'+(R.scale*C_L()/1000).toFixed(2)+" / "+(C_L()/1000).toFixed(2)+' กม.</strong></div></div></div></div>'+svg+'<div class="tw actual-table" style="max-height:300px"><table><tr><th>กม. '+infoTip("ลำดับช่วงหนึ่งกิโลเมตรจากจุดเริ่ม; แถวสุดท้ายอาจเป็นระยะไม่เต็มกิโลเมตร")+'</th><th>เพซแผน '+infoTip("เวลาแผนในช่วงหารด้วยระยะทางของช่วง")+'</th><th>เพซจริง '+infoTip("เวลาจริงที่อ่านจากจุด GPS ในช่วงหารด้วยระยะทาง")+'</th><th>ต่าง '+infoTip("เปอร์เซ็นต์ที่เพซจริงช้าหรือเร็วกว่าแผน; ค่าบวกหมายถึงช้ากว่า")+'</th><th>เวลาเสียสะสม '+infoTip("เวลาจริงสะสมลบเวลาแผนสะสม ณ ปลายช่วง")+'</th></tr>'+R.rows.map(r=>'<tr><td>'+r.k+(r.partial?" (ส่วนท้าย)":"")+'</td><td>'+fmtPace(r.plan)+'</td><td>'+fmtPace(r.act)+'</td><td style="color:'+(r.dev>5?"var(--bad)":"var(--mute)")+'">'+(r.dev>=0?"+":"")+r.dev.toFixed(1)+'%</td><td>'+(r.cum>=0?"+":"−")+fmtDur(Math.abs(r.cum))+'</td></tr>').join("")+'</table></div><p class="note" style="margin-top:6px">ระยะจริงจาก GPS ถูกปรับสัดส่วนให้เท่ากับระยะเส้นทางก่อนเทียบ เพราะ GPS วัดได้ยาวสั้นต่างจากสนามเล็กน้อย</p>';
 }
 const C_L=()=>S.course.L;
 function takeActual(text,name){try{S.actual=parseActual(text,name);err("");renderActual()}catch(e){err("อ่านไฟล์ที่วิ่งจริงไม่ได้ ต้องเป็น GPX หรือ TCX ที่มีเวลาของแต่ละจุด")}}
@@ -720,23 +844,27 @@ function restore(o){
     S.ranges=[];S.viewZoom=1;S.viewCenter=.5;
     S.rangeTol=Number.isFinite(+o.slopeTolerance)&&+o.slopeTolerance>=1&&+o.slopeTolerance<=150?+o.slopeTolerance:null;
     S.mode=o.mode==="trail"||o.mode==="road"?o.mode:"auto";S.tsel=o.tsel==="pace"?"pace":"time";S.T=o.T||14400;S.fp=o.fp||330;S.off=o.off||80;S.aid=o.aid||[];S.gel=o.v>=2?o.gelMinutes||0:0;S.salt=o.v>=3?o.saltMinutes||0:0;
-    $("#mode").value=S.mode;$("#tsel").value=S.tsel;setTT(S.T);setFP(S.fp);$("#off").value=S.off;$("#aid").value=S.aid.join(", ");$("#gel").value=S.gel;$("#salt").value=S.salt;
+    $("#mode").value=S.mode;$("#tsel").value=S.tsel;setTT(S.T);setFP(S.fp);$("#off").value=S.off;aidValues=S.aid.map(Number).filter(x=>Number.isFinite(x)&&x>0);renderAidTags();$("#gel").value=S.gel;$("#salt").value=S.salt;
     S.wps=(o.wps||[]).filter(w=>TYPES[w.type]).map(w=>({id:++uid,m:w.m,type:w.type,text:w.text||"",auto:!!w.auto}));S.autoAlertsEnabled=!!o.autoAlertsEnabled||S.wps.some(w=>w.auto);S.sel=-1;S.actual=null;
     readInputs();S.plan=makePlan(S.course,cfgNow());
     if(o.v<2){
       if(Number(o.gel)>0){S.gel=Math.round(Number(o.gel)*(S.plan.T/(S.course.L/1000))/300)*5;$("#gel").value=S.gel}
     }
     if(S.autoAlertsEnabled)autoGen();
-    renderAll();persist();return true;
+    renderAll();persist();window.RunsArtUI.setFile(o.name||"แผนที่บันทึกไว้");return true;
   }catch(_){return false}
 }
 $("#bSavePlan").onclick=()=>{if(!S.course){err("ยังไม่มีแผนให้บันทึก นำเข้าไฟล์เส้นทางก่อน");return}download(S.course.name.replace(/[^\w\u0E00-\u0E7F-]+/g,"_")+"_plan.json",JSON.stringify(planJSON()),"application/json")};
+$("#mobileSave").onclick=()=>$("#bSavePlan").click();
+$("#mobileGpx").onclick=()=>$("#bGpx").click();
+$("#mobileTcx").onclick=()=>$("#bTcx").click();
 $("#bLoadPlan").onclick=()=>$("#planFile").click();
+$("#emptyImport").onclick=()=>$("#file").click();
 $("#planFile").onchange=e=>{readFileTo(e.target.files[0],text=>{try{if(!restore(JSON.parse(text)))throw 0;err("");persist()}catch(_){err("เปิดไฟล์แผนไม่ได้")}});e.target.value=""};
-$("#bReset").onclick=()=>{try{localStorage.removeItem(LSK)}catch(_){}S.course=null;S.plan=null;S.wps=[];S.rangeTol=null;S.viewZoom=1;S.viewCenter=.5;S.actual=null;S.sel=-1;$("#res").hidden=true;$("#empty").hidden=false;err("")};
+$("#bReset").onclick=()=>{try{localStorage.removeItem(LSK)}catch(_){}S.course=null;S.plan=null;S.wps=[];S.rangeTol=null;S.viewZoom=1;S.viewCenter=.5;S.actual=null;S.sel=-1;$("#res").hidden=true;$("#empty").hidden=false;document.body.classList.remove("has-results");window.RunsArtUI.clearFile();err("")};
 
 /* ============ ปุ่มและช่องกรอก ============ */
-const drop=(el,inp,cb)=>{el.addEventListener("dragover",e=>{e.preventDefault();el.classList.add("over")});el.addEventListener("dragleave",()=>el.classList.remove("over"));el.addEventListener("drop",e=>{e.preventDefault();el.classList.remove("over");readFileTo(e.dataTransfer.files[0],cb)});el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();inp.click()}});inp.onchange=e=>{readFileTo(e.target.files[0],cb);e.target.value=""}};
+const drop=(el,inp,cb)=>{let depth=0;el.addEventListener("dragenter",e=>{e.preventDefault();depth++;el.classList.add("over")});el.addEventListener("dragover",e=>{e.preventDefault();if(e.dataTransfer)e.dataTransfer.dropEffect="copy";el.classList.add("over")});el.addEventListener("dragleave",()=>{depth=Math.max(0,depth-1);if(!depth)el.classList.remove("over")});el.addEventListener("drop",e=>{e.preventDefault();depth=0;el.classList.remove("over");readFileTo(e.dataTransfer.files[0],cb)});el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();inp.click()}});inp.onchange=e=>{readFileTo(e.target.files[0],cb);e.target.value=""}};
 drop($("#drop"),$("#file"),loadFile);drop($("#adrop"),$("#afile"),takeActual);
 function refreshAuto(){
   if(!S.course){readInputs();return}
@@ -745,7 +873,10 @@ function refreshAuto(){
 ["#mode","#tsel"].forEach(id=>$(id).addEventListener("change",refreshAuto));
 ["#th","#tm","#ts","#pm","#ps"].forEach(id=>{const el=$(id);el.addEventListener("focus",()=>el.select());el.addEventListener("input",()=>{el.value=el.value.replace(/\D/g,"")});el.addEventListener("change",()=>{refreshAuto();setTT(S.T);setFP(S.fp)})});
 $("#off").addEventListener("input",()=>{readInputs();persist()});
-$("#aid").addEventListener("change",refreshAuto);$("#gel").addEventListener("change",refreshAuto);$("#salt").addEventListener("change",refreshAuto);
+$("#aidEntry").addEventListener("keydown",e=>{if(e.key===","){e.preventDefault();$("#aidEntry").value+=",";commitAidEntry()}else if(e.key==="Enter"){e.preventDefault();commitAidEntry(true)}else if(e.key==="Backspace"&&!e.currentTarget.value&&aidValues.length){aidValues.pop();updateAidValues()}});
+$("#aidEntry").addEventListener("input",()=>commitAidEntry());
+$("#aidEntry").addEventListener("blur",()=>{if($("#aidEntry").value.trim())commitAidEntry(true)});
+$("#gel").addEventListener("change",refreshAuto);$("#salt").addEventListener("change",refreshAuto);
 $("#rangeTol").addEventListener("input",e=>{if(!S.course)return;S.rangeTol=+e.target.value;renderAll();persist()});
 $("#bAuto").onclick=()=>{if(!S.course){err("นำเข้าไฟล์เส้นทางก่อน");return}S.autoAlertsEnabled=true;refreshAuto()};
 
