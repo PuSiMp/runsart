@@ -134,9 +134,9 @@ th{color:var(--mute);font-weight:500;font-size:.78rem}
 .gbtn:hover{background:color-mix(in srgb,var(--accent) 18%,var(--panel));border-color:var(--accent)}
 .glogo{display:block;flex:none;width:20px;height:20px}
 .account-open{align-self:center;text-decoration:none;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.strava-btn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;height:42px;padding:8px 12px;background:color-mix(in srgb,#fc4c02 10%,var(--panel));border-color:color-mix(in srgb,#fc4c02 36%,var(--line));color:var(--ink);font-weight:500}
+.strava-btn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-width:0;height:42px;padding:8px 12px;overflow:hidden;background:color-mix(in srgb,#fc4c02 10%,var(--panel));border-color:color-mix(in srgb,#fc4c02 36%,var(--line));color:var(--ink);font-weight:500}
 .strava-btn:hover{background:color-mix(in srgb,#fc4c02 16%,var(--panel));border-color:#fc4c02}
-.strava-logo{display:block;flex:none;width:20px;height:20px;color:#fc4c02}
+.strava-logo{display:block;flex:0 0 18px;width:18px;height:18px;max-width:18px;overflow:hidden;color:#fc4c02}
 .lnk{border:0;background:none;color:var(--accent);text-decoration:underline;padding:0;align-self:flex-start}
 .crumbs{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
 .back{color:var(--accent);text-decoration:none;font-size:.9rem;white-space:nowrap}
@@ -163,7 +163,7 @@ th{color:var(--mute);font-weight:500;font-size:.78rem}
   <div class="shd" style="margin:0"><strong id="lgT">เข้าสู่ระบบ</strong><button class="ib" id="lgX" data-tip="ปิด" aria-label="ปิด">×</button></div>
   <div class="tabs2"><button id="tIn" class="on">เข้าสู่ระบบ</button><button id="tUp">สมัครสมาชิก</button></div>
   <button id="gBtn" class="gbtn" hidden><svg class="glogo" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.74 7.18l7.73 6C44.43 37.93 46.98 31.7 46.98 24.55z"/><path fill="#FBBC05" d="M10.53 28.59A14.4 14.4 0 0 1 9.75 24c0-1.59.27-3.13.76-4.59l-7.98-6.19A23.9 23.9 0 0 0 0 24c0 3.87.93 7.55 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.91-5.8l-7.73-6c-2.14 1.45-4.89 2.3-8.18 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>เข้าด้วย Google</button>
-  <button id="stravaBtn" class="strava-btn" hidden><svg class="strava-logo" viewBox="0 0 40 40" aria-hidden="true"><path fill="currentColor" d="M15.7 2 0 32h10.2l5.5-10.6L21.2 32h10.2L15.7 2zm14.1 19.3L24.2 32h12.1l-6.5-10.7z"/></svg>เชื่อมต่อด้วย Strava</button>
+  <button id="stravaBtn" class="strava-btn" hidden><svg class="strava-logo" viewBox="0 0 38 34" aria-hidden="true"><path fill="currentColor" d="M15.7 2 0 32h10.2l5.5-10.6L21.2 32h10.2L15.7 2zm14.1 19.3L24.2 32h12.1l-6.5-10.7z"/></svg>เชื่อมต่อด้วย Strava</button>
   <label>อีเมล<input type="text" id="email" autocomplete="email" inputmode="email" placeholder="you@example.com"></label>
   <label id="pwL">รหัสผ่าน (อย่างน้อย 6 ตัว)<input type="password" id="pw" autocomplete="current-password"></label>
   <button type="button" class="lnk" id="pwShow">แสดงรหัสผ่าน</button>
@@ -701,20 +701,18 @@ $("#login").addEventListener("click",e=>{if(e.target.id==="login")$("#login").hi
 document.addEventListener("keydown",e=>{if(e.key==="Escape")$("#login").hidden=true});
 $("#pwShow").onclick=()=>{const p=$("#pw"),on=p.type==="password";p.type=on?"text":"password";$("#pwShow").textContent=on?"ซ่อนรหัสผ่าน":"แสดงรหัสผ่าน"};
 $("#accountOut").onclick=async()=>{const{error}=await sb.auth.signOut();if(error)$("#loginMsg").textContent="ออกจากระบบไม่สำเร็จ: "+error.message};
-const PENDING_STRAVA="runsart.pendingStrava";
 async function connectStrava(){
   const report=t=>{if($("#login").hidden)$("#stvMsg").textContent=t;else $("#loginMsg").textContent=t};
   if(!sb){report("ต้องตั้งค่า Supabase ก่อนจึงจะเชื่อม Strava ได้");return}
-  if(!USER){sessionStorage.setItem(PENDING_STRAVA,location.pathname);setMode("in");report("เข้าสู่ระบบก่อน แล้วจะพาไปเชื่อมต่อ Strava ต่อ");return}
+  if(!USER){setMode("in");report("เชื่อมต่อ Strava ต้องเข้าสู่ระบบ RunsArt ก่อน (เลือก Google หรืออีเมลได้) จากนั้นเปิดบัญชีด้านบนแล้วกดเชื่อมต่อ Strava อีกครั้ง");return}
   report("กำลังไปยัง Strava…");
   try{
     const r=await fetch("/api/strava-connect?back="+encodeURIComponent(location.pathname),{headers:{Authorization:"Bearer "+SESS.access_token}});
     const j=await r.json();
     if(!r.ok||!j.url){report(j.message||"เชื่อมต่อไม่ได้ ตรวจค่า Environment Variables บน Vercel");return}
-    sessionStorage.removeItem(PENDING_STRAVA);location.href=j.url;
+    location.href=j.url;
   }catch(_){report("เรียก API ไม่ได้ ตรวจการตั้งค่า Strava บน Vercel")}
 }
-function resumeStravaConnect(){if(USER&&sessionStorage.getItem(PENDING_STRAVA)===location.pathname){sessionStorage.removeItem(PENDING_STRAVA);connectStrava()}}
 $("#stravaBtn").onclick=connectStrava;
 $("#tIn").onclick=()=>setMode("in");$("#tUp").onclick=()=>setMode("up");$("#lgForgot").onclick=()=>setMode("reset");
 $("#email").onkeydown=$("#pw").onkeydown=e=>{if(e.key==="Enter")$("#loginGo").click()};
@@ -771,7 +769,7 @@ function renderActs(){
   $("#stvList").innerHTML=L.length?L.map(a=>'<button class="act" data-id="'+a.id+'"><span>'+esc(a.name)+'<br><small>'+esc(new Date(a.date).toLocaleDateString("th-TH"))+' · '+esc(a.type)+'</small></span><span style="text-align:right">'+(a.dist/1000).toFixed(1)+' กม.<br><small>ขึ้น '+Math.round(a.gain||0)+' ม.</small></span></button>').join(""):'<p class="note">ไม่พบกิจกรรม</p>';
 }
 $("#stvList").onclick=async e=>{
-  if(e.target.closest("#stvLogin")){sessionStorage.setItem(PENDING_STRAVA,location.pathname);openLogin("เข้าสู่ระบบก่อน แล้วจะพาไปเชื่อมต่อ Strava ต่อ");return}
+  if(e.target.closest("#stvLogin")){openLogin("เข้าสู่ระบบ RunsArt ก่อน จากนั้นเปิดบัญชีด้านบนเพื่อเชื่อมต่อ Strava");return}
   const b=e.target.closest("[data-id]");if(!b)return;
   const a=ACT.find(x=>String(x.id)===b.dataset.id);
   $("#stvMsg").textContent="กำลังดึงข้อมูลเส้นทาง…";
@@ -790,8 +788,7 @@ $("#stvFile").onclick=()=>$("#gpx").click();
 async function initAuth(){
   renderAcct();if(!sb){stvInit();return}
   const{data}=await sb.auth.getSession();SESS=data.session;USER=SESS?SESS.user:null;renderAcct();await loadRoutes();stvInit();
-  sb.auth.onAuthStateChange((ev,s)=>{const was=USER&&USER.id;SESS=s;USER=s?s.user:null;renderAcct();resumeStravaConnect();if(ev==="PASSWORD_RECOVERY")openLogin("","new");if((USER&&USER.id)!==was){if(ev!=="PASSWORD_RECOVERY")$("#login").hidden=true;loadRoutes();stvInit()}});
-  resumeStravaConnect();
+  sb.auth.onAuthStateChange((ev,s)=>{const was=USER&&USER.id;SESS=s;USER=s?s.user:null;renderAcct();if(ev==="PASSWORD_RECOVERY")openLogin("","new");if((USER&&USER.id)!==was){if(ev!=="PASSWORD_RECOVERY")$("#login").hidden=true;loadRoutes();stvInit()}});
   if(new URLSearchParams(location.search).get("strava")==="connected"){history.replaceState(null,"",location.pathname)}
 }
 /* รับของที่ส่งมาจากหน้าแรก: ไฟล์ที่ลากมาวาง, กิจกรรม Strava (?activity=), เส้นทางที่บันทึก (?route=) */
