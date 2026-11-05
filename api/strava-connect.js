@@ -13,7 +13,7 @@ module.exports = async (req, res) => {
     response_type: "code",
     approval_prompt: "force",
     scope: "read,activity:read_all",
-    state: sign(u.id),
+    state: sign(u.id, req.query && req.query.back),
   });
   res.json({ url });
   } catch (err) {

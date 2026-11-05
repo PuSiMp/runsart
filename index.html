@@ -90,6 +90,10 @@ footer{border-top:1px solid var(--line);padding-top:16px;color:var(--mute);font-
 .gbtn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;height:42px;padding:8px 12px;background:color-mix(in srgb,var(--accent) 12%,var(--panel));border-color:color-mix(in srgb,var(--accent) 32%,var(--line));color:var(--ink);font-weight:500}
 .gbtn:hover{background:color-mix(in srgb,var(--accent) 18%,var(--panel));border-color:var(--accent)}
 .glogo{display:block;flex:none;width:20px;height:20px}
+.account-open{align-self:center;text-decoration:none;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.strava-btn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;height:42px;padding:8px 12px;background:color-mix(in srgb,#fc4c02 10%,var(--panel));border-color:color-mix(in srgb,#fc4c02 36%,var(--line));color:var(--ink);font-weight:500}
+.strava-btn:hover{background:color-mix(in srgb,#fc4c02 16%,var(--panel));border-color:#fc4c02}
+.strava-logo{display:block;flex:none;width:20px;height:20px;color:#fc4c02}
 .choose-tools{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .choose-tools button{min-height:142px;display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:14px;text-align:left}
 .choose-tool-icon{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px;background:color-mix(in srgb,var(--accent) 10%,var(--panel));color:var(--accent)}
@@ -316,12 +320,15 @@ footer{margin-top:12px;padding:18px 0 0}
   <div class="shd"><strong id="lgT">เข้าสู่ระบบ</strong><button class="ib" id="lgX" aria-label="ปิด">×</button></div>
   <div class="tabs2"><button id="tIn" class="on">เข้าสู่ระบบ</button><button id="tUp">สมัครสมาชิก</button></div>
   <button id="gBtn" class="gbtn" hidden><svg class="glogo" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.74 7.18l7.73 6C44.43 37.93 46.98 31.7 46.98 24.55z"/><path fill="#FBBC05" d="M10.53 28.59A14.4 14.4 0 0 1 9.75 24c0-1.59.27-3.13.76-4.59l-7.98-6.19A23.9 23.9 0 0 0 0 24c0 3.87.93 7.55 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.91-5.8l-7.73-6c-2.14 1.45-4.89 2.3-8.18 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>เข้าด้วย Google</button>
+  <button id="stravaBtn" class="strava-btn" hidden><svg class="strava-logo" viewBox="0 0 40 40" aria-hidden="true"><path fill="currentColor" d="M15.7 2 0 32h10.2l5.5-10.6L21.2 32h10.2L15.7 2zm14.1 19.3L24.2 32h12.1l-6.5-10.7z"/></svg>เชื่อมต่อด้วย Strava</button>
   <label>อีเมล<input type="text" id="email" autocomplete="email" inputmode="email" placeholder="you@example.com"></label>
   <label id="pwL">รหัสผ่าน (อย่างน้อย 6 ตัว)<input type="password" id="pw" autocomplete="current-password"></label>
   <button type="button" class="lnk" id="pwShow">แสดงรหัสผ่าน</button>
   <p class="note" id="lgHint"></p>
   <button class="pri big" id="loginGo">เข้าสู่ระบบ</button>
   <button class="lnk" id="lgForgot">ลืมรหัสผ่าน</button>
+  <p class="note" id="accountInfo" hidden></p>
+  <button id="accountOut" hidden>ออกจากระบบ</button>
   <p class="note" id="loginMsg"></p>
 </div></div>
 <div id="chooseTool" class="modal" hidden><div class="mbox wide" role="dialog" aria-modal="true" aria-labelledby="chooseToolTitle">
@@ -370,26 +377,46 @@ try{if(CFG.SUPABASE_URL&&CFG.SUPABASE_ANON_KEY){if(!window.supabase)CFGERR="โ�
 function renderAcct(){
   const a=$("#acct");
   if(!sb){a.innerHTML='<span class="err">'+(CFGERR?'เชื่อมต่อบัญชีไม่ได้ในตอนนี้ แต่ยังนำเข้าไฟล์ GPX/TCX ได้ตามปกติ':'ยังไม่ได้ตั้งค่า Supabase ใน config.js')+'</span>';return}
-  a.innerHTML=USER?'<span class="note">'+esc(USER.email||"")+'</span><button class="ib" id="bOut" aria-label="ออกจากระบบ" title="ออกจากระบบ"><span data-ic="out"></span></button>':'<button class="sbtn pri" id="bIn"><span data-ic="user"></span>เข้าสู่ระบบ</button>';
+  a.innerHTML=USER?'<button class="lnk account-open" id="bAccount">'+esc(USER.email||"บัญชี")+'</button><button class="ib" id="bOut" aria-label="ออกจากระบบ" title="ออกจากระบบ"><span data-ic="out"></span></button>':'<button class="sbtn pri" id="bIn"><span data-ic="user"></span>เข้าสู่ระบบ</button>';
   icons(a);
 }
-$("#acct").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;if(b.id==="bIn")openLogin();else if(b.id==="bOut")sb.auth.signOut()});
+$("#acct").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;if(b.id==="bIn"||b.id==="bAccount")openLogin();else if(b.id==="bOut")sb.auth.signOut()});
 let lgMode="in";
 function setMode(m){
-  lgMode=m;const T={in:"เข้าสู่ระบบ",up:"สมัครสมาชิก",reset:"ลืมรหัสผ่าน"};
+  lgMode=m;const T={in:"เข้าสู่ระบบ",up:"สมัครสมาชิก",reset:"ลืมรหัสผ่าน",account:"บัญชี RunsArt"};
+  const account=m==="account"&&!!USER;
   $("#lgT").textContent=T[m];$("#loginGo").textContent=m==="reset"?"ส่งลิงก์ตั้งรหัสผ่านใหม่":T[m];
   $("#tIn").classList.toggle("on",m==="in");$("#tUp").classList.toggle("on",m==="up");
-  document.querySelector(".tabs2").hidden=m==="reset";$("#pwL").hidden=m==="reset";
-  $("#lgForgot").hidden=m!=="in";$("#pwShow").hidden=m==="reset";
+  document.querySelector(".tabs2").hidden=m==="reset"||account;$("#email").parentNode.hidden=account;$("#pwL").hidden=m==="reset"||account;
+  $("#lgForgot").hidden=m!=="in";$("#pwShow").hidden=m==="reset"||account;$("#loginGo").hidden=account;
   $("#lgHint").textContent=m==="up"?"สมัครด้วยอีเมลอะไรก็ได้ แล้วตั้งรหัสผ่านเอง ถ้าระบบขอให้ยืนยันอีเมล กดลิงก์ในอีเมลหนึ่งครั้งก็พอ":"";
-  $("#gBtn").hidden=!(CFG.GOOGLE&&m!=="reset");
+  $("#accountInfo").hidden=!account;$("#accountInfo").textContent=account?USER.email||"เข้าสู่ระบบแล้ว":"";
+  $("#accountOut").hidden=!account;$("#gBtn").hidden=!(CFG.GOOGLE&&(m==="in"||m==="up"));$("#stravaBtn").hidden=!(m==="in"||m==="up"||account);
   $("#pw").setAttribute("autocomplete",m==="in"?"current-password":"new-password");$("#loginMsg").textContent="";
 }
-function openLogin(msg){setMode("in");$("#login").hidden=false;if(msg)$("#loginMsg").textContent=msg;setTimeout(()=>$("#email").focus(),0)}
+function openLogin(msg){setMode(USER?"account":"in");$("#login").hidden=false;if(msg)$("#loginMsg").textContent=msg;if(!USER)setTimeout(()=>$("#email").focus(),0)}
 $("#lgX").onclick=()=>{$("#login").hidden=true};
 $("#login").addEventListener("click",e=>{if(e.target.id==="login")$("#login").hidden=true});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")$("#login").hidden=true});
 $("#pwShow").onclick=()=>{const p=$("#pw"),on=p.type==="password";p.type=on?"text":"password";$("#pwShow").textContent=on?"ซ่อนรหัสผ่าน":"แสดงรหัสผ่าน"};
+$("#accountOut").onclick=async()=>{const{error}=await sb.auth.signOut();if(error)$("#loginMsg").textContent="ออกจากระบบไม่สำเร็จ: "+error.message};
+const PENDING_STRAVA="runsart.pendingStrava";
+async function connectStrava(){
+  const report=t=>{if($("#login").hidden)setMsg(t);else $("#loginMsg").textContent=t};
+  if(!sb){report("ต้องตั้งค่า Supabase ก่อนจึงจะเชื่อม Strava ได้");return}
+  if(!USER){sessionStorage.setItem(PENDING_STRAVA,location.pathname);setMode("in");report("เข้าสู่ระบบก่อน แล้วจะพาไปเชื่อมต่อ Strava ต่อ");}
+  else{
+    report("กำลังไปยัง Strava…");
+    try{
+      const r=await fetch("/api/strava-connect?back="+encodeURIComponent(location.pathname),{headers:{Authorization:"Bearer "+SESS.access_token}});
+      const j=await r.json();
+      if(!r.ok||!j.url){report(j.message||"เชื่อมต่อไม่ได้ ตรวจค่า Environment Variables บน Vercel");return}
+      sessionStorage.removeItem(PENDING_STRAVA);location.href=j.url;
+    }catch(_){report("เรียก API ไม่ได้ ตรวจการตั้งค่า Strava บน Vercel")}
+  }
+}
+function resumeStravaConnect(){if(USER&&sessionStorage.getItem(PENDING_STRAVA)===location.pathname){sessionStorage.removeItem(PENDING_STRAVA);connectStrava()}}
+$("#stravaBtn").onclick=connectStrava;
 $("#tIn").onclick=()=>setMode("in");$("#tUp").onclick=()=>setMode("up");$("#lgForgot").onclick=()=>setMode("reset");
 $("#email").onkeydown=$("#pw").onkeydown=e=>{if(e.key==="Enter")$("#loginGo").click()};
 const authErr=m=>{m=String(m||"");return /Invalid login/i.test(m)?"อีเมลหรือรหัสผ่านไม่ถูกต้อง":/already registered/i.test(m)?"อีเมลนี้สมัครไว้แล้ว ลองเข้าสู่ระบบแทน":/at least/i.test(m)?"รหัสผ่านต้องยาวอย่างน้อย 6 ตัว":/not confirmed/i.test(m)?"ยังไม่ได้ยืนยันอีเมล เปิดอีเมลแล้วกดลิงก์ยืนยันก่อน":/rate limit/i.test(m)?"ส่งอีเมลบ่อยเกินไป รอสักครู่แล้วลองใหม่":m};
@@ -459,7 +486,7 @@ $("#tq").oninput=()=>{
 /* ---- Strava + ล่าสุด ---- */
 function renderStrava(){
   const b=$("#stravaBox");
-  b.innerHTML=STV==="connected"?'<p class="ok">เชื่อมต่อ Strava แล้ว</p><p class="note">เลือกกิจกรรมได้ในเครื่องมือหรือจากรายการล่าสุดด้านล่าง</p>':STV==="inactive"?'<p class="err">แอป Strava ถูกปิดใช้งาน ติดต่อเจ้าของแอปเพื่อแก้สถานะ</p>':'<button class="pri big" id="bStrava">เชื่อมต่อ Strava</button>';
+  b.innerHTML=STV==="connected"?'<p class="ok">เชื่อมต่อ Strava แล้ว</p><p class="note">เลือกกิจกรรมได้ในเครื่องมือหรือจากรายการล่าสุดด้านล่าง</p>':STV==="inactive"?'<p class="err">แอป Strava ถูกปิดใช้งาน ติดต่อเจ้าของแอปเพื่อแก้สถานะ</p>':'<p class="note">เข้าสู่ระบบแล้วเปิดบัญชีด้านบนเพื่อเชื่อมต่อ Strava</p>';
 }
 function resetOverview(note){
   $("#overviewMetrics").classList.remove("is-loading");
@@ -485,18 +512,11 @@ function renderOverview(activity){
   const date=activity.date?new Date(activity.date).toLocaleDateString("th-TH"):"";
   $("#overviewNote").textContent="กิจกรรมล่าสุด"+(activity.name?" · "+activity.name:"")+(date?" · "+date:"");
 }
-async function connectStrava(){
-  if(!sb){setMsg("ต้องตั้งค่า Supabase ใน config.js ก่อน");return}
-  if(!USER){openLogin("เข้าสู่ระบบก่อนจึงจะเชื่อม Strava ได้");return}
-  try{const r=await fetch("/api/strava-connect?back=/",{headers:{Authorization:"Bearer "+SESS.access_token}}),j=await r.json();if(j.url)go(j.url);else setMsg("เชื่อมต่อไม่ได้ ตรวจค่า Environment Variables บน Vercel")}
-  catch(_){setMsg("เรียก API ไม่ได้ ใช้ได้เมื่ออัปขึ้น Vercel แล้ว")}
-}
-$("#stravaBox").addEventListener("click",e=>{if(e.target.closest("#bStrava"))connectStrava()});
 async function loadRecent(){
   const box=$("#recentBody"),uid=USER&&USER.id,request=++recentRequest;renderStrava();
   $("#recentSection").hidden=!uid;
   $("#recentNav").hidden=!uid;
-  if(!sb||!uid){box.innerHTML="";resetOverview(sb?"เข้าสู่ระบบและเชื่อมต่อ Strava เพื่อดูสถิติกิจกรรม":"เชื่อมต่อ Strava เพื่อดูสถิติ หรือเลือกไฟล์กิจกรรมจากอุปกรณ์ของคุณ");return}
+  if(!sb||!uid){box.innerHTML="";resetOverview(sb?"เข้าสู่ระบบ แล้วเปิดบัญชีด้านบนเพื่อเชื่อมต่อ Strava หรือเลือกไฟล์กิจกรรมจากอุปกรณ์ของคุณ":"เชื่อมต่อ Strava เพื่อดูสถิติ หรือเลือกไฟล์กิจกรรมจากอุปกรณ์ของคุณ");return}
   $("#overviewMetrics").classList.add("is-loading");
   $("#overviewMetrics").setAttribute("aria-busy","true");
   $("#overviewEmpty").hidden=true;
@@ -517,12 +537,11 @@ async function loadRecent(){
     ra.setAttribute("aria-busy","false");
     ra.className="";
     if(r.status===503){const j=await r.json();resetOverview("โหลดสถิติกิจกรรมไม่ได้ในตอนนี้");if(j.error==="strava_app_inactive"){STV="inactive";renderStrava();ra.innerHTML='<p class="err">แอป Strava ถูกปิดใช้งาน เจ้าของแอปต้องแก้สถานะใน Strava ก่อนจึงจะโหลดกิจกรรมได้</p>'}else ra.innerHTML='<p class="err">โหลดกิจกรรมไม่สำเร็จ ('+r.status+')</p>'}
-    else if(r.status===409){const j=await r.json();STV="none";renderStrava();resetOverview("เชื่อมต่อ Strava เพื่อดูสถิติกิจกรรมล่าสุด");ra.innerHTML='<p class="note" style="margin-bottom:8px">'+(j.error==="reconnect_strava"?"Strava ต้องการสิทธิ์อ่านกิจกรรมอีกครั้ง กรุณาเชื่อมต่อใหม่และกดอนุญาต":"ยังไม่ได้เชื่อมต่อ Strava")+'</p><button id="recConn">เชื่อมต่อ Strava ใหม่</button>'}
+    else if(r.status===409){const j=await r.json();STV="none";renderStrava();resetOverview("เปิดบัญชีด้านบนเพื่อเชื่อมต่อ Strava และดูสถิติกิจกรรมล่าสุด");ra.innerHTML='<p class="note">'+(j.error==="reconnect_strava"?"Strava ต้องการสิทธิ์อ่านกิจกรรมอีกครั้ง กรุณาเชื่อมต่อใหม่และกดอนุญาต":"ยังไม่ได้เชื่อมต่อ Strava เปิดบัญชีด้านบนเพื่อเชื่อมต่อ")+'</p>'}
     else if(!r.ok){resetOverview("โหลดสถิติกิจกรรมไม่สำเร็จ");ra.innerHTML='<p class="err">โหลดกิจกรรมไม่สำเร็จ ('+r.status+')</p>'}
     else{const a=await r.json();if(!isCurrent())return;STV="connected";renderStrava();renderOverview(a[0]);ra.innerHTML=a.length?a.slice(0,3).map(x=>'<a class="item" href="/tools/slope/?activity='+encodeURIComponent(x.id)+'&name='+encodeURIComponent(x.name)+'"><b>'+esc(x.name)+'</b><span>'+esc(new Date(x.date).toLocaleDateString("th-TH"))+' · '+((x.dist||0)/1000).toFixed(1)+' กม. · ขึ้น '+Math.round(x.gain||0)+' ม.</span></a>').join(""):'<p class="note">ยังไม่มีกิจกรรม</p>'}
   }catch(_){ra.setAttribute("aria-busy","false");ra.className="";resetOverview("เรียกข้อมูลกิจกรรมไม่ได้ในตอนนี้");ra.innerHTML='<p class="note">เรียก API ไม่ได้ ใช้ได้เมื่ออัปขึ้น Vercel แล้ว</p>'}
 }
-$("#recentBody").addEventListener("click",e=>{if(e.target.closest("#recConn"))connectStrava()});
 $("#overviewImport").onclick=()=>$("#file").click();
 
 let recentRequest=0;
@@ -530,7 +549,8 @@ async function init(){
   renderAcct();
   if(!sb){loadRecent();return}
   const{data}=await sb.auth.getSession();SESS=data.session;USER=SESS?SESS.user:null;renderAcct();loadRecent();
-  sb.auth.onAuthStateChange((ev,s)=>{const was=USER&&USER.id;SESS=s;USER=s?s.user:null;renderAcct();if((USER&&USER.id)!==was){$("#login").hidden=true;STV="unknown";loadRecent()}});
+  sb.auth.onAuthStateChange((ev,s)=>{const was=USER&&USER.id;SESS=s;USER=s?s.user:null;renderAcct();resumeStravaConnect();if((USER&&USER.id)!==was){$("#login").hidden=true;STV="unknown";loadRecent()}});
+  resumeStravaConnect();
   if(new URLSearchParams(location.search).get("strava")==="connected"){STV=USER?"connected":"unknown";history.replaceState(null,"",location.pathname+location.hash);setMsg("เชื่อมต่อ Strava สำเร็จแล้ว");if(USER)loadRecent()}
 }
 init().catch(e=>setMsg("บัญชีใช้งานไม่ได้: "+(e.message||e)));

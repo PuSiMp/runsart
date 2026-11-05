@@ -45,18 +45,25 @@ const mac = (p) => {
   return crypto.createHmac("sha256", process.env.STATE_SECRET).update(p).digest("hex");
 };
 
-function sign(uid) {
-  const p = uid + "." + (Date.now() + 10 * 60 * 1000);
+const STRAVA_RETURN_PATHS = new Set(["/", "/tools/slope/", "/tools/training%20analysis/"]);
+
+function sign(uid, back) {
+  const returnPath = STRAVA_RETURN_PATHS.has(back) ? back : "/";
+  const p = [uid, Date.now() + 10 * 60 * 1000, Buffer.from(returnPath).toString("base64url")].join(".");
   return p + "." + mac(p);
 }
 
 function verify(state) {
   try {
     const a = String(state || "").split(".");
-    if (a.length !== 3 || Date.now() > +a[1]) return null;
-    const want = Buffer.from(mac(a[0] + "." + a[1])),
-      got = Buffer.from(a[2]);
-    return want.length === got.length && crypto.timingSafeEqual(want, got) ? a[0] : null;
+    if ((a.length !== 3 && a.length !== 4) || Date.now() > +a[1]) return null;
+    const payload = a.slice(0, -1).join(".");
+    const want = Buffer.from(mac(payload)),
+      got = Buffer.from(a[a.length - 1]);
+    if (want.length !== got.length || !crypto.timingSafeEqual(want, got)) return null;
+    const back = a.length === 4 ? Buffer.from(a[2], "base64url").toString() : "/";
+    if (!STRAVA_RETURN_PATHS.has(back)) return null;
+    return { uid: a[0], back };
   } catch (err) {
     console.error("verify state failed:", err.message);
     return null;

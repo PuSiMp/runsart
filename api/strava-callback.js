@@ -3,8 +3,8 @@ const { verify, saveTokens } = require("./_lib");
 // Strava เด้งกลับมาที่นี่พร้อม code
 module.exports = async (req, res) => {
   const q = req.query || {};
-  const uid = verify(q.state);
-  if (!uid || !q.code) return res.status(400).send("ลิงก์เชื่อมต่อไม่ถูกต้อง หมดอายุ หรือคุณไม่ได้กดอนุญาต กลับไปลองใหม่ได้");
+  const state = verify(q.state);
+  if (!state || !q.code) return res.status(400).send("ลิงก์เชื่อมต่อไม่ถูกต้อง หมดอายุ หรือคุณไม่ได้กดอนุญาต กลับไปลองใหม่ได้");
   const r = await fetch("https://www.strava.com/oauth/token", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -12,11 +12,11 @@ module.exports = async (req, res) => {
   });
   if (!r.ok) return res.status(502).send("Strava ปฏิเสธการเชื่อมต่อ ตรวจ Client ID, Secret และ Callback Domain");
   try {
-    await saveTokens(uid, await r.json());
+    await saveTokens(state.uid, await r.json());
   } catch (err) {
     console.error("Strava token storage failed:", err);
     return res.status(502).send("Strava อนุญาตแล้ว แต่บันทึก token ไม่สำเร็จ ตรวจว่า Vercel ตั้งค่า SUPABASE_URL และ SUPABASE_SERVICE_ROLE_KEY ถูกต้อง และรัน supabase.sql เพื่อสร้างตาราง public.strava_tokens แล้วลองใหม่");
   }
-  res.writeHead(302, { Location: "/?strava=connected" });
+  res.writeHead(302, { Location: state.back + (state.back.includes("?") ? "&" : "?") + "strava=connected" });
   res.end();
 };
