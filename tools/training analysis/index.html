@@ -1358,13 +1358,20 @@ $("#stvList").onclick=async e=>{
   b.classList.add("is-loading");b.disabled=true;$("#stvList").setAttribute("aria-busy","true");
   $("#streamSkeleton").hidden=false;$("#cv").setAttribute("aria-busy","true");
   try{
-    const r=await api("/api/strava-stream?full=1&id="+encodeURIComponent(a.id));if(!r.ok)throw 0;const j=await r.json();
-    if(!j.time||!j.distance)throw 1;
+    const r=await api("/api/strava-stream?full=1&id="+encodeURIComponent(a.id));
+    if(!r.ok){
+      const problem=await r.json().catch(()=>({}));
+      if(problem.error==="reconnect_strava")throw new Error("Strava ต้องการสิทธิ์อีกครั้ง เปิดบัญชีด้านบนเพื่อเชื่อมต่อใหม่");
+      if(problem.error==="activity_not_found")throw new Error("ไม่พบข้อมูลกิจกรรมนี้ใน Strava อาจถูกลบหรือไม่มีสิทธิ์เข้าถึง");
+      throw new Error(problem.message||"ดึงข้อมูลจาก Strava ไม่สำเร็จ ("+r.status+")");
+    }
+    const j=await r.json();
+    if(!Array.isArray(j.time)||!Array.isArray(j.distance)||j.time.length<2||j.distance.length<2)throw new Error("Strava ไม่ส่งข้อมูลเวลาและระยะของกิจกรรมนี้มาให้ ลองเลือกกิจกรรมอื่น");
     const ll=j.latlng||[];
     const ok=ingest(j.time.map((t,i)=>({t,d:j.distance[i],hr:j.heartrate?j.heartrate[i]:NaN,cad:j.cadence?j.cadence[i]:NaN,ele:j.altitude?j.altitude[i]:NaN,lat:ll[i]?ll[i][0]:NaN,lon:ll[i]?ll[i][1]:NaN})),{name:a.name,fileName:"Strava: "+a.name,activityType:a.type,date:new Date(a.date).toISOString()});
     if(!ok){$("#stvMsg").textContent="ข้อมูลกิจกรรมไม่เพียงพอสำหรับวิเคราะห์ ดูข้อความแจ้งข้อผิดพลาดในหน้า";b.classList.remove("is-loading");b.disabled=false;$("#stvList").setAttribute("aria-busy","false");$("#streamSkeleton").hidden=true;$("#cv").setAttribute("aria-busy","false");return}
     await autoSaveSessions([lastSess]);$("#stvMsg").textContent="วิเคราะห์และบันทึกกิจกรรมแล้ว";$("#streamSkeleton").hidden=true;$("#cv").setAttribute("aria-busy","false");render();
-  }catch(x){b.classList.remove("is-loading");b.disabled=false;$("#stvList").setAttribute("aria-busy","false");$("#streamSkeleton").hidden=true;$("#cv").setAttribute("aria-busy","false");$("#stvMsg").textContent=x===1?"กิจกรรมนี้ไม่มีข้อมูลเวลาและระยะ":"ดึงข้อมูลไม่สำเร็จ"}
+  }catch(x){b.classList.remove("is-loading");b.disabled=false;$("#stvList").setAttribute("aria-busy","false");$("#streamSkeleton").hidden=true;$("#cv").setAttribute("aria-busy","false");$("#stvMsg").textContent=x.message||"ดึงข้อมูลไม่สำเร็จ"}
 };
 $("#q").oninput=renderActs;$("#stvType").onchange=renderActs;$("#dFrom").onchange=$("#dTo").onchange=()=>loadActs(true);$("#stvMore").onclick=()=>loadActs(false);
 
