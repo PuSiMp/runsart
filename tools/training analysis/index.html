@@ -197,36 +197,33 @@ th{color:var(--mute);font-weight:500;font-size:.76rem}
   .visual-tools button{width:44px;height:44px;min-height:44px}
 }
 @media(max-width:760px){
-  html,body{height:100%;overflow:hidden}
-  body{height:100vh;height:100dvh}
-  main{height:100vh;height:100dvh;max-width:none;min-height:0;display:flex;flex-direction:column;gap:8px;overflow:hidden;padding:calc(8px + env(safe-area-inset-top,0px)) 10px calc(8px + env(safe-area-inset-bottom,0px))}
+  main{max-width:none;display:flex;flex-direction:column;gap:8px;padding:calc(8px + env(safe-area-inset-top,0px)) 10px calc(80px + env(safe-area-inset-bottom,0px))}
   .top{flex:none;gap:6px}
   .acct{margin:0}
   .toolnav{flex:none;gap:6px;margin:0;overflow-x:auto;flex-wrap:nowrap;white-space:nowrap;scrollbar-width:none}
   .toolnav::-webkit-scrollbar{display:none}
   .box{margin:0;padding:10px;border-radius:12px}
-  main>section.box:first-of-type{flex:none;max-height:34vh;overflow-y:auto;overscroll-behavior:contain}
-  #empty{flex:1;min-height:0;align-content:center;overflow:auto}
-  #res{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;overflow:hidden}
-  #res[hidden]{display:none}
-  .mobile-content{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+  main>section.box:first-of-type{flex:none}
+  #empty{flex:1;min-height:0;align-content:center}
+  #res{flex:1;display:flex;flex-direction:column;gap:8px}
+  .mobile-content{display:contents}
   #res .mobile-panel{display:none}
   #res[data-mobile-view="summary"] .mobile-panel[data-mobile-panel="summary"],
   #res[data-mobile-view="splits"] .mobile-panel[data-mobile-panel="splits"],
   #res[data-mobile-view="more"] .mobile-panel[data-mobile-panel="more"]{display:grid;gap:8px}
   #res .route-panel[data-mobile-panel="map-chart"]{display:none}
   #res[data-mobile-view="map"] .route-panel[data-mobile-panel="map-chart"],
-  #res[data-mobile-view="chart"] .route-panel[data-mobile-panel="map-chart"]{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);align-content:stretch;gap:8px;height:100%;min-height:0}
+  #res[data-mobile-view="chart"] .route-panel[data-mobile-panel="map-chart"]{display:grid;grid-template-columns:minmax(0,1fr);align-content:stretch;gap:8px}
   #res[data-mobile-view="map"] .route-chart{display:none}
   #res[data-mobile-view="chart"] .route-content{display:none}
-  #res[data-mobile-view="map"] .route-content{height:100%;min-height:0;aspect-ratio:auto}
+  #res[data-mobile-view="map"] .route-content{height:55vh;min-height:350px;aspect-ratio:auto}
   #res[data-mobile-view="splits"] .mobile-panel[data-mobile-panel="splits"]{height:auto;min-height:0;grid-template-rows:auto}
   #res[data-mobile-view="splits"] #reps{max-height:none;min-height:0;height:auto;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain}
-  .mobile-tabs{display:flex;flex:none;gap:4px;padding:4px;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow-x:auto;overscroll-behavior-x:contain}
+  .mobile-tabs{position:fixed;bottom:env(safe-area-inset-bottom, 8px);left:10px;right:10px;z-index:90;display:flex;gap:4px;padding:6px;background:color-mix(in srgb, var(--panel) 95%, transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.15)}
   #res[hidden]+.mobile-tabs{display:none}
-  .mobile-tabs button{flex:0 0 24%;min-width:58px;min-height:44px;padding:4px 6px;font-size:.75rem;line-height:1.2;touch-action:manipulation}
+  .mobile-tabs button{flex:1;min-width:58px;min-height:44px;padding:4px 6px;font-size:.75rem;line-height:1.2;touch-action:manipulation}
   .mobile-tabs button[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--onaccent)}
-  .route-panel .distance-scroll{position:sticky;bottom:0}
+  .route-panel .distance-scroll{position:sticky;bottom:85px;background:var(--panel);padding:6px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
 }
 @media(prefers-reduced-motion:reduce){.skeleton-line,.skeleton-profile i,.act.is-loading{animation:none}.drop,.drop>span:first-child,#trackLine,#hl,#trackPace,#trackHR,#hd,#hd2{transition:none}}
 </style>
@@ -363,7 +360,7 @@ function setMobileView(view,focus=false){
   tabs.forEach(tab=>{const selected=tab.dataset.mobileView===view;tab.setAttribute("aria-selected",String(selected));tab.tabIndex=selected?0:-1;if(selected&&focus)tab.focus()});
   const activeTab=tabs.find(tab=>tab.dataset.mobileView===view);
   if(view==="map"||view==="chart")$("#routePanel").setAttribute("aria-labelledby",activeTab.id);
-  $(".mobile-content").scrollTop=0;
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 $(".mobile-tabs").addEventListener("click",e=>{const tab=e.target.closest("[data-mobile-view]");if(tab)setMobileView(tab.dataset.mobileView)});
 $(".mobile-tabs").addEventListener("keydown",e=>{
